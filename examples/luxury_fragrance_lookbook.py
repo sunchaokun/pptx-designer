@@ -39,11 +39,9 @@ def add_cover(prs: Presentation) -> None:
     rect(slide, 0, 0, 13.333, 7.5, "cream", C=C)
     rect(slide, 0.52, 0.46, 12.30, 0.08, "wine", C=C)
     cover_image(slide, 0.78, 0.85, 11.74, 3.62, str(HERO))
-    text(slide, 0.76, 4.88, 1.62, 0.98, "07", font_size=62,
-         color="wine", bold=True, font_name=SERIF, C=C)
-    text(slide, 2.45, 4.98, 4.42, 0.38, "AURELIA NOCTURNE", font_size=16,
+    text(slide, 0.76, 5.02, 5.54, 0.38, "AURELIA NOCTURNE", font_size=16,
          color="ink", bold=True, font_name=SANS, C=C)
-    multiline(slide, 2.45, 5.40, 5.20, 0.76, ["A perfume atlas for the", "last light of the day."], font_size=21,
+    multiline(slide, 0.76, 5.42, 6.20, 0.76, ["A perfume atlas for the", "last light of the day."], font_size=21,
               color="wine", font_name=SERIF, C=C)
     text(slide, 9.14, 5.08, 3.18, 0.24, "EXTRAIT DE PARFUM", font_size=9,
          color="wine", bold=True, font_name=SANS, C=C)
@@ -118,7 +116,7 @@ def add_object(prs: Presentation) -> None:
          color="cream", font_name=SERIF, C=C)
     text(slide, 9.02, 5.98, 3.28, 0.24, "50 ML / REFILLABLE", font_size=9,
          color="gold", bold=True, align="right", font_name=SANS, C=C)
-    text(slide, 9.03, 6.42, 3.30, 0.24, "MAISON AURELIA / N° 07", font_size=9,
+    text(slide, 9.03, 6.42, 3.30, 0.24, "MAISON AURELIA / NOCTURNE", font_size=9,
          color="rose", bold=True, align="right", font_name=SANS, C=C)
 
 
