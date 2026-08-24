@@ -1,7 +1,8 @@
-"""A four-page luxury fragrance lookbook built only with pptx_designer.
+"""An original four-page luxury fragrance atlas built only with pptx_designer.
 
-The campaign uses distinct editorial images for hero, ingredients, ritual and
-object study. Typography, panels and all supporting information are editable.
+The deck treats the perfume as a collectible object: scent journey, materials,
+ritual and travel-ready presentation. All type and graphic details are native,
+editable PowerPoint objects.
 
 Run: python examples/luxury_fragrance_lookbook.py
 """
@@ -33,94 +34,101 @@ SANS = "Arial"
 
 
 def add_cover(prs: Presentation) -> None:
-    """A cover where large type physically enters the product image."""
+    """A quiet product passport, deliberately unlike the architecture cover."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     rect(slide, 0, 0, 13.333, 7.5, "cream", C=C)
-    cover_image(slide, 0.78, 0.45, 11.80, 5.38, str(HERO))
-    rect(slide, 0.40, 0.45, 0.16, 5.38, "gold", C=C)
-    rect(slide, 8.65, 0.45, 3.93, 0.54, "ink", C=C)
-    text(slide, 8.98, 0.58, 3.15, 0.26, "MAISON AURELIA  /  N° 07", font_size=9,
-         color="gold", bold=True, font_name=SANS, C=C)
-    text(slide, 0.72, 5.25, 7.95, 0.98, "THE RITUAL", font_size=54,
-         color="ink", bold=True, font_name=SERIF, C=C)
-    text(slide, 6.56, 5.25, 5.75, 0.98, "OF LIGHT", font_size=54,
+    rect(slide, 0.52, 0.46, 12.30, 0.08, "wine", C=C)
+    cover_image(slide, 0.78, 0.85, 11.74, 3.62, str(HERO))
+    rect(slide, 10.50, 0.85, 2.02, 0.56, "cream", C=C)
+    text(slide, 10.73, 1.02, 1.58, 0.24, "N° 07 / 2026", font_size=9,
+         color="wine", bold=True, align="center", font_name=SANS, C=C)
+    text(slide, 0.76, 4.88, 1.62, 0.98, "07", font_size=62,
          color="wine", bold=True, font_name=SERIF, C=C)
-    text(slide, 0.76, 6.36, 3.75, 0.24, "EXTRAIT DE PARFUM / 50 ML", font_size=9,
+    text(slide, 2.45, 4.98, 4.42, 0.38, "AURELIA NOCTURNE", font_size=16,
+         color="ink", bold=True, font_name=SANS, C=C)
+    multiline(slide, 2.45, 5.40, 5.20, 0.76, ["A perfume atlas for the", "last light of the day."], font_size=21,
+              color="wine", font_name=SERIF, C=C)
+    text(slide, 9.14, 5.08, 3.18, 0.24, "EXTRAIT DE PARFUM", font_size=9,
          color="wine", bold=True, font_name=SANS, C=C)
-    multiline(slide, 8.10, 6.22, 4.15, 0.62,
-              ["A composition for the hour", "between dusk and silence."],
+    multiline(slide, 9.14, 5.48, 3.22, 0.78,
+              ["Collected in motion.", "Remembered on skin."],
               font_size=14, color="ink", font_name=SERIF, C=C)
-    text(slide, 0.76, 7.00, 11.50, 0.22,
-         "AUTUMN / WINTER 2026     /     PARIS — NEW YORK — TOKYO", font_size=8,
-         color="muted", bold=True, font_name=SANS, C=C)
+    text(slide, 0.78, 6.88, 11.42, 0.24,
+         "50 ML     /     BERGAMOT — IRIS — SMOKED TEA — CEDAR     /     AUTUMN 2026",
+         font_size=8, color="muted", bold=True, font_name=SANS, C=C)
 
 
-def add_composition(prs: Presentation) -> None:
-    """A sensory index: image as a band, native typography as the scent map."""
+def add_material_atlas(prs: Presentation) -> None:
+    """Ingredient landscape and provenance markers, inspired by an atlas not a brochure."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    rect(slide, 0, 0, 13.333, 7.5, "ink", C=C)
-    cover_image(slide, 0.56, 0.55, 12.22, 3.18, str(NOTES))
-    rect(slide, 0.56, 3.20, 12.22, 0.53, "cream", C=C)
-    text(slide, 0.82, 3.34, 11.50, 0.26,
-         "BERGAMOT PEEL  /  SMOKED TEA  /  IRIS  /  CEDAR SHAVINGS", font_size=9,
+    cover_image(slide, 0, 0, 13.333, 7.5, str(NOTES))
+    rect(slide, 0, 0, 13.333, 0.76, "ink", C=C)
+    text(slide, 0.62, 0.24, 3.1, 0.25, "01 / MATERIAL ATLAS", font_size=9,
+         color="gold", bold=True, font_name=SANS, C=C)
+    text(slide, 8.40, 0.20, 4.30, 0.29, "CALABRIA — GRASSE — KASHMIR", font_size=9,
+         color="rose", bold=True, align="right", font_name=SANS, C=C)
+    rect(slide, 0.54, 4.98, 12.26, 1.58, "cream", C=C)
+    text(slide, 0.84, 5.28, 3.44, 0.28, "THE ROUTE OF THE SCENT", font_size=10,
          color="wine", bold=True, font_name=SANS, C=C)
-    text(slide, 0.62, 4.18, 3.00, 0.24, "01 / COMPOSITION", font_size=9,
-         color="gold", bold=True, font_name=SANS, C=C)
-    multiline(slide, 0.58, 4.60, 7.10, 1.34, ["A scent with", "a slow pulse."], font_size=39,
-              color="cream", bold=True, font_name=SERIF, C=C)
-    multiline(slide, 8.32, 4.73, 3.92, 1.20,
-              ["Citrus wakes first. Then iris moves through", "the dark, until tea and cedar stay on skin."],
-              font_size=15, color="rose", font_name=SERIF, C=C)
-    for index, (number, note) in enumerate((("01", "OPEN"), ("02", "HEART"), ("03", "TRAIL"))):
-        x = 0.66 + index * 2.08
-        oval(slide, x, 6.40, 0.42, 0.42, "gold", C=C)
-        text(slide, x + 0.55, 6.37, 1.22, 0.24, f"{number}  {note}", font_size=9,
-             color="cream", bold=True, font_name=SANS, C=C)
-    text(slide, 8.34, 6.50, 3.78, 0.22, "THE PERFUME DEVELOPS IN LAYERS.", font_size=8,
-         color="gold", bold=True, font_name=SANS, C=C)
+    multiline(slide, 0.82, 5.62, 5.70, 0.76, ["Four materials. One", "late-afternoon memory."], font_size=20,
+              color="ink", font_name=SERIF, C=C)
+    origins = [("01", "BERGAMOT", "Calabria / light"), ("02", "IRIS", "Florence / powder"),
+               ("03", "TEA", "Fujian / smoke"), ("04", "CEDAR", "Kashmir / grain")]
+    for index, (number, name, origin) in enumerate(origins):
+        x = 7.02 + index * 1.38
+        oval(slide, x, 5.32, 0.34, 0.34, "wine", C=C)
+        text(slide, x + 0.48, 5.25, 0.74, 0.22, number, font_size=8,
+             color="wine", bold=True, font_name=SANS, C=C)
+        text(slide, x, 5.80, 1.18, 0.26, name, font_size=9,
+             color="ink", bold=True, font_name=SANS, C=C)
+        text(slide, x, 6.13, 1.16, 0.22, origin, font_size=8,
+             color="muted", font_name=SANS, C=C)
+    text(slide, 0.62, 6.94, 11.70, 0.22,
+         "AURELIA / THE PERFUME ATLAS / A STUDY OF ORIGIN, EXTRACTION AND MEMORY", font_size=8,
+         color="cream", bold=True, font_name=SANS, C=C)
 
 
 def add_ritual(prs: Presentation) -> None:
-    """A cinematic usage page with a compact editorial caption system."""
+    """An immersive encounter page with a horizontal, film-like caption system."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     cover_image(slide, 0, 0, 13.333, 7.5, str(RITUAL))
-    rect(slide, 0.52, 0.48, 3.50, 0.60, "cream", C=C)
-    text(slide, 0.80, 0.64, 2.98, 0.26, "02 / THE GESTURE", font_size=9,
+    rect(slide, 0.56, 0.50, 12.20, 0.58, "cream", C=C)
+    text(slide, 0.86, 0.67, 2.82, 0.24, "02 / ON THE SKIN", font_size=9,
          color="wine", bold=True, font_name=SANS, C=C)
-    rect(slide, 0.52, 5.10, 7.26, 1.62, "ink", C=C)
-    multiline(slide, 0.82, 5.24, 6.55, 1.08, ["ONE SPRAY.", "ONE DELIBERATE PAUSE."], font_size=29,
-              color="cream", bold=True, font_name=SERIF, C=C)
-    text(slide, 0.84, 6.26, 6.10, 0.30,
-         "The formula is made to be noticed only at close range.", font_size=12,
-         color="rose", font_name=SERIF, C=C)
-    rect(slide, 10.90, 6.32, 1.75, 0.52, "cream", C=C)
-    text(slide, 11.12, 6.45, 1.30, 0.24, "AT DUSK", font_size=8,
-         color="wine", bold=True, align="center", font_name=SANS, C=C)
+    text(slide, 8.50, 0.65, 3.92, 0.24, "THE RITUAL IS PRIVATE.", font_size=9,
+         color="wine", bold=True, align="right", font_name=SANS, C=C)
+    rect(slide, 0, 5.82, 13.333, 1.68, "wine", C=C)
+    text(slide, 0.72, 6.06, 5.70, 0.44, "A gesture, not a performance.", font_size=21,
+         color="cream", font_name=SERIF, C=C)
+    multiline(slide, 7.16, 6.02, 4.72, 0.88,
+              ["At close range, the fragrance turns warm.", "On fabric, it becomes a private address."],
+              font_size=13, color="rose", font_name=SERIF, C=C)
+    rect(slide, 12.08, 6.10, 0.16, 0.82, "gold", C=C)
 
 
 def add_object(prs: Presentation) -> None:
-    """A calm closing product study rather than another campaign background."""
+    """A collectible-object finale, informed by travel cases rather than sales cards."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    rect(slide, 0, 0, 13.333, 7.5, "cream", C=C)
-    cover_image(slide, 2.34, 0.48, 10.38, 5.92, str(OBJECT))
-    rect(slide, 0.56, 0.48, 0.18, 5.92, "wine", C=C)
-    text(slide, 0.74, 0.72, 1.28, 0.24, "03 / OBJECT", font_size=9,
+    rect(slide, 0, 0, 13.333, 7.5, "ink", C=C)
+    cover_image(slide, 0.58, 0.52, 12.20, 4.56, str(OBJECT))
+    rect(slide, 0.58, 4.58, 12.20, 0.50, "cream", C=C)
+    text(slide, 0.84, 4.70, 11.55, 0.27,
+         "THE OBJECT / DARK GLASS — MATTE CASE — GOLD EDGE — DESIGNED TO TRAVEL", font_size=8,
          color="wine", bold=True, font_name=SANS, C=C)
-    multiline(slide, 0.70, 1.30, 2.55, 1.42, ["A bottle", "kept close."], font_size=32,
-              color="ink", bold=True, font_name=SERIF, C=C)
-    multiline(slide, 0.76, 3.55, 1.90, 1.18,
-              ["Dark glass.", "A single gold edge.", "Nothing added."],
-              font_size=14, color="wine", font_name=SERIF, C=C)
-    text(slide, 2.38, 6.72, 9.65, 0.22,
-         "MAISON AURELIA  /  N° 07  /  EXTRAIT DE PARFUM  /  AVAILABLE OCTOBER 2026",
-         font_size=8, color="wine", bold=True, font_name=SANS, C=C)
-    rect(slide, 0.56, 6.72, 1.28, 0.22, "gold", C=C)
+    text(slide, 0.62, 5.62, 3.35, 0.24, "03 / TO KEEP", font_size=9,
+         color="gold", bold=True, font_name=SANS, C=C)
+    text(slide, 0.58, 6.02, 7.48, 0.52, "An object for the return journey.", font_size=25,
+         color="cream", font_name=SERIF, C=C)
+    text(slide, 9.02, 5.98, 3.28, 0.24, "50 ML / REFILLABLE", font_size=9,
+         color="gold", bold=True, align="right", font_name=SANS, C=C)
+    text(slide, 9.03, 6.42, 3.30, 0.24, "MAISON AURELIA / N° 07", font_size=9,
+         color="rose", bold=True, align="right", font_name=SANS, C=C)
 
 
 def build() -> Path:
     prs = Presentation()
     add_cover(prs)
-    add_composition(prs)
+    add_material_atlas(prs)
     add_ritual(prs)
     add_object(prs)
     output = Path(__file__).with_suffix(".pptx")
