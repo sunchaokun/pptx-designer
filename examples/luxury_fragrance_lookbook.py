@@ -39,9 +39,6 @@ def add_cover(prs: Presentation) -> None:
     rect(slide, 0, 0, 13.333, 7.5, "cream", C=C)
     rect(slide, 0.52, 0.46, 12.30, 0.08, "wine", C=C)
     cover_image(slide, 0.78, 0.85, 11.74, 3.62, str(HERO))
-    rect(slide, 10.50, 0.85, 2.02, 0.56, "cream", C=C)
-    text(slide, 10.73, 1.02, 1.58, 0.24, "N° 07 / 2026", font_size=9,
-         color="wine", bold=True, align="center", font_name=SANS, C=C)
     text(slide, 0.76, 4.88, 1.62, 0.98, "07", font_size=62,
          color="wine", bold=True, font_name=SERIF, C=C)
     text(slide, 2.45, 4.98, 4.42, 0.38, "AURELIA NOCTURNE", font_size=16,
