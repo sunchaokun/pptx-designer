@@ -93,4 +93,4 @@ report = compiler.compile(svg, slide, (1, 1, 8, 4))
 4. 避免 filter/mask/pattern、外部图片/引用与复杂 CSS；
 5. 每次生成后记录 `warnings`、`features` 和 `metrics`，并打开 PPTX 人工检查。
 
-项目后续方向是“可编辑性优先的近似降级”，详见 [P3 路线图](svg-p3-editability-first-roadmap.md)。该路线尚未实现，不应据此假定当前支持局部 PNG 或稳定的持久 source-to-output 映射。
+项目后续方向是“可编辑性优先的近似降级”。该路线尚未实现，不应据此假定当前支持局部 PNG 或稳定的持久 source-to-output 映射。

@@ -351,8 +351,6 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 - [快速开始](docs/getting-started.md)
 - [API 参考](docs/api-reference.md)
 - [SVG 编译器指南](docs/svg-guide.md)
-- [SVG 能力审查](docs/svg-module-analysis.md)
-- [P3 可编辑性优先路线图（预留）](docs/svg-p3-editability-first-roadmap.md)
 - [更新日志](CHANGELOG.md)
 
 ---
