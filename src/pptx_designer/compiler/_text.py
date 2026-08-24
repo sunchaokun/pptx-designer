@@ -14,6 +14,8 @@ from dataclasses import dataclass
 
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.oxml.ns import qn
+from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches, Pt
 
 from pptx_designer.diagrams.text_measurer import estimate_text_size
@@ -44,6 +46,35 @@ _ANCHOR_MAP: dict[str, PP_ALIGN] = {
     "end": PP_ALIGN.RIGHT,
     "start": PP_ALIGN.LEFT,
 }
+
+
+def _opacity_pct(el, paint: str = "fill") -> int:
+    """Return effective element/paint opacity as a PPTX percentage."""
+    try:
+        element_opacity = float(el.get("opacity", "1"))
+        paint_opacity = float(el.get(f"{paint}-opacity", "1"))
+    except (TypeError, ValueError):
+        return 100
+    return max(0, min(100, round(element_opacity * paint_opacity * 100)))
+
+
+def _apply_run_alpha(run, alpha_pct: int) -> None:
+    """Apply alpha to a run's existing RGB solid fill."""
+    if alpha_pct >= 100:
+        return
+    r_pr = run._r.get_or_add_rPr()
+    solid_fill = r_pr.find(qn("a:solidFill"))
+    if solid_fill is None:
+        return
+    srgb = solid_fill.find(qn("a:srgbClr"))
+    if srgb is None:
+        return
+    existing = srgb.find(qn("a:alpha"))
+    if existing is not None:
+        srgb.remove(existing)
+    alpha = OxmlElement("a:alpha")
+    alpha.set("val", str(alpha_pct * 1000))
+    srgb.append(alpha)
 
 
 @dataclass
@@ -154,21 +185,21 @@ def _has_cjk(text: str) -> bool:
 def _measure_text(
     content: str, font_size_pt: float, font_family: str, max_width_inches: float
 ) -> TextMetrics:
-    use_pil = False
+    font = None
     try:
         from PIL import ImageFont
 
         try:
             font = ImageFont.truetype(font_family + ".ttf", int(font_size_pt))
-            use_pil = True
         except OSError:
-            if not _has_cjk(content):
-                font = ImageFont.load_default()
-                use_pil = True
+            # Pillow's default bitmap font has a fixed, unrelated size. It
+            # cannot measure text that will be emitted at the requested
+            # Office point size.
+            font = None
     except ImportError:
         pass
 
-    if use_pil:
+    if font is not None:
         bbox = font.getbbox(content)
         w_px = bbox[2] - bbox[0]
         h_px = bbox[3] - bbox[1]
@@ -190,14 +221,18 @@ def _measure_text(
         content, max(8, int(font_size_pt)), max_width_inches, font_family
     )
     return TextMetrics(
-        width_inches=max(w_est, 0.5),
+        # ``estimate_text_size`` is intentionally compact for card labels.
+        # SVG text has no implicit wrapping, and Office can use wider glyph
+        # metrics than that estimator (notably Arial on Windows/LibreOffice).
+        # Reserve a conservative width when a matching font file is absent.
+        width_inches=max(w_est * 1.4, 0.5),
         height_inches=max(h_est, 0.3),
         ascent_ratio=0.75,
         descent_ratio=0.25,
     )
 
 
-def _resolve_fill(raw: str | None, C: dict, resolve_color_fn) -> str:
+def _resolve_fill(raw: str | None, C: dict, resolve_color_fn) -> str:  # noqa: N803
     if not raw or raw == "none":
         return "#000000"
     if raw.startswith("url(#"):
@@ -220,7 +255,7 @@ def _parse_font_weight(raw: str | None) -> bool:
 
 
 def _collect_spans(el, parent_fs: float, parent_ff: str, parent_fill: str,
-                    C: dict, resolve_color_fn,
+                    C: dict, resolve_color_fn,  # noqa: N803
                     parent_bold: bool = False, parent_italic: bool = False,
                     parent_stroke: str | None = None, parent_stroke_width: float = 0.0) -> list[_SpanSpec]:
     spans: list[_SpanSpec] = []
@@ -330,7 +365,7 @@ def render_svg_text(
     tf: Affine,
     to_inches_fn,
     slide,
-    C: dict,
+    C: dict,  # noqa: N803
     resolve_color_fn,
     features: set,
     svg_w: float = 0.0,
@@ -349,6 +384,8 @@ def render_svg_text(
     parent_fill = _resolve_fill(el.get("fill"), C, resolve_color_fn)
     parent_stroke = _resolve_fill(el.get("stroke"), C, resolve_color_fn) if el.get("stroke") else None
     parent_stroke_width = float(el.get("stroke-width", "0"))
+    fill_alpha = _opacity_pct(el, "fill")
+    stroke_alpha = _opacity_pct(el, "stroke")
     anchor = el.get("text-anchor", "start")
     v_anchor = _resolve_baseline(el)
     baseline_mode = _resolve_baseline_mode(el)
@@ -371,6 +408,7 @@ def render_svg_text(
             content, ix, iy, scaled_fs, parent_ff, parent_fill,
             anchor, v_anchor, baseline_mode, el, slide, C, resolve_color_fn,
             stroke=parent_stroke, stroke_width=parent_stroke_width,
+            fill_alpha=fill_alpha, stroke_alpha=stroke_alpha,
         )
         return
 
@@ -381,6 +419,8 @@ def render_svg_text(
         spans, ix, iy, scaled_fs, parent_ff, parent_fill,
         anchor, v_anchor, baseline_mode, el, slide, to_inches_fn, tf,
         C, resolve_color_fn,
+        fill_alpha=fill_alpha, stroke_alpha=stroke_alpha,
+        svg_to_pt=scale * 72.0,
     )
 
 
@@ -388,8 +428,9 @@ def _render_simple_text(
     content: str, ix: float, iy: float,
     fs: float, ff: str, fill: str,
     anchor: str, v_anchor, baseline_mode: str, el, slide,
-    C: dict, resolve_color_fn,
+    C: dict, resolve_color_fn,  # noqa: N803
     stroke: str | None = None, stroke_width: float = 0.0,
+    fill_alpha: int = 100, stroke_alpha: int = 100,
 ) -> None:
     metrics = _measure_text(content, fs, ff, 8.0)
 
@@ -425,6 +466,7 @@ def _render_simple_text(
         run_outline.text = content
         run_outline.font.size = Pt(outline_fs)
         run_outline.font.color.rgb = RGBColor.from_string(stroke.lstrip("#"))
+        _apply_run_alpha(run_outline, stroke_alpha)
         run_outline.font.name = ff
         run_outline.font.bold = outline_bold
         bold = el.get("font-weight")
@@ -447,6 +489,7 @@ def _render_simple_text(
     run.text = content
     run.font.size = Pt(fs)
     run.font.color.rgb = RGBColor.from_string(fill.lstrip("#"))
+    _apply_run_alpha(run, fill_alpha)
     run.font.name = ff
 
     bold = el.get("font-weight")
@@ -463,7 +506,9 @@ def _render_tspan_text(
     parent_fs: float, parent_ff: str, parent_fill: str,
     anchor: str, v_anchor, baseline_mode: str, el, slide,
     to_inches_fn, tf: Affine,
-    C: dict, resolve_color_fn,
+    C: dict, resolve_color_fn,  # noqa: N803
+    fill_alpha: int = 100, stroke_alpha: int = 100,
+    svg_to_pt: float = 1.0,
 ) -> None:
     lines = _group_spans_into_lines(spans)
 
@@ -519,8 +564,9 @@ def _render_tspan_text(
                         continue
                     run_o = p_o.add_run()
                     run_o.text = sp.text
-                    run_o.font.size = Pt(sp.font_size or parent_fs)
+                    run_o.font.size = Pt(max((sp.font_size or 0) * svg_to_pt, 6.0))
                     run_o.font.color.rgb = RGBColor.from_string((sp.stroke or max_stroke).lstrip("#"))
+                    _apply_run_alpha(run_o, stroke_alpha)
                     run_o.font.name = sp.font_family or parent_ff
                     if sp.bold:
                         run_o.font.bold = True
@@ -569,14 +615,15 @@ def _render_tspan_text(
                 dx_pt = sp.dx * (parent_fs / 14.0) * 0.5
                 spacer = p.add_run()
                 spacer.text = " "
-                spacer.font.size = Pt(sp.font_size or parent_fs)
-                spacer_rPr = spacer._r.get_or_add_rPr()
-                spacer_rPr.set("spc", str(int(dx_pt * 100)))
+                spacer.font.size = Pt(max((sp.font_size or 0) * svg_to_pt, 6.0))
+                spacer_r_pr = spacer._r.get_or_add_rPr()
+                spacer_r_pr.set("spc", str(int(dx_pt * 100)))
 
             run = p.add_run()
             run.text = sp.text
-            run.font.size = Pt(sp.font_size or parent_fs)
+            run.font.size = Pt(max((sp.font_size or 0) * svg_to_pt, 6.0))
             run.font.color.rgb = RGBColor.from_string((sp.fill or parent_fill).lstrip("#"))
+            _apply_run_alpha(run, fill_alpha)
             run.font.name = sp.font_family or parent_ff
             if sp.bold:
                 run.font.bold = True

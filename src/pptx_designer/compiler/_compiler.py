@@ -17,13 +17,14 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Inches
 
+from pptx_designer.effects.shape_effects import set_solid_fill_with_alpha
 from pptx_designer.renderer.boolean_shapes import bool_shape
 from pptx_designer.renderer.freeform_builder import FreeformBuilder
-from pptx_designer.effects.shape_effects import set_solid_fill_with_alpha
 
 from ._affine import Affine, parse_transform
 from ._dash import apply_stroke_style, parse_stroke_style
 from ._errors import SVGCompileError
+from ._ir import SVGIRDocument, build_svg_ir
 from ._paint import GradientDef
 from ._paint import _parse_percent_or_float as _parse_pct
 from ._paint import apply_gradient as _apply_gradient
@@ -113,7 +114,7 @@ _NAMED_COLORS: dict[str, str] = {
 }
 
 
-def _resolve_svg_color(raw: str | None, C: dict | None, fallback: str) -> str | None:
+def _resolve_svg_color(raw: str | None, C: dict | None, fallback: str) -> str | None:  # noqa: N803
     """Resolve an SVG fill/stroke color value against a C (context) dict.
 
     Priority:
@@ -192,11 +193,35 @@ _HSL_RE = re.compile(
 
 @dataclass
 class SVGResult:
+    """Structured result of an SVG compilation.
+
+    ``SVGResult`` remains the public return type for compatibility, while its
+    report fields make a compilation diagnosable without inspecting the slide.
+    """
     shapes: list = field(default_factory=list)
+    native_shapes: list = field(default_factory=list)
+    fallback_shapes: list = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
     features: set = field(default_factory=set)
+    feature_levels: dict[str, str] = field(default_factory=dict)
+    ir_document: SVGIRDocument | None = None
+    source_to_output: dict[str, list] = field(default_factory=dict)
+    metrics: dict[str, float | int] = field(default_factory=dict)
     compile_ms: float = 0.0
     shape_count: int = 0
+
+
+# Descriptive alias for callers that use the result as a compilation report.
+SVGRenderReport = SVGResult
+
+
+_DEFAULT_LIMITS: dict[str, int] = {
+    "max_svg_bytes": 2_000_000,
+    "max_nodes": 10_000,
+    "max_path_commands": 100_000,
+    "max_tree_depth": 200,
+}
 
 
 # ─────────────────────────── compiler ───────────────────────────
@@ -204,8 +229,9 @@ class SVGResult:
 class SVGCompiler:
     """Compile a subset of SVG to native editable PPTX shapes."""
 
-    def __init__(self, C: dict | None = None) -> None:
+    def __init__(self, C: dict | None = None, limits: dict[str, int] | None = None) -> None:  # noqa: N803
         self.C = C or {}
+        self.limits = {**_DEFAULT_LIMITS, **(limits or {})}
 
     def compile(
         self,
@@ -218,10 +244,22 @@ class SVGCompiler:
         result = SVGResult()
         t0 = time.perf_counter()
 
-        # Check for <style> elements before sanitization
-        has_style_elements = "<style" in svg_text.lower()
+        raw_bytes = len(svg_text.encode("utf-8"))
+        self._check_limit("max_svg_bytes", raw_bytes, "SVG document size")
 
+        sanitize_t0 = time.perf_counter()
         root = sanitize(svg_text)
+        sanitize_ms = (time.perf_counter() - sanitize_t0) * 1000
+        node_count = sum(1 for _ in root.iter() if isinstance(_.tag, str))
+        self._check_limit("max_nodes", node_count, "SVG node count")
+        tree_depth = self._tree_depth(root)
+        self._check_limit("max_tree_depth", tree_depth, "SVG tree depth")
+        path_command_count = self._count_path_commands(root)
+        self._check_limit("max_path_commands", path_command_count, "SVG path command count")
+        ir_t0 = time.perf_counter()
+        ir_document = build_svg_ir(root)
+        ir_build_ms = (time.perf_counter() - ir_t0) * 1000
+        self._reject_unrenderable_features(ir_document)
 
         if vb is None:
             vb_el = root.get("viewBox")
@@ -243,29 +281,99 @@ class SVGCompiler:
         self._features: set[str] = set()
         self._warnings: list[str] = []
         self._text_rects: list[tuple[float, float, float, float]] = []
-
-        # Warn if <style> elements were stripped
-        if has_style_elements:
-            self._warnings.append(
-                "stripped <style> element (CSS class-based styling lost)"
-            )
+        self._source_to_output: dict[str, list] = {}
 
         pre_shape_count = len(slide.shapes)
 
+        defs_t0 = time.perf_counter()
         self._collect_defs(root)
+        defs_ms = (time.perf_counter() - defs_t0) * 1000
+        render_t0 = time.perf_counter()
         self._walk(root, Affine(), [])
+        render_ms = (time.perf_counter() - render_t0) * 1000
 
-        result.features = self._features
+        result.features = self._features | set(ir_document.features)
         result.warnings = self._warnings
         result.shape_count = self._shape_count
-        result.compile_ms = (time.perf_counter() - t0) * 1000
 
         # Collect shapes created during compilation
         result.shapes = [slide.shapes[i] for i in range(pre_shape_count, len(slide.shapes))]
+        result.native_shapes = list(result.shapes)
+        result.source_to_output = self._source_to_output
+        result.feature_levels = self._feature_levels(result.features)
+        result.ir_document = ir_document
 
         self._detect_text_overlaps(slide, pre_shape_count, result)
+        result.compile_ms = (time.perf_counter() - t0) * 1000
+        result.metrics = {
+            "svg_bytes": raw_bytes,
+            "node_count": node_count,
+            "tree_depth": tree_depth,
+            "path_command_count": path_command_count,
+            "sanitize_ms": sanitize_ms,
+            "ir_build_ms": ir_build_ms,
+            "ir_node_count": len(ir_document.nodes),
+            "defs_ms": defs_ms,
+            "render_ms": render_ms,
+            "total_ms": result.compile_ms,
+            "native_shape_count": len(result.native_shapes),
+            "fallback_shape_count": 0,
+        }
 
         return result
+
+    def _check_limit(self, name: str, value: int, label: str) -> None:
+        limit = self.limits.get(name)
+        if limit is not None and value > limit:
+            raise SVGCompileError(f"{label} exceeds {name} limit ({value} > {limit})")
+
+    @staticmethod
+    def _count_path_commands(root: etree._Element) -> int:
+        count = 0
+        for el in root.iter():
+            if not isinstance(el.tag, str) or el.tag.split("}")[-1] != "path":
+                continue
+            count += len(re.findall(r"[MmLlHhVvCcSsQqTtAaZz]", el.get("d", "")))
+        return count
+
+    @staticmethod
+    def _tree_depth(root: etree._Element) -> int:
+        max_depth = 0
+        stack = [(root, 1)]
+        while stack:
+            element, depth = stack.pop()
+            if not isinstance(element.tag, str):
+                continue
+            max_depth = max(max_depth, depth)
+            stack.extend((child, depth + 1) for child in element)
+        return max_depth
+
+    @staticmethod
+    def _reject_unrenderable_features(ir_document: SVGIRDocument) -> None:
+        """Fail safely when native OOXML cannot preserve a group compositing rule."""
+        for node in ir_document.nodes:
+            if "group_opacity" in node.features and "hidden" not in node.features:
+                label = f" id='{node.source_id}'" if node.source_id else ""
+                raise SVGCompileError(
+                    f"group opacity on <{node.tag}{label}> requires raster fallback; "
+                    "native rendering would be visually incorrect"
+                )
+
+    def _feature_levels(self, features: set[str]) -> dict[str, str]:
+        levels: dict[str, str] = {}
+        for feature in features:
+            if feature in {"gradient"}:
+                levels[feature] = "OOXML_EFFECT"
+            elif feature in {"clipPath", "evenodd"}:
+                levels[feature] = "NATIVE_APPROX"
+            elif feature in {
+                "image", "filter", "mask", "pattern", "marker", "group_opacity",
+                "raster_fallback_candidate",
+            }:
+                levels[feature] = "RASTER_FALLBACK_CANDIDATE"
+            else:
+                levels[feature] = "NATIVE"
+        return levels
 
     # ── coordinate transforms ────────────────────────────────
 
@@ -291,10 +399,7 @@ class SVGCompiler:
             stops = []
             for s in g.iter(f"{SVG}stop"):
                 off = s.get("offset", "0")
-                if off.endswith("%"):
-                    pos = float(off.rstrip("%")) / 100.0
-                else:
-                    pos = float(off)
+                pos = float(off.rstrip("%")) / 100.0 if off.endswith("%") else float(off)
                 # Get color from attribute or style
                 col = s.get("stop-color")
                 op_str = s.get("stop-opacity")
@@ -407,7 +512,7 @@ class SVGCompiler:
             return [self._cubics_to_path(tf, self._ellipse_cubics(cx, cy, rx, ry))]
         elif tag in ("polygon", "polyline"):
             flat = [float(v) for v in el.get("points", "").replace(",", " ").split()]
-            pts = list(zip(flat[0::2], flat[1::2]))
+            pts = list(zip(flat[0::2], flat[1::2], strict=False))
         elif tag == "line":
             pts = [
                 (float(el.get("x1")), float(el.get("y1"))),
@@ -512,62 +617,62 @@ class SVGCompiler:
     @staticmethod
     def _circle_cubics(cx: float, cy: float, r: float) -> list[tuple[float, float]]:
         """Return 4 cubic Bezier control points for a circle (16 points total).
-        
+
         Uses standard circle approximation with k = 4/3 * tan(pi/8).
         Each quadrant is approximated by one cubic Bezier curve.
         """
         pts: list[tuple[float, float]] = []
         k = (4 / 3) * math.tan(math.pi / 8)  # ≈ 0.5523
-        
+
         # Start at angle 0 (rightmost point) and go counter-clockwise
         for i in range(4):
             a0 = i * math.pi / 2
             a1 = (i + 1) * math.pi / 2
-            
+
             # Start and end points
             p0x = cx + r * math.cos(a0)
             p0y = cy - r * math.sin(a0)  # Note: SVG y-axis is inverted
             p3x = cx + r * math.cos(a1)
             p3y = cy - r * math.sin(a1)
-            
+
             # Control points (tangent to circle at start/end)
             c1x = p0x - k * r * math.sin(a0)
             c1y = p0y - k * r * math.cos(a0)
             c2x = p3x + k * r * math.sin(a1)
             c2y = p3y + k * r * math.cos(a1)
-            
+
             pts.extend([(p0x, p0y), (c1x, c1y), (c2x, c2y), (p3x, p3y)])
-        
+
         return pts
 
     @staticmethod
     def _ellipse_cubics(cx: float, cy: float, rx: float, ry: float) -> list[tuple[float, float]]:
         """Return 4 cubic Bezier control points for an ellipse (16 points total).
-        
+
         Uses standard ellipse approximation.
         Note: SVG y-axis is inverted (down is positive), so we use cy - ry*sin(a).
         """
         pts: list[tuple[float, float]] = []
         k = (4 / 3) * (math.sqrt(2) - 1)  # ≈ 0.5523
-        
+
         for i in range(4):
             a0 = i * math.pi / 2
             a1 = (i + 1) * math.pi / 2
-            
+
             # Start and end points (SVG y-axis inverted)
             p0x = cx + rx * math.cos(a0)
             p0y = cy - ry * math.sin(a0)
             p3x = cx + rx * math.cos(a1)
             p3y = cy - ry * math.sin(a1)
-            
+
             # Control points (tangent to ellipse at start/end)
             c1x = p0x - k * rx * math.sin(a0)
             c1y = p0y - k * ry * math.cos(a0)
             c2x = p3x + k * rx * math.sin(a1)
             c2y = p3y + k * ry * math.cos(a1)
-            
+
             pts.extend([(p0x, p0y), (c1x, c1y), (c2x, c2y), (p3x, p3y)])
-        
+
         return pts
 
     @staticmethod
@@ -608,6 +713,9 @@ class SVGCompiler:
         # Skip non-element nodes (e.g., lxml Comment, ProcessingInstruction)
         if not isinstance(el.tag, str):
             return
+        if el.get("display") == "none" or el.get("visibility") in {"hidden", "collapse"}:
+            return
+        pre_node_shape_count = len(self._slide.shapes)
         tag = el.tag.split("}")[-1] if el.tag else ""
         tf = tf.compose(parse_transform(el.get("transform")))
 
@@ -634,9 +742,24 @@ class SVGCompiler:
         ):
             self._render_shape(el, tag, tf, clip_stack)
 
+        source_id = el.get("id")
+        if source_id:
+            self._record_source_output(source_id, pre_node_shape_count)
+
+    def _record_source_output(self, source_id: str | None, start_index: int) -> None:
+        if not source_id:
+            return
+        new_shapes = [
+            self._slide.shapes[i]
+            for i in range(start_index, len(self._slide.shapes))
+        ]
+        if new_shapes:
+            self._source_to_output.setdefault(source_id, []).extend(new_shapes)
+
     def _render_use(
         self, el: etree._Element, tf: Affine, clip_stack: list
     ) -> None:
+        pre_use_shape_count = len(self._slide.shapes)
         self._features.add("use")
         href = (
             el.get("href")
@@ -666,6 +789,7 @@ class SVGCompiler:
             self._render_shape(ref, ref_tag, use_tf, clip_stack)
         else:
             self._warnings.append(f"<use> references unsupported element <{ref_tag}> (skipped)")
+        self._record_source_output(ref.get("id"), pre_use_shape_count)
 
     def _render_shape(
         self, el: etree._Element, tag: str, tf: Affine, clip_stack: list
@@ -789,7 +913,7 @@ class SVGCompiler:
             from shapely.geometry import Polygon as ShapelyPoly
             from shapely.validation import make_valid
         except ImportError:
-            raise SVGCompileError("shapely is required for boolean operations")
+            raise SVGCompileError("shapely is required for boolean operations") from None
 
         poly = None
         for sub in local_subpaths:

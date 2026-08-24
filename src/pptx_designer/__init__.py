@@ -42,7 +42,7 @@ For more information, see: https://github.com/sunchaokun/pptx-designer
 
 from __future__ import annotations
 
-__version__ = "1.0.0-beta.1"
+__version__ = "1.0.0-beta.2"
 
 from pptx_designer.data import PALETTES, TYPOGRAPHY, STYLES
 from pptx_designer.core.pipeline import Presentation, generate_ppt

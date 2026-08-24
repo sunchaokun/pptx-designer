@@ -10,7 +10,7 @@
 
 Build pixel-perfect, fully editable `.pptx` presentations with composable atoms — designed for AI coding assistants.
 
-[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [LLM Integration](#llm-integration)
+[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [SVG Guide](docs/svg-guide.md) · [Documentation](docs/README.md)
 
 </div>
 
@@ -29,9 +29,9 @@ pptx-designer is built for the **LLM era**. When AI coding assistants generate P
 |---|---|---|---|
 | **LLM-friendly API** | Low-level (coordinates) | Black box | **90+ composable atoms** |
 | **Deterministic** | Yes | No (varies) | **Yes** |
-| **Editable output** | Yes | Sometimes | **Always** |
+| **Editable output** | Yes | Sometimes | **Native-first; supported SVG objects are editable** |
 | **Design system** | None | Proprietary | **40,000+ built-in combos** |
-| **SVG → PPTX** | No | No | **Full SVG compiler** |
+| **SVG → PPTX** | No | No | **Editable SVG subset compiler** |
 | **Diagrams** | Manual shapes | Limited | **10 native engines** |
 | **Brand compliance** | Manual | Partial | **Enterprise VI mode** |
 | **Price** | Free | $10-20/mo | **Free (MIT)** |
@@ -164,8 +164,17 @@ timeline.render(slide, events=[("2024", "Launch"), ("2025", "Scale")], region=re
 ```python
 from pptx_designer.tools.svg import svg_chart
 
-svg_chart(slide, svg_text="<svg>...</svg>", x=1, y=1, w=8, h=6)
+svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="20" width="360" height="160" rx="16" fill="#2563EB"/>
+  <text x="200" y="112" text-anchor="middle" font-size="28"
+        font-weight="bold" fill="#FFFFFF">Editable SVG</text>
+</svg>"""
+
+result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
+print(result.shape_count, result.warnings)
 ```
+
+The compiler creates native PowerPoint shapes and text for its supported SVG subset. It supports common geometry, paths, text/tspan, transforms, gradients, `defs`/`use`, and a constrained clipping path workflow. Filters, masks, patterns, animations, external resources, and some SVG paint semantics are not full-fidelity features. Always inspect `result.warnings` for a production SVG. See the [SVG guide](docs/svg-guide.md) for supported input, error handling, and limits.
 
 ### Effects
 
@@ -338,8 +347,17 @@ cd pptx-designer
 pip install -e ".[dev]"
 
 python -m pytest tests/ -q
-python -m ruff check src/
+python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_svg_tools.py tests/test_svg_compiler_integration.py
 ```
+
+## Documentation
+
+- [Getting started](docs/getting-started.md)
+- [API reference](docs/api-reference.md)
+- [SVG compiler guide](docs/svg-guide.md)
+- [SVG capability analysis](docs/svg-module-analysis.md)
+- [P3 editability-first roadmap (reserved)](docs/svg-p3-editability-first-roadmap.md)
+- [Changelog](CHANGELOG.md)
 
 ---
 

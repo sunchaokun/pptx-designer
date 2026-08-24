@@ -138,8 +138,9 @@ def resolve_paint(
     el, which: str, grads: dict[str, GradientDef], C: dict, resolve_color_fn, features: set
 ) -> tuple[str, object | None, int]:
     v = el.get(which)
-    op = el.get(f"{which}-opacity")
-    alpha = int(float(op) * 100) if op else 100
+    paint_opacity = float(el.get(f"{which}-opacity", "1"))
+    element_opacity = float(el.get("opacity", "1"))
+    alpha = max(0, min(100, round(paint_opacity * element_opacity * 100)))
 
     if v is None:
         return "none", None, alpha

@@ -10,7 +10,7 @@
 
 用可组合的原子函数构建像素级精确、完全可编辑的 `.pptx` —— 专为 AI 编码助手设计。
 
-[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [LLM 集成](#llm-集成)
+[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [SVG 指南](docs/svg-guide.md) · [文档索引](docs/README.md)
 
 </div>
 
@@ -29,9 +29,9 @@ pptx-designer 为 **LLM 时代** 而生。当 AI 编码助手生成 Python 代�
 |---|---|---|---|
 | **LLM 友好 API** | 底层（坐标） | 黑盒 | **90+ 可组合原子** |
 | **确定性** | 是 | 否（随机） | **是** |
-| **可编辑输出** | 是 | 有时 | **始终可编辑** |
+| **可编辑输出** | 是 | 有时 | **原生优先；已支持的 SVG 对象可编辑** |
 | **设计系统** | 无 | 私有 | **40,000+ 内置组合** |
-| **SVG → PPTX** | 否 | 否 | **SVG 编译器**（常用形状/路径/渐变） |
+| **SVG → PPTX** | 否 | 否 | **可编辑 SVG 子集编译器** |
 | **图表** | 手动拼形状 | 有限 | **10 种原生引擎** |
 | **品牌合规** | 手动 | 部分 | **企业 VI 模式** |
 | **价格** | 免费 | ¥70-140/月 | **免费（MIT）** |
@@ -160,8 +160,17 @@ timeline.render(slide, events=[("2024", "发布"), ("2025", "扩展")], region=r
 ```python
 from pptx_designer.tools.svg import svg_chart
 
-svg_chart(slide, svg_text="<svg>...</svg>", x=1, y=1, w=8, h=6)
+svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="20" width="360" height="160" rx="16" fill="#2563EB"/>
+  <text x="200" y="112" text-anchor="middle" font-size="28"
+        font-weight="bold" fill="#FFFFFF">可编辑 SVG</text>
+</svg>"""
+
+result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
+print(result.shape_count, result.warnings)
 ```
+
+编译器会将已支持的 SVG 子集转换成 PowerPoint 原生形状和文本。它支持常用几何图形、路径、文本/tspan、变换、渐变、`defs`/`use` 以及受限的裁剪路径流程；不承诺 filter、mask、pattern、动画、外部资源和部分 SVG paint 语义的像素级还原。生产使用时请检查 `result.warnings`。输入要求、报错处理与限制见 [SVG 指南](docs/svg-guide.md)。
 
 ### 特效
 
@@ -334,8 +343,17 @@ cd pptx-designer
 pip install -e ".[dev]"
 
 python -m pytest tests/ -q
-python -m ruff check src/
+python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_svg_tools.py tests/test_svg_compiler_integration.py
 ```
+
+## 文档
+
+- [快速开始](docs/getting-started.md)
+- [API 参考](docs/api-reference.md)
+- [SVG 编译器指南](docs/svg-guide.md)
+- [SVG 能力审查](docs/svg-module-analysis.md)
+- [P3 可编辑性优先路线图（预留）](docs/svg-p3-editability-first-roadmap.md)
+- [更新日志](CHANGELOG.md)
 
 ---
 

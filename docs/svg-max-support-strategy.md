@@ -27,6 +27,41 @@
 3. 无法安全或稳定转换的局部区域，渲染为 SVG/PNG 图片；
 4. 任意模式都必须产生可观测的能力报告、warning 和降级原因。
 
+## 1.1 当前 baseline 与收益估算修正
+
+本方案最初基于旧版源码设计；当前源码已经完成两项关键修复：
+
+- `PrecisionRenderer` 直接从 `pptx_designer.compiler` 导入正式 `SVGCompiler`；
+- `renderer/svg_compiler.py` 已变为兼容转发 shim，主流程会接收结果并记录 warning/error。
+
+因此，当前主流程 SVG 成功率不能再按“接近 0%”估计。基于现有支持子集和内联样式静态 SVG 的能力，建议暂用以下工程估算，待 20 个以上真实样本测量后替换：
+
+| 指标 | 当前估算 | Phase 0–1 后 | 完整方案后 |
+|---|---:|---:|---:|
+| 主流程成功率 | 70%–85% | 85%–92% | 95%–98% |
+| 常见静态 SVG 视觉还原 | 65%–80% | 75%–85% | 90%–98% |
+| SVG 原生可编辑比例 | 55%–70% | 60%–75% | 65%–85% |
+| 复杂 SVG 可交付率 | 60%–75% | 80%–90% | 95%+ |
+
+这些数字是待验证的假设，不是承诺值。建议定义如下：
+
+- 主流程成功率：`SVGCompiler` 不抛异常且 `shape_count > 0`；
+- 视觉还原：PPTX 导出 PDF 与 SVG 参考图的 SSIM 达到预设阈值，并通过人工检查；
+- 原生可编辑比例：`native_shapes / total_output_objects`，由 RenderReport 统计；
+- 复杂 SVG 可交付率：编译成功、无 critical warning 且输出可打开、可渲染。
+
+预计收益拐点不在已经完成的入口修复，而在后续能力扩展：
+
+| 阶段 | 预期收益 | 主要来源 |
+|---|---:|---|
+| Phase 0（当前已基本完成） | +5%–10% | 入口统一、错误可观测性和测试保护 |
+| Phase 1 | +3%–5% | RenderReport、能力矩阵、限制和回归测试 |
+| Phase 2a | +15%–25% | CSS class、style、继承和变量解析 |
+| Phase 3a | +10%–15% | 复杂 SVG 从失败或缺失效果变为 PNG 可交付 |
+| Phase 3b | +5%–10% | 局部 raster island 提升主体可编辑性 |
+
+Phase 2a 是从“内联静态 SVG 能用”走向“LLM 生成 SVG 更可靠”的主要拐点。所有百分比都应在建立样本集后重新计算。
+
 ## 2. 总体架构
 
 建议将当前单一 `SVGCompiler` 逐步演进为编排器加多个后端，但不应在第一阶段一次性重写为完整 IR 架构。当前单次遍历已经覆盖大量常用 SVG，IR 的引入应服务于样式计算、能力分析和降级决策，而不是为了替换已经工作的几何转换。
@@ -544,13 +579,15 @@ class SVGRenderReport:
 
 ## 11. 分阶段实施计划
 
-### Phase 0：修复现有链路
+### Phase 0：修复现有链路（当前源码已基本完成）
 
-- 统一 `PrecisionRenderer` 的导入入口；
-- 删除或转发旧 `renderer/svg_compiler.py`；
-- 增加 `PrecisionRenderer` SVG 集成测试；
-- 保留 warning 和编译指标；
-- 修复 README / example 的 API。
+- [x] 统一 `PrecisionRenderer` 的导入入口；
+- [x] 将旧 `renderer/svg_compiler.py` 改为转发 shim；
+- [x] 保留 warning 和编译错误日志；
+- [ ] 增加 `PrecisionRenderer` SVG 集成测试；
+- [ ] 修复 README / example 的 API。
+
+Phase 0 的剩余工作主要是测试和文档，不应再被描述为“恢复 SVG 主流程”。
 
 ### Phase 1：稳定现有 compiler
 
@@ -659,4 +696,24 @@ SVG IR
   + 视觉/可编辑性双重回归
 ```
 
-在工程顺序上，先修复现有 P0 入口问题，再做 `RenderReport` 和测试基础设施，之后引入 IR 与 hybrid backend。这样每一步都能落地验证，不会在“支持更多 SVG”过程中失去现有稳定性。
+在当前源码状态下，工程顺序应调整为：先建立 20 个以上真实 SVG 样本的 baseline，补齐 Phase 0 剩余测试和文档，再做 RenderReport 与 CSS 子集解析，之后以 proof-of-concept 验证整体 fallback，最后再决定是否投入高风险的 IR 驱动区域拆分和 hybrid backend。这样可以避免用已经解决的入口问题衡量收益，也不会在“支持更多 SVG”过程中失去现有稳定性。
+
+## 13. 时间与资源估算
+
+以下是工程估算，不是承诺排期。假设 1 名熟悉 Python、`python-pptx`、OOXML、SVG 和图像渲染的工程师全职投入，并且能够使用 PowerPoint、LibreOffice 和 PDF 渲染环境。估算不包含完整浏览器级 CSS、SVG 动画、外部资源加载，或 PPTX 其它渲染模块的大规模重写。
+
+| 阶段 | 工程人日 | 单人自然周 |
+|---|---:|---:|
+| Baseline：20–30 个样本和指标 | 3–5 | 1 |
+| Phase 0 收尾：集成测试、文档、示例 | 3–5 | 1 |
+| Phase 1：RenderReport 和能力矩阵 | 8–12 | 2–3 |
+| Phase 2a：CSS 子集解析 | 15–25 | 3–5 |
+| Phase 2b：增量 SVG IR | 15–25 | 3–5 |
+| Phase 3a：整体 PNG fallback | 8–15 | 2–3 |
+| Phase 3b：raster island 区域拆分 | 25–45 | 5–9 |
+| Phase 3c：source-to-output 映射 | 10–18 | 2–4 |
+| Phase 4–5：扩展能力、性能和跨软件回归 | 35–60 | 7–12 |
+
+单人全职累计估算：Baseline + Phase 0–1 约 3–5 周；加入 Phase 2a 约 6–10 周；加入 Phase 2b + Phase 3a 约 11–18 周；完成 Phase 3b–3c 约 18–31 周；完成 Phase 4–5 约 25–43 周。
+
+推荐在第 14 周设置决策点：先完成 baseline、Phase 0 收尾、Phase 1、Phase 2a 和 Phase 3a，再用一个真实复杂 SVG 做 Hybrid POC，决定是否投入 5–9 周的 Phase 3b。若 POC 无法稳定处理 z-order、透明度和 clip 边界，可以停在 Phase 3a；整体 PNG fallback 仍能显著提高复杂 SVG 的可交付率。

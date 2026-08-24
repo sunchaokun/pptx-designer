@@ -6,7 +6,7 @@
 >
 > 分析范围：SVG 编译器、PPTX 渲染接入、支持边界、文档示例和测试覆盖。
 
-> 状态说明：本文最初审计时记录了旧版入口冲突。后续源码已修复该问题：`PrecisionRenderer` 现在直接导入正式 compiler，`renderer/svg_compiler.py` 已变为兼容转发 shim。下文保留历史问题和验证依据，但当前结论以“已解决”标记为准。
+> 状态说明：本文最初审计时记录了旧版入口冲突。后续源码已修复该问题：`PrecisionRenderer` 现在直接导入正式 compiler，`renderer/svg_compiler.py` 已变为兼容转发 shim；高层 `tools.svg.svg_chart()` 和 SVG 自动化测试也已补齐。下文保留部分历史问题和验证依据，但当前结论以“已解决”标记为准；实际使用边界请优先阅读 [`svg-guide.md`](svg-guide.md)。
 
 ## 结论摘要
 
@@ -17,10 +17,10 @@
 1. 直接调用 `pptx_designer.compiler.SVGCompiler` 可以生成 PPTX 形状；
 2. `PrecisionRenderer` 的 `svg_diagram` 主流程现在调用正式 SVG 编译器；
 3. 主流程现在会记录 SVG warning 和编译错误；
-4. README 和示例引用了不存在的 `pptx_designer.tools.svg`；
-5. 现有自动化测试没有覆盖 SVG 主链路。
+4. README 和示例使用高层入口 `pptx_designer.tools.svg.svg_chart()`；
+5. 自动化测试覆盖 compiler、IR、sanitizer、高层工具和 `PrecisionRenderer` 的 SVG 主链路。
 
-最优先修复项是统一 SVG 入口，并为 `PrecisionRenderer` 增加集成测试。
+后续重点是扩展可编辑 SVG 覆盖范围，并以结构化 warning 与真实样本保护已有能力。
 
 ## 一、模块结构
 
@@ -218,7 +218,7 @@ except SVGCompileError:
 
 当前代码已经接收编译结果、逐条记录 warning，并记录 `SVGCompileError`。因此该问题已解决；仍建议增加回归测试，避免后续重构时错误可观测性退化。
 
-### P1：文档和示例引用不存在的模块
+### P1（已解决）：文档和示例的高层 SVG 入口
 
 以下文件引用：
 
@@ -232,27 +232,15 @@ from pptx_designer.tools.svg import svg_chart
 - [`README.zh-CN.md:161`](../README.zh-CN.md#L161)
 - [`examples/svg_diagrams.py:3`](../examples/svg_diagrams.py#L3)
 
-但项目中不存在 `src/pptx_designer/tools/svg.py`，因此这些示例不能按文档直接运行。
+当前项目已提供 [`src/pptx_designer/tools/svg.py`](../src/pptx_designer/tools/svg.py)，`svg_chart()` 内部调用正式 `SVGCompiler` 并返回 `SVGResult`。README、快速开始和 SVG 指南均以此入口为例。
 
-### P1：测试没有覆盖 SVG 主链路
+### P1（已解决）：SVG 主链路测试
 
-根目录虽然有多个 `test_svg*.py` 和调试脚本，但标准测试配置的 `testpaths` 是 `tests`。当前 `tests` 中没有有效的 SVG 编译器或 `PrecisionRenderer` SVG 集成测试。
+当前 `tests/` 已包含 `test_svg_tools.py`、`test_svg_compiler_integration.py`、`test_compiler/` 与 `test_renderer/` 中的相关用例，覆盖高层入口、编译结果、IR、CSS、限额、group opacity 安全拒绝及渲染器接入。应持续运行这些用例，避免入口和文档再次漂移。
 
-已运行现有 pytest，结果为：
+### P2（已解决）：`SVGResult` 输出对象与报告字段
 
-```text
-20 passed
-```
-
-但这并不能证明 SVG 主流程正常，因为旧入口导入错误没有被测试捕获。
-
-### P2：`SVGResult.shapes` 没有填充，且主渲染器连结果对象都没有保留
-
-[`_compiler.py:194`](../src/pptx_designer/compiler/_compiler.py#L194) 中的 `SVGResult` 暴露了 `shapes` 字段，但编译过程中实际维护的是内部的 `shape_count`，并没有把生成的 PPTX shape 对象写入 `result.shapes`。
-
-此外，当前 [`precision.py:1246`](../src/pptx_designer/renderer/precision.py#L1246) 直接调用 `compile()`，没有接收返回值，因此主渲染器目前连 `shape_count`、`warnings` 和 `features` 都不会消费。这里比“只检查 shape_count”更准确的判断是：当前生产调用方完全忽略 `SVGResult`。
-
-因此当前结果对象更像统计信息，而不是完整的编译产物引用；未来如果需要对 SVG 生成的 shape 做批量透明度、动画、可访问性或后处理，缺少 shape 引用会增加实现成本。
+当前 `SVGResult` 会收集本次新增的 `shapes`、`native_shapes`、warning、feature、IR、metrics 及运行期 `source_to_output` 映射；主渲染器会接收结果并记录 warning/error。对象映射仍是运行期引用，不是保存后可复用的持久标识；持久 mapping 属于后续 P3 预留能力。
 
 ### P2：`<use>` 目前不加载外部资源，但存在扩展时的安全边界
 
@@ -293,7 +281,7 @@ from pptx_designer.tools.svg import svg_chart
 
 ### P2：能力声明明显宽于实际实现
 
-README 和 CHANGELOG 使用了“完整 SVG 编译器”“full SVG 1.1 support”等表述，但实际遍历逻辑只处理有限标签。以下能力没有作为通用 SVG 功能实现：
+README 和 CHANGELOG 已改用“可编辑 SVG 子集编译器”的表述。以下能力仍没有作为通用 SVG 功能实现：
 
 - `image`
 - `filter`
@@ -314,24 +302,18 @@ README 和 CHANGELOG 使用了“完整 SVG 编译器”“full SVG 1.1 support�
 
 - 解析 XML；
 - 删除 `<script>`；
-- 删除 `<style>`；
-- 将有限的 `style="..."` 属性展开；
+- 在安全范围内解析受限的 `<style>` 规则并将计算后的样式物化；
+- 删除不应进入渲染树的 style 元素；
 - 从 `width` / `height` 推断缺失的 `viewBox`。
 
-它不能提供完整 CSS 支持。例如：
+它不能提供完整浏览器 CSS 支持。例如：
 
 ```svg
 <style>.box { fill: red; }</style>
 <rect class="box" />
 ```
 
-其中 `<style>` 会被删除，`.box` 规则不会应用。编译器会发出类似：
-
-```text
-stripped <style> element (CSS class-based styling lost)
-```
-
-对于 LLM 生成的 SVG，建议优先使用元素直接属性：
+受支持的 class/id/tag 选择器可被物化，但复杂选择器、伪类、完整 CSS layout 与浏览器级级联不在承诺范围内。对于 LLM 生成的 SVG，仍建议优先使用元素直接属性：
 
 ```svg
 <rect fill="#FF0000" stroke="#000000" />
@@ -391,7 +373,7 @@ tests/test_svg_sanitizer.py
 
 ### 第五步：修正文档的能力描述
 
-将“完整 SVG 1.1”改为：
+历史上应将“完整 SVG 1.1”改为：
 
 > 支持常用 SVG 形状、路径、文本、渐变、变换、引用和裁剪，并将其转换为可编辑 PPTX 原生形状。
 
@@ -401,13 +383,24 @@ tests/test_svg_sanitizer.py
 
 SVG 底层实现本身已经具备较好的模块化基础：路径解析、Affine 变换、paint/gradient、文本、sanitizer、dash 和主题桥接都已拆分。
 
-当前最主要的缺陷是集成层，而不是几何算法：
+历史上最主要的缺陷是集成层，而不是几何算法；该集成缺陷当前已经修复。当前主要工作转向能力覆盖、降级策略、性能和真实样本基准：
 
 ```text
 完整 compiler 已存在
         ↓
-PrecisionRenderer 仍引用旧 renderer 桩
+PrecisionRenderer 已切换到正式 compiler
         ↓
-svg_diagram 主流程实际不渲染
+常见静态 SVG 可以进入主流程
         ↓
-异常又被静默吞掉
+复杂特性仍需要 CSS、fallback 和性能策略
+```
+
+因此，本文的历史 P0/P1 不能作为当前 SVG 成功率 baseline。当前 baseline 应通过真实样本集测量，至少区分：
+
+- inline style 静态 SVG；
+- CSS class SVG；
+- 渐变、clipPath 和复杂 path；
+- filter/mask/image；
+- 大型多节点 SVG。
+
+在没有样本集之前，任何“主流程成功率”百分比都只能作为估算，不能替代实际基准。
