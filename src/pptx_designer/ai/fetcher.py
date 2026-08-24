@@ -48,7 +48,12 @@ class ImageFetcher:
         self._cache_dir.mkdir(parents=True, exist_ok=True)
 
     def _apply_host_detection(self) -> None:
-        from pptx_designer.adapters.llm_config_adapter import detect_host_llm_config
+        try:
+            from pptx_designer.adapters.llm_config_adapter import detect_host_llm_config
+        except ImportError:
+            # Host integration is optional in the standalone Python package.
+            # Environment variables and explicit arguments remain available.
+            return
 
         detected = detect_host_llm_config()
         if not detected:

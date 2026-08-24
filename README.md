@@ -370,7 +370,7 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 ## Advanced examples
 
-Explore complete four-page, editable decks in [examples/](examples/README.md): an executive business review, a product strategy roadmap, and an SVG architecture review. Every example includes the build script and its generated `.pptx` output.
+Explore complete four-page, editable decks in [examples/](examples/README.md): a luxury fragrance lookbook, a couture editorial deck, and an architecture vision book. Every example includes the build script, original image assets, and its generated `.pptx` output.
 
 ---
 

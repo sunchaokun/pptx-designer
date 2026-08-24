@@ -369,7 +369,7 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 ## 高级案例
 
-[examples/](examples/README.md) 提供三个完整、可编辑的四页案例：高管业务复盘、产品战略路线图与 SVG 架构评审。每个案例均包含构建代码和生成的 `.pptx` 文件。
+[examples/](examples/README.md) 提供三个完整、可编辑的四页高级案例：奢侈品香氛画册、时装编辑册与建筑愿景书。每个案例均包含构建代码、原创视觉资源和生成的 `.pptx` 文件。
 
 ---
 
