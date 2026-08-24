@@ -16,6 +16,10 @@ from pptx_designer.tools.text import multiline, text
 
 ROOT = Path(__file__).parent
 PAVILION = ROOT / "assets" / "monumental-pavilion.png"
+DUSK = ROOT / "assets" / "architecture-dusk.png"
+INTERIOR = ROOT / "assets" / "architecture-interior.png"
+DETAIL = ROOT / "assets" / "architecture-detail.png"
+AERIAL = ROOT / "assets" / "architecture-aerial.png"
 C = {
     "ultramarine": "#123B7A",
     "electric": "#1769E0",
@@ -33,7 +37,7 @@ def add_cover(prs: Presentation) -> None:
     """A typographic cover: image, title and label overlap rather than split."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     rect(slide, 0, 0, 13.333, 7.5, "paper", C=C)
-    cover_image(slide, 1.35, 0.52, 11.25, 5.62, str(PAVILION))
+    cover_image(slide, 1.35, 0.52, 11.25, 5.62, str(AERIAL))
     rect(slide, 0.56, 0.52, 0.22, 5.62, "signal", C=C)
     rect(slide, 8.78, 0.52, 3.82, 0.65, "ultramarine", C=C)
     text(slide, 9.06, 0.77, 3.12, 0.16, "PACIFIC CULTURAL DISTRICT  /  2027",
@@ -56,7 +60,7 @@ def add_proposition(prs: Presentation) -> None:
     """A poster-like proposition page, with the image treated as a material sample."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     rect(slide, 0, 0, 13.333, 7.5, "ultramarine", C=C)
-    cover_image(slide, 3.05, 0.55, 7.28, 5.82, str(PAVILION))
+    cover_image(slide, 3.05, 0.55, 7.28, 5.82, str(INTERIOR))
     rect(slide, 3.05, 5.75, 7.28, 0.62, "paper", C=C)
     text(slide, 3.33, 5.97, 6.65, 0.15, "THE ROOF IS A CLIMATE DEVICE, NOT AN OBJECT.",
          font_size=9, color="ultramarine", bold=True, font_name=SANS, C=C)
@@ -95,14 +99,14 @@ def add_sequence(prs: Presentation) -> None:
              color="ultramarine", bold=True, font_name=SANS, C=C)
         text(slide, 7.28, top - 0.02, 4.85, 0.46, detail, font_size=13,
              color="ink", font_name=SERIF, C=C)
-    cover_image(slide, 9.45, 5.95, 2.78, 0.92, str(PAVILION))
+    cover_image(slide, 9.45, 5.95, 2.78, 0.92, str(DETAIL))
     rect(slide, 0.62, 6.94, 12.08, 0.07, "signal", C=C)
 
 
 def add_finale(prs: Presentation) -> None:
     """A closing spread with a full-bleed image interrupted by a paper manifesto."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    cover_image(slide, 0, 0, 13.333, 7.5, str(PAVILION))
+    cover_image(slide, 0, 0, 13.333, 7.5, str(DUSK))
     rect(slide, 0.58, 0.55, 5.20, 5.72, "paper", C=C)
     rect(slide, 0.58, 0.55, 5.20, 0.15, "signal", C=C)
     text(slide, 0.90, 0.95, 3.7, 0.16, "03 / THE INVITATION", font_size=9,
