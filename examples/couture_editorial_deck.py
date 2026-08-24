@@ -1,7 +1,7 @@
-"""A four-page couture dossier built only with pptx_designer.
+"""A four-page couture editorial study built only with pptx_designer.
 
-It uses distinct images for silhouette, atelier work, material study and salon
-presentation. All copy, rules and information panels remain editable.
+This intentionally uses four distinct editorial structures: contact sheet,
+manifesto, material plate and salon poster. Supporting copy is editable.
 
 Run: python examples/couture_editorial_deck.py
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pptx_designer import Presentation
 from pptx_designer.tools.images import cover_image
-from pptx_designer.tools.shapes import oval, rect
+from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import multiline, text
 
 
@@ -32,92 +32,93 @@ SERIF = "Georgia"
 SANS = "Arial"
 
 
-def add_cover(prs: Presentation) -> None:
-    """A composed collection plate, not a conventional text/image split cover."""
+def add_contact_sheet(prs: Presentation) -> None:
+    """Cover: asymmetrical editorial contact sheet, not a hero-image cover."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     rect(slide, 0, 0, 13.333, 7.5, "paper", C=C)
-    rect(slide, 0.52, 0.48, 12.28, 0.08, "black", C=C)
-    cover_image(slide, 0.76, 0.92, 11.82, 4.58, str(LOOK))
-    rect(slide, 10.35, 0.92, 2.23, 0.54, "black", C=C)
-    text(slide, 10.63, 1.07, 1.72, 0.24, "ATELIER EDITION", font_size=9,
-         color="paper", bold=True, align="center", font_name=SANS, C=C)
-    text(slide, 0.76, 5.94, 5.20, 0.38, "ATELIER MERIDIAN", font_size=17,
-         color="black", bold=True, font_name=SANS, C=C)
-    multiline(slide, 0.74, 6.31, 6.28, 0.84,
-              ["Sculpted light,", "held in fabric."],
-              font_size=24, color="rust", font_name=SERIF, C=C)
-    text(slide, 8.44, 6.10, 3.84, 0.24, "SPRING / SUMMER 2027", font_size=9,
-         color="rust", bold=True, align="right", font_name=SANS, C=C)
-    multiline(slide, 8.44, 6.40, 3.84, 0.66,
-              ["A study of drape, restraint,", "and the precision of the hand."],
-              font_size=13, color="black", align="right", font_name=SERIF, C=C)
+    cover_image(slide, 0.56, 0.55, 6.18, 5.92, str(LOOK))
+    cover_image(slide, 7.04, 0.55, 5.72, 2.32, str(MATERIAL))
+    cover_image(slide, 7.04, 3.16, 5.72, 1.82, str(ATELIER))
+    rect(slide, 7.04, 5.25, 5.72, 1.22, "black", C=C)
+    text(slide, 7.34, 5.52, 4.98, 0.40, "THE WHITE STUDY", font_size=18,
+         color="paper", bold=True, font_name=SANS, C=C)
+    text(slide, 7.35, 6.05, 4.90, 0.24, "COUTURE / SPRING–SUMMER 2027", font_size=9,
+         color="champagne", bold=True, font_name=SANS, C=C)
+    text(slide, 0.58, 6.79, 3.72, 0.24, "SILHOUETTE / HAND / MATERIAL", font_size=9,
+         color="rust", bold=True, font_name=SANS, C=C)
+    text(slide, 7.04, 6.82, 5.62, 0.24,
+         "AN EDITORIAL RECORD OF HOW A DRESS COMES INTO BEING", font_size=8,
+         color="stone", bold=True, align="right", font_name=SANS, C=C)
 
 
-def add_atelier(prs: Presentation) -> None:
-    """Craft becomes the evidence of value: no generic silhouette page."""
+def add_manifesto(prs: Presentation) -> None:
+    """Page two: typographic manifesto above a narrow atelier evidence strip."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     rect(slide, 0, 0, 13.333, 7.5, "black", C=C)
-    cover_image(slide, 0.56, 0.58, 12.20, 3.84, str(ATELIER))
-    rect(slide, 0.56, 3.88, 12.20, 0.54, "paper", C=C)
-    text(slide, 0.84, 4.03, 11.54, 0.24,
-         "HAND-FOLDED ORGANZA / TEMPORARY STITCH / FINAL SILHOUETTE", font_size=9,
-         color="rust", bold=True, font_name=SANS, C=C)
-    text(slide, 0.64, 4.96, 2.94, 0.24, "01 / THE HAND", font_size=9,
+    text(slide, 0.64, 0.62, 2.80, 0.24, "I / THE HAND", font_size=9,
          color="sand", bold=True, font_name=SANS, C=C)
-    text(slide, 0.58, 5.36, 6.90, 0.54, "Construction is the ornament.", font_size=26,
-         color="paper", font_name=SERIF, C=C)
-    multiline(slide, 8.04, 5.23, 4.06, 0.92,
-              ["Each fold is pinned before it is trusted.",
-               "The final line is discovered, not drawn."],
+    multiline(slide, 0.58, 1.34, 9.20, 2.38,
+              ["FORM IS A DECISION", "MADE BY HAND."],
+              font_size=48, color="paper", bold=True, font_name=SERIF, C=C)
+    multiline(slide, 9.72, 1.58, 2.58, 1.62,
+              ["No seam is merely", "functional. It guides", "the body through light."],
               font_size=14, color="champagne", font_name=SERIF, C=C)
-    rect(slide, 0.62, 6.72, 11.72, 0.06, "rust", C=C)
+    cover_image(slide, 0.58, 4.56, 12.18, 2.10, str(ATELIER))
+    rect(slide, 0.58, 6.17, 12.18, 0.49, "paper", C=C)
+    text(slide, 0.88, 6.29, 11.52, 0.25,
+         "PIN / FOLD / RELEASE / REPEAT — THE GARMENT IS FOUND THROUGH ITS MAKING", font_size=8,
+         color="rust", bold=True, font_name=SANS, C=C)
 
 
-def add_material(prs: Presentation) -> None:
-    """Material study with factual labels rather than decorative colour swatches."""
+def add_material_plate(prs: Presentation) -> None:
+    """Page three: near-silent full-frame material plate with side annotations."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     cover_image(slide, 0, 0, 13.333, 7.5, str(MATERIAL))
-    rect(slide, 0.54, 0.52, 5.04, 1.36, "paper", C=C)
-    text(slide, 0.82, 0.77, 3.70, 0.24, "02 / MATERIAL STUDY", font_size=9,
+    rect(slide, 0.52, 0.52, 2.84, 6.46, "paper", C=C)
+    text(slide, 0.82, 0.84, 2.14, 0.24, "II / MATERIAL", font_size=9,
          color="rust", bold=True, font_name=SANS, C=C)
-    text(slide, 0.80, 1.10, 4.18, 0.42, "Texture carries the light.", font_size=18,
-         color="black", font_name=SERIF, C=C)
-    rect(slide, 0, 5.66, 13.333, 1.84, "black", C=C)
-    materials = [("01", "ORGANZA", "translucent structure"), ("02", "SATIN", "weight and reflection"),
-                 ("03", "PEARL", "a point of brightness")]
-    for index, (number, name, detail) in enumerate(materials):
-        x = 0.76 + index * 4.08
-        oval(slide, x, 6.16, 0.42, 0.42, "sand", C=C)
-        text(slide, x + 0.60, 6.07, 2.16, 0.24, f"{number}  {name}", font_size=10,
-             color="paper", bold=True, font_name=SANS, C=C)
-        text(slide, x + 0.60, 6.40, 2.72, 0.28, detail, font_size=11,
-             color="champagne", font_name=SERIF, C=C)
+    multiline(slide, 0.78, 1.38, 2.12, 1.48,
+              ["Light", "needs", "texture."],
+              font_size=30, color="black", bold=True, font_name=SERIF, C=C)
+    rect(slide, 0.82, 3.34, 1.92, 0.06, "sand", C=C)
+    multiline(slide, 0.82, 3.76, 1.92, 1.18,
+              ["Organza", "Satin", "Pearl"],
+              font_size=14, color="rust", font_name=SANS, C=C)
+    multiline(slide, 0.82, 5.42, 1.92, 0.92,
+              ["Structure", "Reflection", "Brightness"],
+              font_size=11, color="stone", font_name=SERIF, C=C)
+    text(slide, 0.82, 6.62, 1.92, 0.22, "A MATERIAL PLATE", font_size=8,
+         color="rust", bold=True, font_name=SANS, C=C)
 
 
-def add_salon(prs: Presentation) -> None:
-    """An exhibition-like finale; event details remain secondary to the garment."""
+def add_salon_poster(prs: Presentation) -> None:
+    """Page four: a restrained exhibition poster, letting the salon carry the drama."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     cover_image(slide, 0, 0, 13.333, 7.5, str(SALON))
-    rect(slide, 0.56, 0.52, 12.22, 0.58, "paper", C=C)
-    text(slide, 0.84, 0.69, 3.42, 0.24, "03 / SALON AFTER DARK", font_size=9,
+    rect(slide, 0.56, 0.54, 4.20, 5.78, "paper", C=C)
+    text(slide, 0.86, 0.86, 3.48, 0.24, "III / AFTER DARK", font_size=9,
          color="rust", bold=True, font_name=SANS, C=C)
-    text(slide, 8.18, 0.69, 4.14, 0.24, "PARIS / SEPTEMBER 2027", font_size=9,
-         color="rust", bold=True, align="right", font_name=SANS, C=C)
-    rect(slide, 0.58, 5.76, 8.08, 1.18, "black", C=C)
-    text(slide, 0.88, 6.04, 7.38, 0.46, "The collection waits for its first witness.", font_size=21,
-         color="paper", font_name=SERIF, C=C)
-    text(slide, 9.24, 6.06, 3.04, 0.24, "PRIVATE PRESENTATION", font_size=9,
+    multiline(slide, 0.82, 1.50, 3.34, 1.58,
+              ["A room", "for the", "first look."],
+              font_size=31, color="black", bold=True, font_name=SERIF, C=C)
+    multiline(slide, 0.88, 3.78, 3.24, 0.88,
+              ["The dress stands still.", "Everything around it changes."],
+              font_size=14, color="rust", font_name=SERIF, C=C)
+    rect(slide, 0.86, 5.22, 3.32, 0.06, "sand", C=C)
+    multiline(slide, 0.86, 5.54, 3.20, 0.52,
+              ["PRIVATE SALON / PARIS", "SEPTEMBER 2027 / 19:30"],
+              font_size=8, color="black", bold=True, font_name=SANS, C=C)
+    text(slide, 5.30, 6.82, 7.14, 0.24,
+         "THE WHITE STUDY / COUTURE EDITORIAL", font_size=8,
          color="paper", bold=True, align="right", font_name=SANS, C=C)
-    text(slide, 9.24, 6.48, 3.04, 0.24, "19:30 / BY APPOINTMENT", font_size=9,
-         color="champagne", align="right", font_name=SANS, C=C)
 
 
 def build() -> Path:
     prs = Presentation()
-    add_cover(prs)
-    add_atelier(prs)
-    add_material(prs)
-    add_salon(prs)
+    add_contact_sheet(prs)
+    add_manifesto(prs)
+    add_material_plate(prs)
+    add_salon_poster(prs)
     output = Path(__file__).with_suffix(".pptx")
     prs.save(output)
     return output
