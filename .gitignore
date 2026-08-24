@@ -41,6 +41,7 @@ htmlcov/
 output/
 *.pptx
 !tests/fixtures/*.pptx
+!examples/*.pptx
 
 # Cache
 .cache/

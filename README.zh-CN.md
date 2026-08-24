@@ -367,6 +367,10 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 - [SVG 编译器指南](docs/svg-guide.md)
 - [更新日志](CHANGELOG.md)
 
+## 高级案例
+
+[examples/](examples/README.md) 提供三个完整、可编辑的四页案例：高管业务复盘、产品战略路线图与 SVG 架构评审。每个案例均包含构建代码和生成的 `.pptx` 文件。
+
 ---
 
 ## 许可证

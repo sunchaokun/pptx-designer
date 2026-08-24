@@ -368,6 +368,10 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 - [SVG compiler guide](docs/svg-guide.md)
 - [Changelog](CHANGELOG.md)
 
+## Advanced examples
+
+Explore complete four-page, editable decks in [examples/](examples/README.md): an executive business review, a product strategy roadmap, and an SVG architecture review. Every example includes the build script and its generated `.pptx` output.
+
 ---
 
 ## License
