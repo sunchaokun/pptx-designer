@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pptx-designer"
+version = "1.0.0-beta.1"
+description = "Python library for LLMs to generate pixel-perfect PowerPoint presentations with 40,000+ style combinations"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Chaokun Sun", email = "sunchaokun@gmail.com"},
+]
+keywords = [
+    "pptx", "powerpoint", "presentation", "llm", "ai",
+    "build-mode", "svg", "charts", "diagrams", "python-pptx",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business",
+    "Topic :: Multimedia :: Graphics :: Presentation",
+    "Typing :: Typed",
+]
+dependencies = [
+    "python-pptx>=1.0.2",
+    "lxml>=4.9.0",
+    "Pillow>=10.0",
+    "shapely>=2.0",
+]
+
+[project.optional-dependencies]
+images = [
+    "httpx>=0.24.0",
+]
+ai-images = [
+    "openai>=1.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+pptx-designer = "pptx_designer.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/sunchaokun/pptx-designer"
+Documentation = "https://pptx-designer.readthedocs.io"
+Repository = "https://github.com/sunchaokun/pptx-designer"
+Changelog = "https://github.com/sunchaokun/pptx-designer/blob/main/CHANGELOG.md"
+Issues = "https://github.com/sunchaokun/pptx-designer/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pptx_designer = ["data/*.csv", "data/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
