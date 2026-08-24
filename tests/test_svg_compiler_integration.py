@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import time
+
 import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
-from pptx_designer.compiler import SVGCompiler, SVGCompileError, SVGResult
+from pptx_designer.compiler import SVGCompileError, SVGCompiler, SVGRenderReport, SVGResult
 
 
 def _slide():
@@ -44,6 +46,34 @@ class TestBasicShapes:
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
 
+    def test_result_contains_shapes_metrics_and_source_mapping(self):
+        svg = (
+            '<svg viewBox="0 0 100 100">'
+            '<rect id="background" x="0" y="0" width="100" height="100" fill="#4472C4"/>'
+            "</svg>"
+        )
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+        assert isinstance(result, SVGRenderReport)
+        assert result.shapes == result.native_shapes
+        assert len(result.shapes) == result.shape_count
+        assert result.source_to_output["background"]
+        assert result.metrics["node_count"] >= 2
+        assert result.metrics["ir_node_count"] == result.metrics["node_count"]
+        assert result.metrics["ir_build_ms"] >= 0
+        assert result.ir_document is not None
+        assert result.ir_document.nodes_for_id("background")[0].tag == "rect"
+        assert result.metrics["total_ms"] >= 0
+        assert result.feature_levels["rect"] == "NATIVE"
+
+    def test_total_metric_includes_post_processing(self, monkeypatch):
+        def slow_overlap(slide, pre_count, result):
+            time.sleep(0.02)
+
+        monkeypatch.setattr(SVGCompiler, "_detect_text_overlaps", staticmethod(slow_overlap))
+        svg = '<svg viewBox="0 0 10 10"><rect width="10" height="10" fill="#4472C4"/></svg>'
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+        assert result.metrics["total_ms"] >= 20
+
 
 class TestPath:
     def test_simple_path(self):
@@ -67,6 +97,12 @@ class TestText:
         svg = '<svg viewBox="0 0 400 300"><text x="100" y="100"><tspan font-size="18" fill="#E74C3C">Line 1</tspan><tspan x="100" dy="30" font-size="14" fill="#333">Line 2</tspan></text></svg>'
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
+
+    def test_tspan_font_size_uses_svg_to_ppt_scale(self):
+        svg = '<svg viewBox="0 0 1280 720"><text x="100" y="100" font-size="20"><tspan>Scaled</tspan></text></svg>'
+        result = SVGCompiler().compile(svg, _slide(), (0, 0, 13.333, 7.5))
+        run = result.shapes[0].text_frame.paragraphs[0].runs[0]
+        assert run.font.size.pt == pytest.approx(15.0, abs=0.1)
 
 
 class TestGradients:
@@ -113,11 +149,47 @@ class TestClipPath:
         assert result.shape_count >= 1
 
 
+class TestUseAndVisibility:
+    def test_use_maps_referenced_and_use_ids(self):
+        svg = '''<svg viewBox="0 0 100 100">
+            <defs><rect id="source" x="0" y="0" width="10" height="10" fill="#4472C4"/></defs>
+            <use id="copy" href="#source" x="20" y="20"/>
+        </svg>'''
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+        assert result.source_to_output["source"]
+        assert result.source_to_output["copy"]
+
+    @pytest.mark.parametrize("attr", ["display=\"none\"", "visibility=\"hidden\""])
+    def test_hidden_elements_are_not_rendered(self, attr):
+        svg = f'<svg viewBox="0 0 10 10"><rect {attr} width="10" height="10" fill="#4472C4"/></svg>'
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+        assert result.shape_count == 0
+        assert result.shapes == []
+
+
+class TestGroupOpacity:
+    def test_group_opacity_fails_before_creating_incorrect_shapes(self):
+        svg = '<svg viewBox="0 0 10 10"><g id="faded" opacity="0.5"><rect width="10" height="10" fill="#112233"/></g></svg>'
+        slide = _slide()
+        with pytest.raises(SVGCompileError, match="requires raster fallback"):
+            SVGCompiler().compile(svg, slide, (0, 0, 1, 1))
+        assert len(slide.shapes) == 0
+
+
 class TestUnsupported:
     def test_image_warning(self):
         svg = '<svg viewBox="0 0 400 300"><image href="photo.jpg" width="400" height="300"/></svg>'
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert any("image" in w.lower() or "unsupported" in w.lower() for w in result.warnings)
+        assert result.feature_levels["image"] == "RASTER_FALLBACK_CANDIDATE"
+
+
+class TestTextOpacity:
+    def test_text_opacity_writes_alpha(self):
+        svg = '<svg viewBox="0 0 100 100"><text x="10" y="50" opacity="0.5" fill="#112233">Hello</text></svg>'
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+        run_xml = result.shapes[0].text_frame.paragraphs[0].runs[0]._r.xml
+        assert 'a:alpha val="50000"' in run_xml
 
 
 class TestScalingModes:
@@ -140,6 +212,46 @@ class TestErrors:
     def test_invalid_svg(self):
         with pytest.raises(SVGCompileError):
             SVGCompiler().compile("not svg at all", _slide(), (1, 1, 8, 6))
+
+    def test_svg_size_limit(self):
+        compiler = SVGCompiler(limits={"max_svg_bytes": 10})
+        with pytest.raises(SVGCompileError, match="size"):
+            compiler.compile('<svg viewBox="0 0 1 1"/>', _slide(), (1, 1, 8, 6))
+
+    def test_node_limit(self):
+        compiler = SVGCompiler(limits={"max_nodes": 2})
+        svg = '<svg viewBox="0 0 1 1"><g><rect width="1" height="1"/></g></svg>'
+        with pytest.raises(SVGCompileError, match="node count"):
+            compiler.compile(svg, _slide(), (1, 1, 8, 6))
+
+    def test_node_limit_is_checked_before_ir_is_built(self, monkeypatch):
+        import pptx_designer.compiler._compiler as compiler_module
+
+        called = False
+
+        def fail_if_called(_root):
+            nonlocal called
+            called = True
+            raise AssertionError("IR must not be built after a node-limit failure")
+
+        monkeypatch.setattr(compiler_module, "build_svg_ir", fail_if_called)
+        compiler = SVGCompiler(limits={"max_nodes": 2})
+        svg = '<svg viewBox="0 0 1 1"><g><rect width="1" height="1"/></g></svg>'
+        with pytest.raises(SVGCompileError, match="node count"):
+            compiler.compile(svg, _slide(), (0, 0, 1, 1))
+        assert not called
+
+    def test_tree_depth_limit(self):
+        compiler = SVGCompiler(limits={"max_tree_depth": 3})
+        svg = '<svg viewBox="0 0 1 1"><g><g><rect width="1" height="1"/></g></g></svg>'
+        with pytest.raises(SVGCompileError, match="tree depth"):
+            compiler.compile(svg, _slide(), (0, 0, 1, 1))
+
+    def test_path_command_limit(self):
+        compiler = SVGCompiler(limits={"max_path_commands": 2})
+        svg = '<svg viewBox="0 0 1 1"><path d="M0 0 L1 0 L1 1 Z"/></svg>'
+        with pytest.raises(SVGCompileError, match="path command"):
+            compiler.compile(svg, _slide(), (1, 1, 8, 6))
 
 
 class TestCompatShim:

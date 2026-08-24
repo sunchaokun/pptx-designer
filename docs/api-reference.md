@@ -1,4 +1,6 @@
-# API Reference
+# API 参考
+
+> 适用版本：`1.0.0-beta.2`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 
@@ -151,8 +153,26 @@ animation.add_entrance(slide, shape_id, "fade_in")
 ## Compiler
 
 ```python
-from pptx_designer.compiler import SVGCompiler
+from pptx_designer.compiler import SVGCompileError, SVGCompiler
 
 compiler = SVGCompiler()
-result = compiler.compile(svg_text, slide, rect)
+result = compiler.compile(
+    svg_text,
+    slide,
+    rect=(1.0, 1.0, 8.0, 4.0),  # x, y, width, height; inches
+)
+
+print(result.shape_count)
+print(result.warnings)
+print(result.features)
 ```
+
+For the convenient Build-mode wrapper:
+
+```python
+from pptx_designer.tools.svg import svg_chart
+
+result = svg_chart(slide, svg_text, x=1.0, y=1.0, w=8.0, h=4.0)
+```
+
+`SVGResult` includes `shape_count`, `shapes`, `native_shapes`, `warnings`, `errors`, `features`, `feature_levels`, `source_to_output`, `metrics`, and `compile_ms`. Invalid SVG or a configured safety limit raises `SVGCompileError`; unsupported individual elements may instead be skipped with a warning. Production callers should handle both paths.

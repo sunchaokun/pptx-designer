@@ -6,9 +6,10 @@ Usage::
     result = SVGCompiler(C=context).compile(svg_text, slide, rect)
 """
 from ._affine import Affine, parse_transform
-from ._compiler import SVGCompiler, SVGResult
+from ._compiler import SVGCompiler, SVGRenderReport, SVGResult
 from ._dash import StrokeStyle, apply_stroke_style, parse_stroke_style
 from ._errors import SVGCompileError
+from ._ir import SVGIRDocument, SVGIRNode, build_svg_ir
 from ._paint import (
     GradientDef,
     apply_gradient,
@@ -32,12 +33,16 @@ __all__ = [
     "GradientDef",
     "SVGCompileError",
     "SVGCompiler",
+    "SVGIRDocument",
+    "SVGIRNode",
+    "SVGRenderReport",
     "SVGResult",
     "StrokeStyle",
     "apply_gradient",
     "apply_stroke_style",
     "arc_to_cubics",
     "available_mood_gradients",
+    "build_svg_ir",
     "c_to_svg_style",
     "collect_linear_gradient",
     "collect_radial_gradient",

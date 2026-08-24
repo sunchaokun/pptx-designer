@@ -1237,21 +1237,23 @@ class PrecisionRenderer:
 
     def _render_svg_diagram_on_slide(self, slide, svg_diagram,
                                      cx: float | None = None, cy: float | None = None,
-                                     cw: float | None = None, ch: float | None = None) -> None:
+                                     cw: float | None = None, ch: float | None = None):
         from pptx_designer.compiler import SVGCompileError, SVGCompiler
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         svg_text = svg_diagram if isinstance(svg_diagram, str) else svg_diagram.get("svg", "")
         if not svg_text:
-            return
+            return None
         C = self._build_svg_context()
         try:
             result = SVGCompiler(C=C).compile(svg_text, slide, (cx, cy, cw, ch))
             if result.warnings:
                 for w in result.warnings:
                     logger.warning("SVG compiler warning: %s", w)
+            return result
         except SVGCompileError as e:
             logger.error("SVG compilation failed: %s", e)
+            return None
 
     def _build_svg_context(self) -> dict:
         C = {}

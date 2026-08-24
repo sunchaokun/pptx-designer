@@ -48,3 +48,14 @@ output/
 # Docs build
 site/
 docs/_build/
+
+# Local SVG development notes and manual verification scripts.
+# User-facing SVG documentation remains tracked in docs/svg-guide.md.
+docs/svg-module-analysis.md
+docs/svg-max-support-strategy.md
+docs/svg-p0-p2-code-review.md
+docs/svg-p2b-deep-review.md
+docs/svg-p3-editability-first-roadmap.md
+docs/svg-p3-layerplan-design.md
+scripts/generate_peppa_example.py
+scripts/svg_p2b_smoke.py

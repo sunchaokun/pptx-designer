@@ -14,6 +14,7 @@ import re
 
 from lxml import etree
 
+from ._css import apply_css_blocks
 from ._errors import SVGCompileError
 
 SVG_NS = "http://www.w3.org/2000/svg"
@@ -109,9 +110,10 @@ def sanitize(svg_text: str) -> etree._Element:
     1. Parse with lxml (tolerant of minor XML errors)
     2. Ensure SVG namespace
     3. Fix self-closing tags (lxml-based, preserves children)
-    4. Strip ``<script>`` / ``<style>``
-    5. Expand ``style`` attributes → individual attributes
-    6. Infer missing ``viewBox``
+    4. Apply CSS ``<style>`` blocks → individual attributes
+    5. Strip ``<script>`` / ``<style>``
+    6. Expand ``style`` attributes → individual attributes
+    7. Infer missing ``viewBox``
     """
     if not svg_text or not svg_text.strip():
         raise SVGCompileError("SVG document is empty")
@@ -134,6 +136,7 @@ def sanitize(svg_text: str) -> etree._Element:
                 break
 
     _fix_self_closing_lxml(root)
+    apply_css_blocks(root)
     _strip_unwanted(root)
     _walk_expand(root)
     _infer_viewbox(root)
