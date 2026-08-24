@@ -2,15 +2,15 @@
 
 # pptx-designer
 
-**为 LLM 设计的 Python PPT 生成库**
+**面向 LLM 编程工作流的、代码优先的可编辑 PPT Python 标准库**
 
 [![PyPI version](https://img.shields.io/pypi/v/pptx-designer.svg)](https://pypi.org/project/pptx-designer/)
 [![Python](https://img.shields.io/pypi/pyversions/pptx-designer.svg)](https://pypi.org/project/pptx-designer/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-用可组合的原子函数构建像素级精确、完全可编辑的 `.pptx` —— 专为 AI 编码助手设计。
+用可组合的演示文稿原语、设计数据与 PowerPoint 原生对象，将可审查的 Python 代码构建为可编辑 `.pptx`。
 
-[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [SVG 指南](docs/svg-guide.md) · [文档索引](docs/README.md)
+[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [LLM 编写手册](docs/llm-authoring-guide.md) · [文档索引](docs/README.md)
 
 </div>
 
@@ -18,23 +18,22 @@
 
 ## 为什么选择 pptx-designer？
 
-pptx-designer 为 **LLM 时代** 而生。当 AI 编码助手生成 Python 代码来创建演示文稿时，它需要：
+越来越多的软件在 LLM 的协作下完成。此时真正适合审查、版本管理、测试和迭代的单位是生成出来的 **代码**，而不是不可追溯的提示词结果。`pptx-designer` 是为这种工作方式设计的 Python 标准库：AI 助手负责组合明确的函数调用，开发者仍可检查、修改、测试并重复运行同一份 Python 文件。
 
-- **清晰、可组合的 API** —— 而不是黑盒魔法
-- **确定性输出** —— 相同代码，相同结果
-- **完全可编辑** —— 每个形状、每段文字、每张图表
-- **核心功能无需 LLM** —— 可离线使用
+它不是演示文稿 SaaS，也不是提示词到图片的黑盒。只要所选组件能够表达，输出的 `.pptx` 就由 PowerPoint 原生对象构成。
 
-| 能力 | 原生 python-pptx | SaaS AI 工具 | **pptx-designer** |
-|---|---|---|---|
-| **LLM 友好 API** | 底层（坐标） | 黑盒 | **90+ 可组合原子** |
-| **确定性** | 是 | 否（随机） | **是** |
-| **可编辑输出** | 是 | 有时 | **原生优先；已支持的 SVG 对象可编辑** |
-| **设计系统** | 无 | 私有 | **40,000+ 内置组合** |
-| **SVG → PPTX** | 否 | 否 | **可编辑 SVG 子集编译器** |
-| **图表** | 手动拼形状 | 有限 | **10 种原生引擎** |
-| **品牌合规** | 手动 | 部分 | **企业 VI 模式** |
-| **价格** | 免费 | ¥70-140/月 | **免费（MIT）** |
+| 设计取舍 | 实际含义 |
+|---|---|
+| **代码即唯一事实来源** | 布局、文案、颜色和数据保存在 Python 中，可进入 Git 审查。 |
+| **面向 LLM 的公共 API** | 小而具名、可组合的辅助函数减少生成和修改代码时的歧义。 |
+| **确定性构建路径** | 相同输入、包版本、字体和运行环境对应可重复的构建目标。 |
+| **原生对象优先** | 形状、文本、图表、图示和已支持 SVG 元素尽可能输出为原生 PPT 对象。 |
+| **渐进式控制** | 先用 `generate_ppt()`；需要精确构图时转入 Build 模式。 |
+| **AI 服务可选** | 核心布局与绘制不需要 API Key；图片生成/搜索按需启用。 |
+
+### 范围与真实边界
+
+`pptx-designer` 在 `python-pptx` 之上提供面向演示文稿的高层封装；它不替代 PowerPoint 渲染引擎，也不实现所有演示文稿或 SVG 特性。原生可编辑性和视觉还原度取决于具体组件及目标 Office 环境。SVG 编译器有意只支持可编辑子集，而不是浏览器级完整 SVG。请把 PPTX 视为构建产物：交付前应在目标应用中打开并审查关键页面。
 
 ---
 
@@ -57,14 +56,15 @@ pip install pptx-designer[ai-images]   # AI 图片生成（OpenAI 等）
 
 ## 快速开始
 
-### 为 LLM 设计
+### 一页代码优先的幻灯片
 
 当 AI 编码助手生成 PPT 代码时，输出如下：
 
 ```python
-from pptx_designer.tools.shapes import rect, rounded_rect
+from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import text, multiline
-from pptx_designer.tools.cards import page_header, kpi_card
+from pptx_designer.tools.cards import kpi_card
+from pptx_designer.tools.layout import page_header
 from pptx_designer.tools.images import cover_image
 from pptx_designer.core.pipeline import Presentation
 
@@ -87,13 +87,12 @@ rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
 prs.save("output/q4_report.pptx")
 ```
 
-### 为人类开发者
+### 由结构化内容生成完整演示文稿
 
 ```python
 from pptx_designer import generate_ppt
 
-# generate_ppt 内部使用 Build 模式
-# 提供结构化内容可获得最佳效果
+# 结构化内容会让生成结果更可预测、更便于审查。
 result = generate_ppt(
     content={
         "title": "Q4 营收报告",
@@ -106,7 +105,7 @@ result = generate_ppt(
     output="output/report.pptx",
 )
 
-# 或提供简单描述（LLM 会展开为结构化内容）
+# 简单描述使用包内的规划器，不需要配置 LLM 服务商。
 result = generate_ppt("AI 创业融资路演", style="dark cyberpunk")
 ```
 
@@ -119,12 +118,12 @@ result = generate_ppt("AI 创业融资路演", style="dark cyberpunk")
 ### 形状
 
 ```python
-from pptx_designer.tools.shapes import rect, rounded_rect, oval, hexagon, diamond, star
+from pptx_designer.tools.shapes import rect, rrect, oval, hexagon, diamond, star5
 
-rect(slide, x=1, y=1, w=4, h=2, fill="#3B82F6")
-rounded_rect(slide, x=1, y=1, w=4, h=2, fill="#3B82F6", radius="lg")
-oval(slide, cx=3, cy=2, size=1.5, fill="#10B981")
-hexagon(slide, cx=6, cy=2, size=1.5, fill="#F59E0B")
+rect(slide, left=1, top=1, width=4, height=2, fill="#3B82F6")
+rrect(slide, left=1, top=3.3, width=4, height=2, fill="#2563EB")
+oval(slide, left=6, top=1, width=2, height=2, fill="#10B981")
+hexagon(slide, cx=9, cy=2, size=1.5, fill="#F59E0B")
 ```
 
 ### 文字
@@ -132,27 +131,37 @@ hexagon(slide, cx=6, cy=2, size=1.5, fill="#F59E0B")
 ```python
 from pptx_designer.tools.text import text, multiline, gradient_text, dramatic_text
 
-text(slide, x=1, y=1, w=8, h=1, "Hello World", font_size=32, bold=True)
-multiline(slide, x=1, y=2, w=8, h=3, ["第1行", "第2行", "第3行"], font_size=14)
-gradient_text(slide, x=1, y=1, w=8, h=1, "渐变文字", preset="gold-shine", font_size=48)
+text(slide, left=1, top=1, width=8, height=1, txt="Hello World", font_size=32, bold=True)
+multiline(slide, left=1, top=2, width=8, height=3, lines=["第1行", "第2行", "第3行"], font_size=14)
+gradient_text(slide, left=1, top=1, width=8, height=1, txt="渐变文字", preset="gold-shine", font_size=48)
 ```
 
 ### 图表
 
 ```python
-from pptx_designer.tools.charts import bar_chart, donut_chart, native_chart
+from pptx_designer.tools.charts import bar_chart
 
-bar_chart(slide, x=1, y=2, data=[("Q1", "85%", 8500000), ("Q2", "92%", 9200000)])
-donut_chart(slide, cx=8, cy=3, radius=1.5, sectors=[("A", "40%", "#3B82F6"), ("B", "60%", "#10B981")])
+bar_chart(slide, left=2, top=2, data=[("Q1", 0.85, "85%"), ("Q2", 0.92, "92%")])
 ```
 
 ### 图表引擎
 
 ```python
-from pptx_designer.diagrams import flowchart, timeline, swot, matrix
+from pptx_designer.diagrams import DiagramStyle, FlowchartDiagram, Region, TimelineDiagram
 
-flowchart.render(slide, steps=["步骤1", "步骤2", "步骤3"], region=region, style=style)
-timeline.render(slide, events=[("2024", "发布"), ("2025", "扩展")], region=region, style=style)
+style = DiagramStyle()
+
+FlowchartDiagram(
+    data={"nodes": [{"label": "发现"}, {"label": "构建"}, {"label": "审查"}]},
+    style=style,
+    region=Region(left=1, top=2, width=10, height=2),
+).render(slide)
+
+TimelineDiagram(
+    data={"events": [{"year": "2024", "title": "发布"}, {"year": "2025", "title": "扩展"}]},
+    style=style,
+    region=Region(left=1, top=4.5, width=10, height=2),
+).render(slide)
 ```
 
 ### SVG → PPTX
@@ -184,23 +193,30 @@ shape_fx.apply_pattern(shape, "cross", fg="#000000", bg="#FFFFFF")
 
 ---
 
-## LLM 集成
+## LLM 编程工作流
 
-pptx-designer 专为 AI 编码助手设计。以下是它有效的原因：
+本库的目标是让助手编写普通 Python，而不是把版式决策隐藏在远程生成服务中。推荐流程：
 
-### 1. 清晰的函数签名
+1. 在代码中定义页面内容、数据和设计约束；
+2. 让 LLM 组合公开的 `pptx_designer` API；
+3. 像审查普通应用代码一样审查生成的 Python；
+4. 运行代码、检查 `.pptx`，并将代码和测试纳入版本控制。
+
+这形成可持续的反馈闭环：一次性的标题或数字修改可以直接在 PowerPoint 中完成；需要可重复的修改则应改动对应 Python 调用后重新构建。
+
+### 1. 明确的函数签名
 
 ```python
-def rect(slide, left, top, width, height, *, fill, line=None, C=None) -> Shape
-def text(slide, left, top, width, height, txt, *, font_size=12, color="text_body", bold=False) -> Shape
-def kpi_card(slide, left, top, width, height, number, label, trend="", *, C=None) -> Shape
+def rect(slide, left, top, width, height, fill, line=None, C=None) -> Shape
+def text(slide, left, top, width, height, txt, font_size=12, color="text_body", bold=False, ...) -> Shape
+def kpi_card(slide, left, top, width, height, number, label, trend="", trend_up=True, C=None, ...) -> list[Shape]
 ```
 
-LLM 可以理解并生成这些函数调用，无需猜测。
+具名参数和聚焦的辅助函数为 LLM 提供受限目标，也让代码审查更清晰。
 
-### 2. 可组合原子
+### 2. 可组合的演示文稿原语
 
-每个函数只做一件事。LLM 像搭积木一样组合它们：
+每个辅助函数职责单一。LLM 可以像搭积木一样组合它们，开发者仍保有每个调用的控制权：
 
 ```python
 # LLM 生成的代码
@@ -210,13 +226,9 @@ kpi_card(slide, 5, 2, 3, 1.5, "89%", "留存率", "+5pp", C=C)
 rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
 ```
 
-### 3. 确定性输出
+### 3. 主题数据与显式覆盖
 
-相同代码始终生成相同 PPT。无随机性，无变异。
-
-### 4. 40,000+ 风格预设
-
-LLM 可用自然语言选择风格：
+内置的配色、字体和风格数据可帮助 LLM 从协调的默认值开始；正式交付时，应固定明确选项以获得可重复的构建：
 
 ```python
 from pptx_designer.renderer.theme import ThemeComposer
@@ -225,30 +237,31 @@ theme = ThemeComposer().compose(style="dark cyberpunk")
 # 返回: colors, typography, decoration, layout_variant
 ```
 
-### 5. 核心功能无需 API Key
+### 4. 核心绘制功能无需 API Key
 
 所有形状/文字/图表/图表/特效函数可离线使用。AI 图片生成是可选的。
 
-### 给 LLM 的系统提示
+### 面向 LLM 的安全提示词
 
 在 AI 编码助手中使用 pptx-designer 时，使用此系统提示：
 
 ```
 你是使用 pptx-designer 的 PPT 生成专家。
 
-关键规则：
-1. 始终从 pptx_designer.tools.* 导入形状、文字、图表
-2. 使用 C 字典管理颜色（primary, accent, text_dark, text_body, background）
-3. 使用 PALETTES 字典获取预定义配色：from pptx_designer.data import PALETTES
-4. 每个内容页使用 page_header()
-5. 指标用 kpi_card()，数据用 bar_chart()
-6. 最后用 prs.save(path) 保存
+规则：
+1. 只使用有文档的公开 `pptx_designer` 导入；不要臆造辅助函数或使用私有模块。
+2. 创建 `Presentation()`，添加空白 slide，最后使用 `prs.save(path)` 保存。
+3. 位置和尺寸使用具名参数；坐标单位为英寸。
+4. 颜色放在 `C` 字典中，或选择明确的 theme。
+5. 优先使用原生形状、文字、图表和图示；编译 SVG 后检查 `SVGResult.warnings`。
+6. 必须生成可运行 Python 文件；PPT 未被打开或渲染检查前，不得声称页面已经正确。
 
 可用模块：
-- pptx_designer.tools.shapes: rect, rounded_rect, oval, hexagon, diamond, star, triangle, arrow
+- pptx_designer.tools.shapes: rect, rrect, oval, hexagon, diamond, star5, triangle, arrow
 - pptx_designer.tools.text: text, multiline, gradient_text, dramatic_text, vertical_text
-- pptx_designer.tools.charts: bar_chart, donut_chart, native_chart, comparison_bars
+- pptx_designer.tools.charts: bar_chart, comparison_bars
 - pptx_designer.tools.cards: kpi_card, highlight_cards, code_block, section_divider, hero_slide
+- pptx_designer.tools.layout: page_header, top_bar, page_number
 - pptx_designer.data: PALETTES (192 种配色), TYPOGRAPHY (74 种字体), STYLES (84 种风格)
 ```
 
@@ -256,7 +269,7 @@ theme = ThemeComposer().compose(style="dark cyberpunk")
 
 ## 风格系统
 
-40,000+ 组合来自离散原子：
+库内含配色、字体和风格预设数据。自然语言选风格适合探索；需要可重复构建时应使用明确值：
 
 ```python
 from pptx_designer.renderer.theme import ThemeComposer
@@ -273,7 +286,7 @@ theme = ThemeComposer().compose(
 )
 ```
 
-### 设计知识库
+### 内置设计数据
 
 | 数据库 | 数量 | 访问方式 |
 |--------|------:|----------|
@@ -292,9 +305,9 @@ theme = ThemeComposer().compose(
 
 ---
 
-## 企业模式（VI Build）
+## 模板与企业工具
 
-基于模板的品牌合规生成：
+包内还包含面向模板和品牌工作流的项目扫描、提案等工具。这些 API 是可选项；代码优先的 Build 模式仍是共同基础。
 
 ```python
 from pptx_designer.enterprise import ProjectScanner, ProposalGenerator
@@ -350,6 +363,7 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 - [快速开始](docs/getting-started.md)
 - [API 参考](docs/api-reference.md)
+- [LLM 编写手册](docs/llm-authoring-guide.md)
 - [SVG 编译器指南](docs/svg-guide.md)
 - [更新日志](CHANGELOG.md)
 

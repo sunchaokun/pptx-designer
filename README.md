@@ -2,15 +2,15 @@
 
 # pptx-designer
 
-**The Python library for LLMs to generate professional PowerPoint presentations**
+**A code-first Python library for editable PowerPoint generation in LLM coding workflows**
 
 [![PyPI version](https://img.shields.io/pypi/v/pptx-designer.svg)](https://pypi.org/project/pptx-designer/)
 [![Python](https://img.shields.io/pypi/pyversions/pptx-designer.svg)](https://pypi.org/project/pptx-designer/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Build pixel-perfect, fully editable `.pptx` presentations with composable atoms — designed for AI coding assistants.
+Turn reviewed Python code into editable `.pptx` files with composable presentation primitives, design data, and native PowerPoint objects.
 
-[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [SVG Guide](docs/svg-guide.md) · [Documentation](docs/README.md)
+[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [LLM Authoring Guide](docs/llm-authoring-guide.md) · [Documentation](docs/README.md)
 
 </div>
 
@@ -18,23 +18,22 @@ Build pixel-perfect, fully editable `.pptx` presentations with composable atoms 
 
 ## Why pptx-designer?
 
-pptx-designer is built for the **LLM era**. When AI coding assistants generate Python code to create presentations, they need:
+More software is now written with an LLM in the loop. That makes the generated **code**—rather than an opaque prompt result—the useful unit of review, versioning, testing, and iteration. `pptx-designer` is a standard Python package built for that workflow: an assistant can compose explicit function calls, and a developer can inspect, modify, test, and rerun the same file.
 
-- **Clear, composable APIs** — not magic black boxes
-- **Deterministic output** — same code, same result
-- **Full editability** — every shape, every text, every chart
-- **No LLM dependency for core features** — offline-capable
+It is deliberately not a presentation SaaS or a prompt-to-image black box. The output is a `.pptx` built from PowerPoint-native objects whenever the chosen component can express them.
 
-| Capability | Raw python-pptx | SaaS AI tools | **pptx-designer** |
-|---|---|---|---|
-| **LLM-friendly API** | Low-level (coordinates) | Black box | **90+ composable atoms** |
-| **Deterministic** | Yes | No (varies) | **Yes** |
-| **Editable output** | Yes | Sometimes | **Native-first; supported SVG objects are editable** |
-| **Design system** | None | Proprietary | **40,000+ built-in combos** |
-| **SVG → PPTX** | No | No | **Editable SVG subset compiler** |
-| **Diagrams** | Manual shapes | Limited | **10 native engines** |
-| **Brand compliance** | Manual | Partial | **Enterprise VI mode** |
-| **Price** | Free | $10-20/mo | **Free (MIT)** |
+| Design choice | What it means in practice |
+|---|---|
+| **Code is the source of truth** | Layout, wording, colours, and data live in Python and can be reviewed in Git. |
+| **LLM-friendly public APIs** | Small, named, composable helpers reduce ambiguity when code is generated or edited by an assistant. |
+| **Deterministic build path** | The same inputs, package version, fonts, and runtime produce a repeatable build target. |
+| **Editable by default** | Shapes, text, diagrams, and supported SVG elements are emitted as native PPT objects where possible. |
+| **Progressive control** | Start with `generate_ppt()`; move to Build mode when a slide needs exact composition. |
+| **Optional AI services** | Core layout and drawing do not require an API key; image generation/search is opt-in. |
+
+### Scope and honest boundaries
+
+`pptx-designer` adds a higher-level, presentation-oriented layer on top of `python-pptx`; it does not replace PowerPoint's rendering engine or implement every presentation/SVG feature. Native editability and visual fidelity depend on the component and target Office environment. The SVG compiler intentionally supports an editable subset, not browser-complete SVG. Treat generated PPTX files as build artifacts: open them in the target application and review important slides before delivery.
 
 ---
 
@@ -57,14 +56,15 @@ pip install pptx-designer[ai-images]   # AI image generation (OpenAI, etc.)
 
 ## Quick Start
 
-### For LLMs
+### A code-first slide
 
 When an AI coding assistant generates PPT code, it produces:
 
 ```python
-from pptx_designer.tools.shapes import rect, rounded_rect
+from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import text, multiline
-from pptx_designer.tools.cards import page_header, kpi_card
+from pptx_designer.tools.cards import kpi_card
+from pptx_designer.tools.layout import page_header
 from pptx_designer.tools.images import cover_image
 from pptx_designer.core.pipeline import Presentation
 
@@ -87,13 +87,12 @@ rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
 prs.save("output/q4_report.pptx")
 ```
 
-### For humans
+### A generated deck from structured content
 
 ```python
 from pptx_designer import generate_ppt
 
-# generate_ppt uses Build mode internally
-# Provide structured content for best results
+# Structured content makes the generated deck predictable and reviewable.
 result = generate_ppt(
     content={
         "title": "Q4 Revenue Report",
@@ -106,7 +105,7 @@ result = generate_ppt(
     output="output/report.pptx",
 )
 
-# Or provide a simple query (LLM will expand to structured content)
+# A simple query uses the package's built-in planner; no LLM provider is required.
 result = generate_ppt("AI startup pitch deck", style="dark cyberpunk")
 ```
 
@@ -119,12 +118,12 @@ All presentations are built using **composable atoms** — simple, predictable f
 ### Shapes
 
 ```python
-from pptx_designer.tools.shapes import rect, rounded_rect, oval, hexagon, diamond, star
+from pptx_designer.tools.shapes import rect, rrect, oval, hexagon, diamond, star5
 
-rect(slide, x=1, y=1, w=4, h=2, fill="#3B82F6")
-rounded_rect(slide, x=1, y=1, w=4, h=2, fill="#3B82F6", radius="lg")
-oval(slide, cx=3, cy=2, size=1.5, fill="#10B981")
-hexagon(slide, cx=6, cy=2, size=1.5, fill="#F59E0B")
+rect(slide, left=1, top=1, width=4, height=2, fill="#3B82F6")
+rrect(slide, left=1, top=3.3, width=4, height=2, fill="#2563EB")
+oval(slide, left=6, top=1, width=2, height=2, fill="#10B981")
+hexagon(slide, cx=9, cy=2, size=1.5, fill="#F59E0B")
 ```
 
 ### Text
@@ -132,31 +131,38 @@ hexagon(slide, cx=6, cy=2, size=1.5, fill="#F59E0B")
 ```python
 from pptx_designer.tools.text import text, multiline, gradient_text, dramatic_text
 
-text(slide, x=1, y=1, w=8, h=1, "Hello World", font_size=32, bold=True)
-multiline(slide, x=1, y=2, w=8, h=3, ["Line 1", "Line 2", "Line 3"], font_size=14)
-gradient_text(slide, x=1, y=1, w=8, h=1, "Gradient", preset="gold-shine", font_size=48)
+text(slide, left=1, top=1, width=8, height=1, txt="Hello World", font_size=32, bold=True)
+multiline(slide, left=1, top=2, width=8, height=3, lines=["Line 1", "Line 2", "Line 3"], font_size=14)
+gradient_text(slide, left=1, top=1, width=8, height=1, txt="Gradient", preset="gold-shine", font_size=48)
 ```
 
 ### Charts
 
 ```python
-from pptx_designer.tools.charts import bar_chart, donut_chart, native_chart
+from pptx_designer.tools.charts import bar_chart
 
-bar_chart(slide, x=1, y=2, data=[("Q1", "85%", 8500000), ("Q2", "92%", 9200000)])
-donut_chart(slide, cx=8, cy=3, radius=1.5, sectors=[("A", "40%", "#3B82F6"), ("B", "60%", "#10B981")])
+bar_chart(slide, left=2, top=2, data=[("Q1", 0.85, "85%"), ("Q2", 0.92, "92%")])
 ```
 
 ### Diagrams
 
 ```python
-from pptx_designer.diagrams import flowchart, timeline, swot, matrix
-from pptx_designer.renderer.layout import Region
+from pptx_designer.diagrams import DiagramStyle, FlowchartDiagram, Region, TimelineDiagram
 
-# Define region (position and size)
 region = Region(left=1, top=2, width=10, height=5)
+style = DiagramStyle()
 
-flowchart.render(slide, steps=["Step 1", "Step 2", "Step 3"], region=region)
-timeline.render(slide, events=[("2024", "Launch"), ("2025", "Scale")], region=region)
+FlowchartDiagram(
+    data={"nodes": [{"label": "Discover"}, {"label": "Build"}, {"label": "Review"}]},
+    style=style,
+    region=Region(left=1, top=2, width=10, height=2),
+).render(slide)
+
+TimelineDiagram(
+    data={"events": [{"year": "2024", "title": "Launch"}, {"year": "2025", "title": "Scale"}]},
+    style=style,
+    region=Region(left=1, top=4.5, width=10, height=2),
+).render(slide)
 ```
 
 ### SVG → PPTX
@@ -188,23 +194,30 @@ shape_fx.apply_pattern(shape, "cross", fg="#000000", bg="#FFFFFF")
 
 ---
 
-## LLM Integration
+## LLM coding workflow
 
-pptx-designer is designed for AI coding assistants. Here's why it works:
+The library is designed for an assistant to write ordinary Python—not to hide layout decisions behind a remote generation service. A reliable workflow is:
 
-### 1. Clear function signatures
+1. Define slide content, data, and design constraints in code.
+2. Ask the LLM to compose public `pptx_designer` APIs.
+3. Review the generated Python as normal application code.
+4. Run it, inspect the `.pptx`, and keep the code and tests in version control.
+
+This creates a practical feedback loop: a user can edit a title or value in PowerPoint for a one-off change, or edit the keyed Python call and rebuild when the change should be reproducible.
+
+### 1. Explicit function signatures
 
 ```python
-def rect(slide, left, top, width, height, *, fill, line=None, C=None) -> Shape
-def text(slide, left, top, width, height, txt, *, font_size=12, color="text_body", bold=False) -> Shape
-def kpi_card(slide, left, top, width, height, number, label, trend="", *, C=None) -> Shape
+def rect(slide, left, top, width, height, fill, line=None, C=None) -> Shape
+def text(slide, left, top, width, height, txt, font_size=12, color="text_body", bold=False, ...) -> Shape
+def kpi_card(slide, left, top, width, height, number, label, trend="", trend_up=True, C=None, ...) -> list[Shape]
 ```
 
-LLMs can understand and generate calls to these functions without guessing.
+Named arguments and focused helpers give an LLM a constrained target and give reviewers readable code.
 
-### 2. Composable atoms
+### 2. Composable presentation primitives
 
-Each function does one thing well. LLMs combine them like building blocks:
+Each helper has a narrow responsibility. An LLM can combine them like building blocks, while a developer retains control over every call:
 
 ```python
 # LLM generates this code
@@ -214,13 +227,9 @@ kpi_card(slide, 5, 2, 3, 1.5, "89%", "Retention", "+5pp", C=C)
 rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
 ```
 
-### 3. Deterministic output
+### 3. Theme data and explicit overrides
 
-Same code always produces the same PPT. No randomness, no variation.
-
-### 4. 40,000+ style presets
-
-LLMs can select styles with natural language:
+The built-in palette, typography, and style data help an assistant begin from coherent defaults. For production work, pin explicit choices when visual consistency matters:
 
 ```python
 from pptx_designer.renderer.theme import ThemeComposer
@@ -229,38 +238,39 @@ theme = ThemeComposer().compose(style="dark cyberpunk")
 # Returns: colors, typography, decoration, layout_variant
 ```
 
-### 5. No API keys for core features
+### 4. No API keys for core drawing features
 
 All shape/text/chart/diagram/effect functions work offline. AI image generation is optional.
 
-### System prompt for LLMs
+### Prompting an LLM safely
 
 When using pptx-designer with AI coding assistants, use this system prompt:
 
 ```
 You are a PPT generation expert using pptx-designer.
 
-Key rules:
-1. Always import from pptx_designer.tools.* for shapes, text, charts
-2. Use C dict for colors (primary, accent, text_dark, text_body, background)
-3. Use PALETTES dict for pre-defined color schemes: from pptx_designer.data import PALETTES
-4. Use page_header() for every content slide
-5. Use kpi_card() for metrics, bar_chart() for data
-6. Save with prs.save(path) at the end
+Rules:
+1. Use only documented public `pptx_designer` imports; do not invent helpers or private modules.
+2. Create a `Presentation()`, add a blank slide, and save the result with `prs.save(path)`.
+3. Use named arguments for positions and dimensions. Coordinates are inches.
+4. Keep colours in a `C` dictionary or select an explicit theme.
+5. Prefer native shapes, text, charts, and diagrams. Check `SVGResult.warnings` after compiling SVG.
+6. Generate a runnable Python file and do not claim the PPT is correct until it has been opened or rendered for review.
 
 Available modules:
-- pptx_designer.tools.shapes: rect, rounded_rect, oval, hexagon, diamond, star, triangle, arrow
+- pptx_designer.tools.shapes: rect, rrect, oval, hexagon, diamond, star5, triangle, arrow
 - pptx_designer.tools.text: text, multiline, gradient_text, dramatic_text, vertical_text
-- pptx_designer.tools.charts: bar_chart, donut_chart, native_chart, comparison_bars
+- pptx_designer.tools.charts: bar_chart, comparison_bars
 - pptx_designer.tools.cards: kpi_card, highlight_cards, code_block, section_divider, hero_slide
+- pptx_designer.tools.layout: page_header, top_bar, page_number
 - pptx_designer.data: PALETTES (192 colors), TYPOGRAPHY (74 fonts), STYLES (84 presets)
 ```
 
 ---
 
-## Style System
+## Style system
 
-40,000+ combinations from discrete atoms:
+The library ships palette, typography, and style-preset data. Natural-language style selection is a convenience for exploration; explicit values are more appropriate for a reproducible build:
 
 ```python
 from pptx_designer.renderer.theme import ThemeComposer
@@ -277,7 +287,7 @@ theme = ThemeComposer().compose(
 )
 ```
 
-### Design knowledge base
+### Built-in design data
 
 | Database | Count | Access |
 |----------|------:|--------|
@@ -296,9 +306,9 @@ Built-in theme atoms (for ThemeComposer):
 
 ---
 
-## Enterprise Mode (VI Build)
+## Template and enterprise utilities
 
-Brand-compliant generation from templates:
+The package also includes project-scanning and proposal utilities for template- and brand-led workflows. These APIs are optional: the code-first Build mode remains the common foundation.
 
 ```python
 from pptx_designer.enterprise import ProjectScanner, ProposalGenerator
@@ -354,6 +364,7 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 - [Getting started](docs/getting-started.md)
 - [API reference](docs/api-reference.md)
+- [LLM authoring guide](docs/llm-authoring-guide.md)
 - [SVG compiler guide](docs/svg-guide.md)
 - [Changelog](CHANGELOG.md)
 
