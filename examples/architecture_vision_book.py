@@ -1,4 +1,7 @@
-"""A four-page architecture vision book built only with pptx_designer.
+"""A four-page architecture concept book built only with pptx_designer.
+
+The imagery is intentionally a single visual anchor. Every caption, title,
+rule and colour field remains a native, editable PowerPoint object.
 
 Run: python examples/architecture_vision_book.py
 """
@@ -7,82 +10,121 @@ from pathlib import Path
 
 from pptx_designer import Presentation
 from pptx_designer.tools.images import cover_image
-from pptx_designer.tools.shapes import oval, rect, rrect
+from pptx_designer.tools.shapes import oval, rect
 from pptx_designer.tools.text import multiline, text
 
 
 ROOT = Path(__file__).parent
 PAVILION = ROOT / "assets" / "monumental-pavilion.png"
-C = {"blue": "#123B7A", "cobalt": "#1967D2", "sky": "#DDEBFF", "white": "#F9FBFF", "ink": "#10213D", "red": "#D84437"}
+C = {
+    "ultramarine": "#123B7A",
+    "electric": "#1769E0",
+    "paper": "#F4F0E8",
+    "ink": "#101F37",
+    "signal": "#DF3E32",
+    "mist": "#DDEBFF",
+    "white": "#FFFFFF",
+}
 SERIF = "Georgia"
 SANS = "Arial"
 
 
 def add_cover(prs: Presentation) -> None:
+    """A typographic cover: image, title and label overlap rather than split."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    cover_image(slide, 0, 0, 13.333, 7.5, str(PAVILION))
-    rect(slide, 0, 0, 13.333, 0.15, "red", C=C)
-    rrect(slide, 0.70, 0.72, 3.15, 0.46, "white", C=C)
-    text(slide, 0.90, 0.87, 2.75, 0.14, "STUDIO HORIZON  /  2027", font_size=9, color="blue", bold=True, font_name=SANS, C=C)
-    text(slide, 0.72, 2.00, 6.7, 1.10, "A place for\nclearer futures.", font_size=42, color="white", bold=True, font_name=SERIF, C=C)
-    text(slide, 0.78, 3.70, 4.9, 0.48, "A civic pavilion imagined as a threshold between climate, culture, and calm.",
-         font_size=15, color="sky", font_name=SERIF, C=C)
-    rect(slide, 0, 6.90, 13.333, 0.60, "blue", C=C)
-    text(slide, 0.78, 7.10, 11.8, 0.14, "CONCEPT BOOK  /  PACIFIC CULTURAL DISTRICT  /  COMPETITION ENTRY", font_size=9,
-         color="white", bold=True, font_name=SANS, C=C)
+    rect(slide, 0, 0, 13.333, 7.5, "paper", C=C)
+    cover_image(slide, 1.35, 0.52, 11.25, 5.62, str(PAVILION))
+    rect(slide, 0.56, 0.52, 0.22, 5.62, "signal", C=C)
+    rect(slide, 8.78, 0.52, 3.82, 0.65, "ultramarine", C=C)
+    text(slide, 9.06, 0.77, 3.12, 0.16, "PACIFIC CULTURAL DISTRICT  /  2027",
+         font_size=8, color="white", bold=True, font_name=SANS, C=C)
+    text(slide, 0.62, 5.42, 7.6, 0.66, "HORIZON", font_size=52,
+         color="ink", bold=True, font_name=SERIF, C=C)
+    text(slide, 6.38, 5.42, 5.9, 0.66, "COMMONS", font_size=52,
+         color="signal", bold=True, font_name=SERIF, C=C)
+    text(slide, 0.64, 6.38, 3.2, 0.16, "A CIVIC PAVILION / CONCEPT BOOK", font_size=9,
+         color="signal", bold=True, font_name=SANS, C=C)
+    multiline(slide, 8.20, 6.26, 4.15, 0.54,
+              ["A generous threshold between", "climate, culture and pause."],
+              font_size=13, color="ultramarine", font_name=SERIF, C=C)
+    text(slide, 0.64, 7.04, 11.8, 0.14,
+         "STUDIO HORIZON     /     SITE 07     /     PACIFIC COAST", font_size=8,
+         color="ink", bold=True, font_name=SANS, C=C)
 
 
-def add_concept(prs: Presentation) -> None:
+def add_proposition(prs: Presentation) -> None:
+    """A poster-like proposition page, with the image treated as a material sample."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    rect(slide, 0, 0, 13.333, 7.5, "white", C=C)
-    text(slide, 0.72, 0.72, 2.8, 0.18, "01  /  THE CONCEPT", font_size=10, color="red", bold=True, font_name=SANS, C=C)
-    text(slide, 0.68, 1.30, 5.3, 1.08, "Monumental,\nnever imposing.", font_size=39, color="ink", bold=True, font_name=SERIF, C=C)
-    multiline(slide, 0.75, 3.02, 4.65, 1.08,
-              ["A generous curve gives shade, frames water, and makes arrival feel ceremonial.",
-               "The architecture does less so the landscape can do more."],
-              font_size=15, color="blue", font_name=SERIF, C=C)
-    cover_image(slide, 5.85, 0.72, 6.75, 5.90, str(PAVILION))
-    rect(slide, 5.85, 6.30, 6.75, 0.32, "blue", C=C)
-    text(slide, 0.78, 5.35, 3.8, 0.20, "2,800 m²  /  WATER + SHADE + GATHERING", font_size=9, color="red", bold=True, font_name=SANS, C=C)
+    rect(slide, 0, 0, 13.333, 7.5, "ultramarine", C=C)
+    cover_image(slide, 3.05, 0.55, 7.28, 5.82, str(PAVILION))
+    rect(slide, 3.05, 5.75, 7.28, 0.62, "paper", C=C)
+    text(slide, 3.33, 5.97, 6.65, 0.15, "THE ROOF IS A CLIMATE DEVICE, NOT AN OBJECT.",
+         font_size=9, color="ultramarine", bold=True, font_name=SANS, C=C)
+    text(slide, 0.58, 0.62, 2.0, 0.16, "01 / PROPOSITION", font_size=9,
+         color="mist", bold=True, font_name=SANS, C=C)
+    multiline(slide, 0.55, 1.34, 2.14, 3.35, ["SHADE", "IS", "CIVIC."], font_size=39,
+              color="white", bold=True, font_name=SERIF, C=C)
+    multiline(slide, 10.78, 1.20, 1.92, 1.95,
+              ["The canopy gives the", "public room its", "temperature, scale", "and reason to stay."],
+              font_size=13, color="mist", font_name=SERIF, C=C)
+    oval(slide, 10.98, 4.40, 1.05, 1.05, "signal", C=C)
+    text(slide, 0.58, 6.84, 11.5, 0.16,
+         "2,800 M²     /     WATER + SHADE + GATHERING     /     OPEN TO THE HORIZON",
+         font_size=8, color="mist", bold=True, font_name=SANS, C=C)
 
 
-def add_principles(prs: Presentation) -> None:
+def add_sequence(prs: Presentation) -> None:
+    """A paced editorial sequence; not a conventional three-card layout."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    rect(slide, 0, 0, 13.333, 7.5, "blue", C=C)
-    text(slide, 0.72, 0.72, 3.0, 0.18, "02  /  THE PRINCIPLES", font_size=10, color="sky", bold=True, font_name=SANS, C=C)
-    text(slide, 0.68, 1.30, 6.0, 0.54, "Three precise gestures.", font_size=37, color="white", bold=True, font_name=SERIF, C=C)
-    principles = [("01", "SHADE", "A deep canopy reduces heat and creates a public room."),
-                  ("02", "REFLECTION", "Water doubles the sky and slows the pace of the site."),
-                  ("03", "THRESHOLD", "A single red object marks arrival without adding noise.")]
-    for index, (number, title, detail) in enumerate(principles):
-        x = 0.78 + index * 4.05
-        rrect(slide, x, 2.65, 3.58, 2.58, "#1B4D95", C=C)
-        oval(slide, x + 0.30, 3.00, 0.55, 0.55, "red" if index == 2 else "sky", C=C)
-        text(slide, x + 1.05, 3.02, 2.0, 0.18, number, font_size=9, color="sky", bold=True, font_name=SANS, C=C)
-        text(slide, x + 0.30, 3.88, 2.8, 0.30, title, font_size=19, color="white", bold=True, font_name=SERIF, C=C)
-        text(slide, x + 0.30, 4.35, 2.78, 0.48, detail, font_size=11, color="#DDEBFF", font_name=SANS, C=C)
-    text(slide, 0.78, 6.42, 10.8, 0.18, "The proposal measures ambition by the quality of the public’s pause.", font_size=14,
-         color="sky", font_name=SERIF, C=C)
+    rect(slide, 0, 0, 13.333, 7.5, "paper", C=C)
+    text(slide, 0.62, 0.54, 2.1, 0.16, "02 / ARRIVAL SEQUENCE", font_size=9,
+         color="signal", bold=True, font_name=SANS, C=C)
+    text(slide, 0.56, 1.06, 12.0, 0.62, "A place unfolds in three pauses.", font_size=38,
+         color="ink", bold=True, font_name=SERIF, C=C)
+    steps = [
+        ("I", "APPROACH", "The long edge slows the city before the building begins."),
+        ("II", "CROSSING", "A cool shadow makes the act of arrival feel deliberate."),
+        ("III", "RETURN", "Water sends the sky back into the room as a quiet civic ritual."),
+    ]
+    for index, (roman, title, detail) in enumerate(steps):
+        top = 2.18 + index * 1.40
+        text(slide, 0.68, top, 0.78, 0.46, roman, font_size=24,
+             color="signal", bold=True, font_name=SERIF, C=C)
+        rect(slide, 1.68, top + 0.20, 2.35 + index * 1.45, 0.07, "electric", C=C)
+        text(slide, 4.74, top, 2.10, 0.26, title, font_size=16,
+             color="ultramarine", bold=True, font_name=SANS, C=C)
+        text(slide, 7.28, top - 0.02, 4.85, 0.46, detail, font_size=13,
+             color="ink", font_name=SERIF, C=C)
+    cover_image(slide, 9.45, 5.95, 2.78, 0.92, str(PAVILION))
+    rect(slide, 0.62, 6.94, 12.08, 0.07, "signal", C=C)
 
 
 def add_finale(prs: Presentation) -> None:
+    """A closing spread with a full-bleed image interrupted by a paper manifesto."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     cover_image(slide, 0, 0, 13.333, 7.5, str(PAVILION))
-    rect(slide, 0, 0, 5.15, 7.5, "white", C=C)
-    rect(slide, 5.15, 0, 0.06, 7.5, "red", C=C)
-    text(slide, 0.70, 0.92, 3.5, 0.18, "THE INVITATION", font_size=10, color="red", bold=True, font_name=SANS, C=C)
-    text(slide, 0.65, 2.05, 4.05, 1.20, "Build a place\nworth returning to.", font_size=38, color="ink", bold=True, font_name=SERIF, C=C)
-    text(slide, 0.72, 4.06, 3.75, 0.52, "A pavilion that does not compete with the horizon—it clarifies it.",
-         font_size=15, color="blue", font_name=SERIF, C=C)
-    rrect(slide, 0.72, 5.82, 2.62, 0.50, "blue", C=C)
-    text(slide, 0.98, 5.98, 2.08, 0.14, "STUDIO HORIZON", font_size=9, color="white", bold=True, align="center", font_name=SANS, C=C)
+    rect(slide, 0.58, 0.55, 5.20, 5.72, "paper", C=C)
+    rect(slide, 0.58, 0.55, 5.20, 0.15, "signal", C=C)
+    text(slide, 0.90, 0.95, 3.7, 0.16, "03 / THE INVITATION", font_size=9,
+         color="signal", bold=True, font_name=SANS, C=C)
+    multiline(slide, 0.86, 1.70, 4.25, 0.90, ["MAKE ROOM", "FOR RETURN."], font_size=38,
+              color="ink", bold=True, font_name=SERIF, C=C)
+    multiline(slide, 0.92, 3.55, 4.08, 0.95,
+              ["The strongest civic gesture is not spectacle.",
+               "It is giving people a reason to pause, return, and belong."],
+              font_size=15, color="ultramarine", font_name=SERIF, C=C)
+    text(slide, 0.92, 5.52, 3.9, 0.16, "STUDIO HORIZON  /  ARCHITECTURE + PUBLIC LIFE",
+         font_size=8, color="ink", bold=True, font_name=SANS, C=C)
+    rect(slide, 6.45, 6.62, 6.28, 0.34, "ultramarine", C=C)
+    text(slide, 6.70, 6.73, 5.75, 0.13, "PACIFIC CULTURAL DISTRICT  /  CONCEPT BOOK  /  2027",
+         font_size=8, color="white", bold=True, font_name=SANS, C=C)
 
 
 def build() -> Path:
     prs = Presentation()
     add_cover(prs)
-    add_concept(prs)
-    add_principles(prs)
+    add_proposition(prs)
+    add_sequence(prs)
     add_finale(prs)
     output = Path(__file__).with_suffix(".pptx")
     prs.save(output)
