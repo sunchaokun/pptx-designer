@@ -8,13 +8,29 @@ import json
 import os
 import tempfile
 import time
-import urllib.request
-import urllib.parse
 import urllib.error
+import urllib.parse
+import urllib.request
+from collections.abc import Callable
 from pathlib import Path
+
+from pptx_designer.utils.env import load_project_dotenv
 
 
 class ImageFetcher:
+    _PROVIDER_ALIASES = {
+        "openai": "gpt-image",
+        "gpt_image": "gpt-image",
+        "gptimage": "gpt-image",
+        "dall-e": "dalle",
+        "doubao": "seedream",
+        "volcengine": "seedream",
+        "google": "gemini",
+        "tongyi": "wanx",
+        "aliyun": "wanx",
+        "moonshot": "kimi",
+    }
+
     def __init__(
         self,
         mode: str = "placeholder",
@@ -26,16 +42,25 @@ class ImageFetcher:
         llm_model: str | None = None,
         image_cache_dir: str | None = None,
         auto_detect: bool = True,
+        host_image_generator: Callable[..., str | None] | None = None,
     ):
+        self._dotenv_path = load_project_dotenv() if auto_detect else None
         self.mode = mode
         self.unsplash_access_key = unsplash_access_key or os.environ.get("UNSPLASH_ACCESS_KEY", "")
         self.pexels_api_key = pexels_api_key or os.environ.get("PEXELS_API_KEY", "")
-        self.llm_provider = (llm_provider or os.environ.get("PPT_IMAGE_LLM_PROVIDER", "")).lower()
+        raw_provider = (llm_provider or os.environ.get("PPT_IMAGE_LLM_PROVIDER", "")).lower()
+        self.llm_provider = self._PROVIDER_ALIASES.get(raw_provider, raw_provider)
         self.llm_api_key = llm_api_key or os.environ.get("PPT_IMAGE_LLM_API_KEY", "")
         self.llm_base_url = llm_base_url or os.environ.get("PPT_IMAGE_LLM_BASE_URL", "")
         self.llm_model = llm_model or os.environ.get("PPT_IMAGE_LLM_MODEL", "")
         self._detected_from = ""
+        self._host_image_generator = host_image_generator
 
+        if auto_detect and not self.llm_provider:
+            self._detect_provider_from_environment()
+
+        # Project/process configuration is deliberate user input.  Only use a
+        # host agent's provider entry as the final automatic fallback.
         if auto_detect and not self.llm_provider and not self.llm_api_key:
             self._apply_host_detection()
 
@@ -59,7 +84,8 @@ class ImageFetcher:
         if not detected:
             return
         if not self.llm_provider and detected.get("llm_provider"):
-            self.llm_provider = detected["llm_provider"].lower()
+            raw_provider = detected["llm_provider"].lower()
+            self.llm_provider = self._PROVIDER_ALIASES.get(raw_provider, raw_provider)
         if not self.llm_api_key and detected.get("llm_api_key"):
             self.llm_api_key = detected["llm_api_key"]
         if not self.llm_base_url and detected.get("llm_base_url"):
@@ -76,14 +102,7 @@ class ImageFetcher:
                 self.llm_base_url = os.environ.get("ARK_BASE_URL", "")
             if not self.llm_model:
                 self.llm_model = os.environ.get("ARK_IMAGE_MODEL", "")
-        elif self.llm_provider in ("gpt-image", "gpt_image", "gptimage"):
-            if not self.llm_api_key:
-                self.llm_api_key = os.environ.get("OPENAI_API_KEY", "")
-            if not self.llm_base_url:
-                self.llm_base_url = os.environ.get("OPENAI_BASE_URL", "")
-            if not self.llm_model:
-                self.llm_model = os.environ.get("OPENAI_IMAGE_MODEL", "")
-        elif self.llm_provider in ("dalle", "dall-e"):
+        elif self.llm_provider in ("gpt-image", "gpt_image", "gptimage") or self.llm_provider in ("dalle", "dall-e"):
             if not self.llm_api_key:
                 self.llm_api_key = os.environ.get("OPENAI_API_KEY", "")
             if not self.llm_base_url:
@@ -112,6 +131,21 @@ class ImageFetcher:
             if not self.llm_model:
                 self.llm_model = os.environ.get("MOONSHOT_IMAGE_MODEL", "")
 
+    def _detect_provider_from_environment(self) -> None:
+        """Choose a provider when a conventional provider key is available."""
+        provider_keys = (
+            ("gpt-image", "OPENAI_API_KEY"),
+            ("seedream", "ARK_API_KEY"),
+            ("gemini", "GEMINI_API_KEY"),
+            ("wanx", "DASHSCOPE_API_KEY"),
+            ("kimi", "MOONSHOT_API_KEY"),
+        )
+        for provider, env_key in provider_keys:
+            if os.environ.get(env_key):
+                self.llm_provider = provider
+                self._detected_from = self._detected_from or f"environment:{env_key}"
+                return
+
     def fetch(self, keywords: str, emotion: str = "", goal: str = "", width: int = 1920, height: int = 1080) -> str | None:
         if self.mode == "placeholder":
             return None
@@ -120,6 +154,9 @@ class ImageFetcher:
             return self._fetch_from_search(keywords, emotion, width, height)
 
         if self.mode == "generate":
+            result = self._fetch_from_host_generator(keywords, emotion, goal, width, height)
+            if result:
+                return result
             return self._fetch_from_llm_generate(keywords, emotion, goal, width, height)
 
         if self.mode == "enhance":
@@ -131,12 +168,37 @@ class ImageFetcher:
         return None
 
     def _fetch_auto(self, keywords: str, emotion: str, goal: str, width: int, height: int) -> str | None:
+        result = self._fetch_from_host_generator(keywords, emotion, goal, width, height)
+        if result:
+            return result
         if self.llm_provider:
             result = self._fetch_from_llm_generate(keywords, emotion, goal, width, height)
             if result:
                 return result
         result = self._fetch_from_search(keywords, emotion, width, height)
         return result
+
+    def _fetch_from_host_generator(
+        self, keywords: str, emotion: str, goal: str, width: int, height: int
+    ) -> str | None:
+        """Ask an injected host bridge for a local generated image.
+
+        Codex-style image tools belong to the agent host, not to a normal
+        Python process.  The host must therefore inject a callable explicitly;
+        arbitrary commands or session credentials are never discovered here.
+        """
+        if self._host_image_generator is None:
+            return None
+        try:
+            path = self._host_image_generator(
+                keywords=keywords, emotion=emotion, goal=goal, width=width, height=height
+            )
+        except Exception:
+            return None
+        if path and Path(path).is_file():
+            self._detected_from = "host-image-generator"
+            return str(path)
+        return None
 
     def _fetch_from_search(self, keywords: str, emotion: str, width: int, height: int) -> str | None:
         cached = self._check_cache(f"search:{keywords}:{width}x{height}")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pptx-designer"
-version = "1.0.0b3"
+version = "1.0.0b4"
 description = "Python library for LLMs to generate pixel-perfect PowerPoint presentations with 40,000+ style combinations"
 readme = "README.md"
 license = {text = "MIT"}

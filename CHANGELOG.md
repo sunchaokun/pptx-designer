@@ -2,6 +2,15 @@
 
 All notable user-facing changes are recorded here. This project follows a pre-release versioning scheme before the first stable `1.0.0` release.
 
+## 1.0.0b4 — 2026-08-25
+
+### Image configuration
+
+- Restored the public `fetch_image()` and `extract_design_dna()` APIs used by the CLI.
+- Load the nearest project `.env` without overriding existing environment variables; added `.env.example` and documented the safe placement.
+- Detect the image provider from conventional provider keys and conservatively support Codex provider entries backed by an environment key. Session credentials are never used as API keys.
+- Added the safe `host_image_generator` bridge for Agent-owned image tools, and prevent ordinary Agent text models from being used as image models unless `image_model` is explicitly configured.
+
 ## 1.0.0b3 — 2026-08-25
 
 ### Examples

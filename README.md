@@ -336,7 +336,89 @@ result = generate_ppt(
 
 ## Configuration
 
-### Optional API keys (for AI image features only)
+### Image generation and `.env`
+
+Put a `.env` beside your own `build.py` / project files (or in one of its
+parent directories), then keep it out of Git. Do **not** put credentials in
+the installed `pptx_designer` package directory: upgrades and virtual
+environments will replace it.
+
+[`.env.example`](.env.example) is the checked-in reference file. Copy it to
+your own project root, then replace only the provider you plan to use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```bash
+cp .env.example .env
+```
+
+The package reads the nearest `.env` from the working directory upward.
+Process environment variables take precedence over values in `.env`.
+
+```dotenv
+# .env in your presentation project
+PPT_IMAGE_LLM_PROVIDER=gpt-image
+OPENAI_API_KEY=your-api-key
+# OPENAI_IMAGE_MODEL=gpt-image-1
+```
+
+Test the configuration without writing image-request code yourself:
+
+```powershell
+pptx-designer image "editorial fragrance bottle on black stone" --image-mode auto -v
+```
+
+`auto` resolves sources in this order:
+
+1. A `host_image_generator` supplied by an Agent host.
+2. Explicit Python arguments or CLI options.
+3. Project `.env` and process environment variables.
+4. An Agent provider configuration that explicitly references an environment key.
+5. Stock-image search, then no image / the calling layout's placeholder.
+
+When `PPT_IMAGE_LLM_PROVIDER` is omitted, `auto` selects a provider from one
+configured provider key (`OPENAI_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`,
+`DASHSCOPE_API_KEY`, or `MOONSHOT_API_KEY`).
+
+```python
+from pptx_designer import fetch_image
+
+asset = fetch_image(
+    "editorial fragrance bottle on black stone",
+    mode="auto",
+    goal="hook",
+)
+print(asset["path"])  # local file path, or None when every source declines
+```
+
+Agent hosts can also inject a `host_image_generator` callback. This is the
+safe bridge for a host-owned image tool (such as an Agent image-generation
+capability) when no image API is configured: the callback must return a local
+image file path, which `pptx-designer` then places in the slide. The library
+does not attempt to invoke Agent tools or login credentials by itself. This
+hook is for Agent/Skill implementers, not ordinary `build.py` users:
+
+```python
+from pptx_designer import fetch_image
+
+def generate_with_host_tool(*, keywords, emotion, goal, width, height):
+    # The Agent host calls its own image tool and returns the saved local path.
+    return "C:/project/assets/generated/hero.png"
+
+asset = fetch_image(
+    "quiet modern architecture at dawn",
+    mode="auto",
+    host_image_generator=generate_with_host_tool,
+)
+```
+
+A Codex provider entry is considered only when it references an environment
+key. Login/session tokens are never treated as image API keys, and the
+provider's ordinary text model is never treated as an image model. Set an
+explicit `image_model` in the Agent configuration when a non-default image
+model is required.
 
 | Variable | Provider | Description |
 |----------|----------|-------------|

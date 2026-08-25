@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
@@ -100,3 +100,8 @@ class DesignDNAExtractor:
             pass
 
         return dna
+
+
+def extract_design_dna(pptx_path: str) -> dict[str, Any]:
+    """Extract design DNA as a JSON-serializable dictionary."""
+    return asdict(DesignDNAExtractor().extract(pptx_path))

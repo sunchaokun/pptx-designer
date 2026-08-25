@@ -3,21 +3,20 @@
 import argparse
 import json
 import sys
+from contextlib import suppress
 
 for _stream_name in ("stdout", "stderr"):
     _stream = getattr(sys, _stream_name)
     if _stream and hasattr(_stream, "reconfigure"):
-        try:
+        with suppress(Exception):
             _stream.reconfigure(encoding="utf-8", errors="replace")
-        except Exception:
-            pass
 
-from pptx_designer import generate_ppt, fetch_image, extract_design_dna  # noqa: E402
+from pptx_designer import extract_design_dna, fetch_image, generate_ppt  # noqa: E402
 
 
 def _load_dotenv():
-    from pptx_designer.build_helpers import _load_dotenv as _bh_load
-    _bh_load()
+    from pptx_designer.utils.env import load_project_dotenv
+    load_project_dotenv()
 
 
 def _add_image_options(parser):

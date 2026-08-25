@@ -292,12 +292,8 @@ def set_slide_bg_image(slide, image_path):
 
 def _fetch_image(*args, **kwargs):
     """Lazy-import fetch_image — avoids circular imports at module level."""
-    try:
-        from pptx_designer import fetch_image as _fi
-        return _fi(*args, **kwargs)
-    except ImportError:
-        from pptx_designer.ai import fetch_image as _fi
-        return _fi(*args, **kwargs)
+    from pptx_designer.ai import fetch_image
+    return fetch_image(*args, **kwargs)
 
 
 __all__ = [

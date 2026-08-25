@@ -9,7 +9,7 @@ from pptx_designer.enterprise.template_analyzer import TemplateAnalyzer
 from pptx_designer.enterprise.slide_extractor import SlideExtractor
 from pptx_designer.enterprise.delivery_gate import DeliveryGate, QualityReport, CheckItem
 from pptx_designer.enterprise.version_manager import next_version, write_meta, read_meta
-from pptx_designer.enterprise.design_dna_extractor import DesignDNAExtractor, DesignDNA, SlideDNA, TextZone, PagePlan
+from pptx_designer.enterprise.design_dna_extractor import DesignDNAExtractor, DesignDNA, SlideDNA, TextZone, PagePlan, extract_design_dna
 
 __all__ = [
     "BrandSpec",
@@ -36,5 +36,6 @@ __all__ = [
     "SlideDNA",
     "TextZone",
     "PagePlan",
+    "extract_design_dna",
 ]
 
