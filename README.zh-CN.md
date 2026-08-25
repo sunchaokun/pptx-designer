@@ -10,7 +10,7 @@
 
 用可组合的演示文稿原语、设计数据与 PowerPoint 原生对象，将可审查的 Python 代码构建为可编辑 `.pptx`。
 
-[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [LLM 编写手册](docs/llm-authoring-guide.md) · [文档索引](docs/README.md)
+[安装](#安装) · [快速开始](#快速开始) · [Build 模式](#build-模式) · [LLM 编写手册](https://github.com/sunchaokun/pptx-designer/blob/main/docs/llm-authoring-guide.md) · [文档索引](https://github.com/sunchaokun/pptx-designer/tree/main/docs)
 
 </div>
 
@@ -179,7 +179,7 @@ result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
 print(result.shape_count, result.warnings)
 ```
 
-编译器会将已支持的 SVG 子集转换成 PowerPoint 原生形状和文本。它支持常用几何图形、路径、文本/tspan、变换、渐变、`defs`/`use` 以及受限的裁剪路径流程；不承诺 filter、mask、pattern、动画、外部资源和部分 SVG paint 语义的像素级还原。生产使用时请检查 `result.warnings`。输入要求、报错处理与限制见 [SVG 指南](docs/svg-guide.md)。
+编译器会将已支持的 SVG 子集转换成 PowerPoint 原生形状和文本。它支持常用几何图形、路径、文本/tspan、变换、渐变、`defs`/`use` 以及受限的裁剪路径流程；不承诺 filter、mask、pattern、动画、外部资源和部分 SVG paint 语义的像素级还原。生产使用时请检查 `result.warnings`。输入要求、报错处理与限制见 [SVG 指南](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md)。
 
 ### 特效
 
@@ -361,15 +361,15 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 ## 文档
 
-- [快速开始](docs/getting-started.md)
-- [API 参考](docs/api-reference.md)
-- [LLM 编写手册](docs/llm-authoring-guide.md)
-- [SVG 编译器指南](docs/svg-guide.md)
-- [更新日志](CHANGELOG.md)
+- [快速开始](https://github.com/sunchaokun/pptx-designer/blob/main/docs/getting-started.md)
+- [API 参考](https://github.com/sunchaokun/pptx-designer/blob/main/docs/api-reference.md)
+- [LLM 编写手册](https://github.com/sunchaokun/pptx-designer/blob/main/docs/llm-authoring-guide.md)
+- [SVG 编译器指南](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md)
+- [更新日志](https://github.com/sunchaokun/pptx-designer/blob/main/CHANGELOG.md)
 
 ## 高级案例
 
-[examples/](examples/README.md) 提供三个完整、可编辑的四页高级案例：奢侈品香氛画册、时装编辑册与建筑愿景书。每个案例均包含构建代码、原创视觉资源和生成的 `.pptx` 文件。
+[examples/](https://github.com/sunchaokun/pptx-designer/tree/main/examples) 提供三个完整、可编辑的四页高级案例：奢侈品香氛画册、时装编辑册与建筑愿景书。每个案例均包含构建代码、原创视觉资源和生成的 `.pptx` 文件。
 
 ---
 

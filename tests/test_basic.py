@@ -1,12 +1,11 @@
 """Basic tests for pptx-designer package."""
 
-import pytest
 from pptx_designer.core.pipeline import Presentation
-from pptx_designer.tools.shapes import rect, oval, hexagon
-from pptx_designer.tools.text import text, multiline
-from pptx_designer.tools.cards import kpi_card, highlight_cards
+from pptx_designer.data import PALETTES, STYLES, TYPOGRAPHY
+from pptx_designer.tools.cards import highlight_cards, kpi_card
 from pptx_designer.tools.layout import page_header, top_bar
-from pptx_designer.data import PALETTES, TYPOGRAPHY, STYLES
+from pptx_designer.tools.shapes import hexagon, oval, rect
+from pptx_designer.tools.text import multiline, text
 
 
 class TestPackageImport:
@@ -14,7 +13,7 @@ class TestPackageImport:
 
     def test_version(self):
         import pptx_designer
-        assert pptx_designer.__version__ == "1.0.0b4"
+        assert pptx_designer.__version__ == "1.0.0b5"
 
     def test_palletes_count(self):
         assert len(PALETTES) == 192

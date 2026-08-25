@@ -42,11 +42,11 @@ For more information, see: https://github.com/sunchaokun/pptx-designer
 
 from __future__ import annotations
 
-__version__ = "1.0.0b4"
+__version__ = "1.0.0b5"
 
-from pptx_designer.data import PALETTES, TYPOGRAPHY, STYLES
-from pptx_designer.core.pipeline import Presentation, generate_ppt
 from pptx_designer.ai import fetch_image
+from pptx_designer.core.pipeline import Presentation, generate_ppt
+from pptx_designer.data import PALETTES, STYLES, TYPOGRAPHY
 from pptx_designer.enterprise.design_dna_extractor import extract_design_dna
 
 __all__ = [

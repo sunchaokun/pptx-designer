@@ -2,6 +2,13 @@
 
 All notable user-facing changes are recorded here. This project follows a pre-release versioning scheme before the first stable `1.0.0` release.
 
+## 1.0.0b5 — 2026-08-25
+
+### Documentation
+
+- Replaced README relative documentation, example, and changelog links with absolute GitHub URLs so they render correctly on PyPI.
+- Pointed the PyPI documentation metadata to the maintained GitHub documentation index.
+
 ## 1.0.0b4 — 2026-08-25
 
 ### Image configuration

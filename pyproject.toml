@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pptx-designer"
-version = "1.0.0b4"
+version = "1.0.0b5"
 description = "Python library for LLMs to generate pixel-perfect PowerPoint presentations with 40,000+ style combinations"
 readme = "README.md"
 license = {text = "MIT"}
@@ -57,7 +57,7 @@ pptx-designer = "pptx_designer.cli.main:main"
 
 [project.urls]
 Homepage = "https://github.com/sunchaokun/pptx-designer"
-Documentation = "https://pptx-designer.readthedocs.io"
+Documentation = "https://github.com/sunchaokun/pptx-designer/tree/main/docs"
 Repository = "https://github.com/sunchaokun/pptx-designer"
 Changelog = "https://github.com/sunchaokun/pptx-designer/blob/main/CHANGELOG.md"
 Issues = "https://github.com/sunchaokun/pptx-designer/issues"

@@ -10,7 +10,7 @@
 
 Turn reviewed Python code into editable `.pptx` files with composable presentation primitives, design data, and native PowerPoint objects.
 
-[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [LLM Authoring Guide](docs/llm-authoring-guide.md) · [Documentation](docs/README.md)
+[Installation](#installation) · [Quick Start](#quick-start) · [Build Mode](#build-mode) · [LLM Authoring Guide](https://github.com/sunchaokun/pptx-designer/blob/main/docs/llm-authoring-guide.md) · [Documentation](https://github.com/sunchaokun/pptx-designer/tree/main/docs)
 
 </div>
 
@@ -180,7 +180,7 @@ result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
 print(result.shape_count, result.warnings)
 ```
 
-The compiler creates native PowerPoint shapes and text for its supported SVG subset. It supports common geometry, paths, text/tspan, transforms, gradients, `defs`/`use`, and a constrained clipping path workflow. Filters, masks, patterns, animations, external resources, and some SVG paint semantics are not full-fidelity features. Always inspect `result.warnings` for a production SVG. See the [SVG guide](docs/svg-guide.md) for supported input, error handling, and limits.
+The compiler creates native PowerPoint shapes and text for its supported SVG subset. It supports common geometry, paths, text/tspan, transforms, gradients, `defs`/`use`, and a constrained clipping path workflow. Filters, masks, patterns, animations, external resources, and some SVG paint semantics are not full-fidelity features. Always inspect `result.warnings` for a production SVG. See the [SVG guide](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md) for supported input, error handling, and limits.
 
 ### Effects
 
@@ -444,15 +444,15 @@ python -m ruff check src/pptx_designer/compiler tests/test_compiler tests/test_s
 
 ## Documentation
 
-- [Getting started](docs/getting-started.md)
-- [API reference](docs/api-reference.md)
-- [LLM authoring guide](docs/llm-authoring-guide.md)
-- [SVG compiler guide](docs/svg-guide.md)
-- [Changelog](CHANGELOG.md)
+- [Getting started](https://github.com/sunchaokun/pptx-designer/blob/main/docs/getting-started.md)
+- [API reference](https://github.com/sunchaokun/pptx-designer/blob/main/docs/api-reference.md)
+- [LLM authoring guide](https://github.com/sunchaokun/pptx-designer/blob/main/docs/llm-authoring-guide.md)
+- [SVG compiler guide](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md)
+- [Changelog](https://github.com/sunchaokun/pptx-designer/blob/main/CHANGELOG.md)
 
 ## Advanced examples
 
-Explore complete four-page, editable decks in [examples/](examples/README.md): a luxury fragrance lookbook, a couture editorial deck, and an architecture vision book. Every example includes the build script, original image assets, and its generated `.pptx` output.
+Explore complete four-page, editable decks in [examples/](https://github.com/sunchaokun/pptx-designer/tree/main/examples): a luxury fragrance lookbook, a couture editorial deck, and an architecture vision book. Every example includes the build script, original image assets, and its generated `.pptx` output.
 
 ---
 
