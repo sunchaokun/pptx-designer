@@ -9,7 +9,7 @@ typography, and editable PowerPoint objects are all created by this library.
 | Case | Source | Output | What it demonstrates |
 |---|---|---|---|
 | Luxury fragrance lookbook | [luxury_fragrance_lookbook.py](luxury_fragrance_lookbook.py) | [luxury_fragrance_lookbook.pptx](luxury_fragrance_lookbook.pptx) | Dark editorial cover, product manifesto, material study, and campaign finale. |
-| Couture editorial deck | [couture_editorial_deck.py](couture_editorial_deck.py) | [couture_editorial_deck.pptx](couture_editorial_deck.pptx) | Fashion-magazine cover, silhouette story, colour palette, and private-view invitation. |
+| Couture editorial deck | [couture_editorial_deck.py](couture_editorial_deck.py) | [couture_editorial_deck.pptx](couture_editorial_deck.pptx) | Deconstructed couture lookbook: manifesto cover, silhouette study, material index, and salon poster. |
 | Architecture vision book | [architecture_vision_book.py](architecture_vision_book.py) | [architecture_vision_book.pptx](architecture_vision_book.pptx) | Competition-style cover, concept narrative, spatial principles, and final invitation. |
 
 ## Run an example

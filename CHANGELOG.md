@@ -2,6 +2,14 @@
 
 All notable user-facing changes are recorded here. This project follows a pre-release versioning scheme before the first stable `1.0.0` release.
 
+## 1.0.0b3 — 2026-08-25
+
+### Examples
+
+- Reworked the four-page couture editorial example as a deconstructed fashion lookbook, with distinct manifesto, silhouette-study, material-index, and salon-poster layouts.
+- Kept all editorial copy, typography, colour fields, labels, and geometric accents as native, editable PowerPoint objects; photography remains an atmosphere layer only.
+- Added visual rendering verification to the example revision workflow using LibreOffice PDF/PNG output.
+
 ## 1.0.0-beta.2 — 2026-08-24
 
 ### SVG compiler
