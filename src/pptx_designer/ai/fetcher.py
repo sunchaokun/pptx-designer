@@ -146,7 +146,9 @@ class ImageFetcher:
                 self._detected_from = self._detected_from or f"environment:{env_key}"
                 return
 
-    def fetch(self, keywords: str, emotion: str = "", goal: str = "", width: int = 1920, height: int = 1080) -> str | None:
+    def fetch(
+        self, keywords: str, emotion: str = "", goal: str = "", width: int = 1920, height: int = 1080
+    ) -> str | None:
         if self.mode == "placeholder":
             return None
 
@@ -178,9 +180,7 @@ class ImageFetcher:
         result = self._fetch_from_search(keywords, emotion, width, height)
         return result
 
-    def _fetch_from_host_generator(
-        self, keywords: str, emotion: str, goal: str, width: int, height: int
-    ) -> str | None:
+    def _fetch_from_host_generator(self, keywords: str, emotion: str, goal: str, width: int, height: int) -> str | None:
         """Ask an injected host bridge for a local generated image.
 
         Codex-style image tools belong to the agent host, not to a normal
@@ -190,9 +190,7 @@ class ImageFetcher:
         if self._host_image_generator is None:
             return None
         try:
-            path = self._host_image_generator(
-                keywords=keywords, emotion=emotion, goal=goal, width=width, height=height
-            )
+            path = self._host_image_generator(keywords=keywords, emotion=emotion, goal=goal, width=width, height=height)
         except Exception:
             return None
         if path and Path(path).is_file():
@@ -222,10 +220,13 @@ class ImageFetcher:
         try:
             query = urllib.parse.quote(keywords)
             url = f"https://api.unsplash.com/search/photos?query={query}&per_page=1&orientation=landscape"
-            req = urllib.request.Request(url, headers={
-                "Authorization": f"Client-ID {self.unsplash_access_key}",
-                "Accept-Version": "v1",
-            })
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "Authorization": f"Client-ID {self.unsplash_access_key}",
+                    "Accept-Version": "v1",
+                },
+            )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
             results = data.get("results", [])
@@ -244,9 +245,12 @@ class ImageFetcher:
         try:
             query = urllib.parse.quote(keywords)
             url = f"https://api.pexels.com/v1/search?query={query}&per_page=1&orientation=landscape"
-            req = urllib.request.Request(url, headers={
-                "Authorization": self.pexels_api_key,
-            })
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "Authorization": self.pexels_api_key,
+                },
+            )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
             photos = data.get("photos", [])
@@ -353,19 +357,25 @@ class ImageFetcher:
             if cached:
                 return cached
 
-            payload = json.dumps({
-                "model": model,
-                "prompt": prompt,
-                "size": img_size,
-                "response_format": "url",
-                "watermark": False,
-            }).encode("utf-8")
+            payload = json.dumps(
+                {
+                    "model": model,
+                    "prompt": prompt,
+                    "size": img_size,
+                    "response_format": "url",
+                    "watermark": False,
+                }
+            ).encode("utf-8")
 
             url = f"{base_url}/images/generations"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+            )
 
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -398,20 +408,26 @@ class ImageFetcher:
             if cached:
                 return cached
 
-            payload = json.dumps({
-                "model": model,
-                "prompt": prompt,
-                "n": 1,
-                "size": size,
-                "quality": "low",
-                "output_format": "png",
-            }).encode("utf-8")
+            payload = json.dumps(
+                {
+                    "model": model,
+                    "prompt": prompt,
+                    "n": 1,
+                    "size": size,
+                    "quality": "low",
+                    "output_format": "png",
+                }
+            ).encode("utf-8")
 
             url = f"{base_url}/images/generations"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+            )
 
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -453,19 +469,25 @@ class ImageFetcher:
             if cached:
                 return cached
 
-            payload = json.dumps({
-                "model": model,
-                "prompt": prompt,
-                "n": 1,
-                "size": size,
-                "quality": "standard",
-            }).encode("utf-8")
+            payload = json.dumps(
+                {
+                    "model": model,
+                    "prompt": prompt,
+                    "n": 1,
+                    "size": size,
+                    "quality": "standard",
+                }
+            ).encode("utf-8")
 
             url = f"{base_url}/images/generations"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+            )
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
@@ -490,20 +512,24 @@ class ImageFetcher:
             if cached:
                 return cached
 
-            payload = json.dumps({
-                "contents": [{
-                    "parts": [{"text": prompt}]
-                }],
-                "generationConfig": {
-                    "responseModalities": ["IMAGE", "TEXT"],
+            payload = json.dumps(
+                {
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {
+                        "responseModalities": ["IMAGE", "TEXT"],
+                    },
                 }
-            }).encode("utf-8")
+            ).encode("utf-8")
 
             url = f"{base_url}/models/{model}:generateContent"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "x-goog-api-key": api_key,
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": api_key,
+                },
+            )
 
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -543,21 +569,27 @@ class ImageFetcher:
             model = self.llm_model or "wanx-v1"
             size_str = f"{width}*{height}"
 
-            payload = json.dumps({
-                "model": model,
-                "input": {"prompt": prompt},
-                "parameters": {
-                    "size": size_str,
-                    "n": 1,
-                },
-            }).encode("utf-8")
+            payload = json.dumps(
+                {
+                    "model": model,
+                    "input": {"prompt": prompt},
+                    "parameters": {
+                        "size": size_str,
+                        "n": 1,
+                    },
+                }
+            ).encode("utf-8")
 
             url = f"{base_url}/services/aigc/text2image/image-synthesis"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-                "X-DashScope-Async": "enable",
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                    "X-DashScope-Async": "enable",
+                },
+            )
             with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
@@ -568,9 +600,12 @@ class ImageFetcher:
             for _ in range(30):
                 time.sleep(2)
                 status_url = f"{base_url}/tasks/{task_id}"
-                status_req = urllib.request.Request(status_url, headers={
-                    "Authorization": f"Bearer {api_key}",
-                })
+                status_req = urllib.request.Request(
+                    status_url,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                    },
+                )
                 with urllib.request.urlopen(status_req, timeout=10) as status_resp:
                     status_data = json.loads(status_resp.read().decode("utf-8"))
 
@@ -601,21 +636,27 @@ class ImageFetcher:
             system_msg = "You are an expert at selecting the perfect stock photo search keywords for presentation slides. Return ONLY 3-5 English search keywords separated by spaces, nothing else."
             user_msg = f"I need a presentation image for a slide about '{goal}' with emotion '{emotion}'. Original keywords: '{keywords}'. Give me better Unsplash search keywords."
 
-            payload = json.dumps({
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": system_msg},
-                    {"role": "user", "content": user_msg},
-                ],
-                "temperature": 0.3,
-                "max_tokens": 50,
-            }).encode("utf-8")
+            payload = json.dumps(
+                {
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_msg},
+                        {"role": "user", "content": user_msg},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 50,
+                }
+            ).encode("utf-8")
 
             url = f"{base_url}/chat/completions"
-            req = urllib.request.Request(url, data=payload, headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-            })
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+            )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
@@ -637,9 +678,12 @@ class ImageFetcher:
             if cache_path.exists() and cache_path.stat().st_size > 1000:
                 return str(cache_path)
 
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "pptx-designer/0.8.0",
-            })
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "pptx-designer/0.8.0",
+                },
+            )
             with urllib.request.urlopen(req, timeout=120) as resp:
                 image_data = resp.read()
 

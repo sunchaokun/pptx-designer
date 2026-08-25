@@ -6,7 +6,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class FunnelDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         stages = self.data.get("stages", [])
         if not stages:
@@ -25,18 +24,25 @@ class FunnelDiagram(BaseDiagram):
 
             label = stage.get("label", stage.get("name", f"Stage {i + 1}"))
 
-            self._nodes.append({
-                "x": x, "y": y, "width": stage_w, "height": stage_h,
-                "label": label,
-                "shape": "rectangle",
-                "fill_role": stage.get("fill_role", self.style.node_fill),
-                "font_color_role": stage.get("font_color_role", self.style.node_font_color),
-            })
+            self._nodes.append(
+                {
+                    "x": x,
+                    "y": y,
+                    "width": stage_w,
+                    "height": stage_h,
+                    "label": label,
+                    "shape": "rectangle",
+                    "fill_role": stage.get("fill_role", self.style.node_fill),
+                    "font_color_role": stage.get("font_color_role", self.style.node_font_color),
+                }
+            )
 
             if i < n - 1:
-                self._connectors.append({
-                    "x1": self.region.center_x,
-                    "y1": y + stage_h,
-                    "x2": self.region.center_x,
-                    "y2": y + stage_h + gap,
-                })
+                self._connectors.append(
+                    {
+                        "x1": self.region.center_x,
+                        "y1": y + stage_h,
+                        "x2": self.region.center_x,
+                        "y2": y + stage_h + gap,
+                    }
+                )

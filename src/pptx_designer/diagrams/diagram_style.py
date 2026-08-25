@@ -95,23 +95,32 @@ class DiagramStyle:
         density = max(1, min(10, density))
         if density <= 3:
             style = DiagramStyle(
-                node_font_size_pt=16, label_font_size_pt=13,
-                cell_header_font_size_pt=18, cell_body_font_size_pt=14,
-                node_gap_inches=0.4, padding_inches=0.2,
+                node_font_size_pt=16,
+                label_font_size_pt=13,
+                cell_header_font_size_pt=18,
+                cell_body_font_size_pt=14,
+                node_gap_inches=0.4,
+                padding_inches=0.2,
                 _color_map=self._color_map,
             )
         elif density <= 6:
             style = DiagramStyle(
-                node_font_size_pt=14, label_font_size_pt=12,
-                cell_header_font_size_pt=16, cell_body_font_size_pt=12,
-                node_gap_inches=0.3, padding_inches=0.15,
+                node_font_size_pt=14,
+                label_font_size_pt=12,
+                cell_header_font_size_pt=16,
+                cell_body_font_size_pt=12,
+                node_gap_inches=0.3,
+                padding_inches=0.15,
                 _color_map=self._color_map,
             )
         else:
             style = DiagramStyle(
-                node_font_size_pt=12, label_font_size_pt=10,
-                cell_header_font_size_pt=14, cell_body_font_size_pt=10,
-                node_gap_inches=0.2, padding_inches=0.1,
+                node_font_size_pt=12,
+                label_font_size_pt=10,
+                cell_header_font_size_pt=14,
+                cell_body_font_size_pt=10,
+                node_gap_inches=0.2,
+                padding_inches=0.1,
                 _color_map=self._color_map,
             )
         style.node_fill = self.node_fill

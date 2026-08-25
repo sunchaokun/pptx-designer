@@ -14,12 +14,12 @@ from __future__ import annotations
 
 import math
 
+from lxml import etree
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Inches, Pt
-from lxml import etree
 
 from pptx_designer.effects.shape_effects import (
     apply_gradient,
@@ -28,7 +28,6 @@ from pptx_designer.effects.shape_effects import (
 
 
 class ShapeFactory:
-
     def __init__(self, brand_colors: dict[str, str] | None = None):
         self._colors = brand_colors or {}
         self._gradient_presets = self._build_gradient_presets()
@@ -66,10 +65,19 @@ class ShapeFactory:
         return f"{r:02X}{g:02X}{b:02X}"
 
     def add_glow_oval(
-        self, slide, x: float, y: float, w: float, h: float,
-        label: str = "", font_size: int = 14, color_role: str = "primary",
-        gradient_type: str = "linear", angle: int = 5400000,
-        shadow: bool = True, font_color: str = "#FFFFFF",
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        label: str = "",
+        font_size: int = 14,
+        color_role: str = "primary",
+        gradient_type: str = "linear",
+        angle: int = 5400000,
+        shadow: bool = True,
+        font_color: str = "#FFFFFF",
     ) -> object:
         shape = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(x), Inches(y), Inches(w), Inches(h))
         c1, c2 = self._gradient_presets.get(color_role, (self._c(color_role), self._darken(self._c(color_role))))
@@ -91,12 +99,23 @@ class ShapeFactory:
         return shape
 
     def add_ring_node(
-        self, slide, x: float, y: float, size: float,
-        label: str = "", font_size: int = 18, color_role: str = "primary",
-        ring_width_ratio: float = 0.25, shadow: bool = True,
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        label: str = "",
+        font_size: int = 18,
+        color_role: str = "primary",
+        ring_width_ratio: float = 0.25,
+        shadow: bool = True,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.DONUT, Inches(x), Inches(y), Inches(size), Inches(size),
+            MSO_SHAPE.DONUT,
+            Inches(x),
+            Inches(y),
+            Inches(size),
+            Inches(size),
         )
         c1, c2 = self._gradient_presets.get(color_role, (self._c(color_role), self._darken(self._c(color_role))))
         apply_gradient(shape, c1, c2, gradient_type="path")
@@ -117,12 +136,23 @@ class ShapeFactory:
         return shape
 
     def add_hexagon_card(
-        self, slide, x: float, y: float, size: float,
-        label: str = "", subtitle: str = "", font_size: int = 13,
-        color_role: str = "primary", shadow: bool = True,
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        label: str = "",
+        subtitle: str = "",
+        font_size: int = 13,
+        color_role: str = "primary",
+        shadow: bool = True,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.HEXAGON, Inches(x), Inches(y), Inches(size), Inches(size * 0.87),
+            MSO_SHAPE.HEXAGON,
+            Inches(x),
+            Inches(y),
+            Inches(size),
+            Inches(size * 0.87),
         )
         c1, c2 = self._gradient_presets.get(color_role, (self._c(color_role), self._darken(self._c(color_role))))
         apply_gradient(shape, c1, c2, gradient_type="linear", angle=5400000)
@@ -151,8 +181,14 @@ class ShapeFactory:
         return shape
 
     def add_arc_connector(
-        self, slide, x: float, y: float, w: float, h: float,
-        color_role: str = "accent", line_width_pt: float = 2.0,
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        color_role: str = "accent",
+        line_width_pt: float = 2.0,
     ) -> object:
         shape = slide.shapes.add_shape(MSO_SHAPE.ARC, Inches(x), Inches(y), Inches(w), Inches(h))
         spPr = shape._element.find(qn("p:spPr"))
@@ -174,12 +210,24 @@ class ShapeFactory:
         return shape
 
     def add_rounded_card(
-        self, slide, x: float, y: float, w: float, h: float,
-        title: str = "", body: str = "", color_role: str = "primary",
-        shadow: bool = True, gradient: bool = True,
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        title: str = "",
+        body: str = "",
+        color_role: str = "primary",
+        shadow: bool = True,
+        gradient: bool = True,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h),
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            Inches(x),
+            Inches(y),
+            Inches(w),
+            Inches(h),
         )
         if gradient:
             c1 = self._c("muted", "#F1F5F9")
@@ -214,11 +262,21 @@ class ShapeFactory:
         return shape
 
     def add_triangle_pointer(
-        self, slide, x: float, y: float, w: float, h: float,
-        color_role: str = "accent", gradient: bool = True,
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        color_role: str = "accent",
+        gradient: bool = True,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.ISOSCELES_TRIANGLE, Inches(x), Inches(y), Inches(w), Inches(h),
+            MSO_SHAPE.ISOSCELES_TRIANGLE,
+            Inches(x),
+            Inches(y),
+            Inches(w),
+            Inches(h),
         )
         if gradient:
             c1 = self._c(color_role, "#FF5500")
@@ -231,12 +289,23 @@ class ShapeFactory:
         return shape
 
     def add_chevron_step(
-        self, slide, x: float, y: float, w: float, h: float,
-        label: str = "", font_size: int = 12, color_role: str = "primary",
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        label: str = "",
+        font_size: int = 12,
+        color_role: str = "primary",
         step_index: int = 0,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.CHEVRON, Inches(x), Inches(y), Inches(w), Inches(h),
+            MSO_SHAPE.CHEVRON,
+            Inches(x),
+            Inches(y),
+            Inches(w),
+            Inches(h),
         )
         c1 = self._c(color_role, "#1D78FA")
         shade = min(step_index * 15, 60)
@@ -258,11 +327,21 @@ class ShapeFactory:
         return shape
 
     def add_diamond_node(
-        self, slide, x: float, y: float, size: float,
-        label: str = "", font_size: int = 12, color_role: str = "accent",
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        label: str = "",
+        font_size: int = 12,
+        color_role: str = "accent",
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.DIAMOND, Inches(x), Inches(y), Inches(size), Inches(size),
+            MSO_SHAPE.DIAMOND,
+            Inches(x),
+            Inches(y),
+            Inches(size),
+            Inches(size),
         )
         c1, c2 = self._gradient_presets.get(color_role, (self._c(color_role), self._darken(self._c(color_role))))
         apply_gradient(shape, c1, c2, gradient_type="path")
@@ -282,11 +361,21 @@ class ShapeFactory:
         return shape
 
     def add_block_arc(
-        self, slide, x: float, y: float, w: float, h: float,
-        color_role: str = "primary", line_width_pt: float = 3.0,
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        color_role: str = "primary",
+        line_width_pt: float = 3.0,
     ) -> object:
         shape = slide.shapes.add_shape(
-            MSO_SHAPE.BLOCK_ARC, Inches(x), Inches(y), Inches(w), Inches(h),
+            MSO_SHAPE.BLOCK_ARC,
+            Inches(x),
+            Inches(y),
+            Inches(w),
+            Inches(h),
         )
         c1 = self._c(color_role, "#1D78FA")
         c2 = self._darken(c1, 20)
@@ -295,17 +384,28 @@ class ShapeFactory:
         return shape
 
     def add_radial_diagram(
-        self, slide, center_x: float, center_y: float,
-        center_label: str, center_size: float = 2.5,
+        self,
+        slide,
+        center_x: float,
+        center_y: float,
+        center_label: str,
+        center_size: float = 2.5,
         nodes: list[dict[str, str]] | None = None,
-        node_size: float = 1.0, radius: float = 3.0,
+        node_size: float = 1.0,
+        radius: float = 3.0,
         center_color_role: str = "primary",
     ) -> list[object]:
         shapes = []
         center = self.add_glow_oval(
-            slide, center_x - center_size / 2, center_y - center_size / 2,
-            center_size, center_size, label=center_label,
-            font_size=20, color_role=center_color_role, gradient_type="path",
+            slide,
+            center_x - center_size / 2,
+            center_y - center_size / 2,
+            center_size,
+            center_size,
+            label=center_label,
+            font_size=20,
+            color_role=center_color_role,
+            gradient_type="path",
         )
         shapes.append(center)
 
@@ -318,7 +418,11 @@ class ShapeFactory:
             nx = center_x + radius * math.cos(angle) - node_size / 2
             ny = center_y + radius * math.sin(angle) - node_size / 2
             oval = self.add_glow_oval(
-                slide, nx, ny, node_size, node_size,
+                slide,
+                nx,
+                ny,
+                node_size,
+                node_size,
                 label=node.get("label", ""),
                 font_size=node.get("font_size", 12),
                 color_role=node.get("color_role", "accent"),
@@ -327,15 +431,25 @@ class ShapeFactory:
         return shapes
 
     def add_ring_diagram(
-        self, slide, center_x: float, center_y: float,
-        center_label: str, ring_size: float = 4.0,
+        self,
+        slide,
+        center_x: float,
+        center_y: float,
+        center_label: str,
+        ring_size: float = 4.0,
         nodes: list[dict[str, str]] | None = None,
-        node_size: float = 0.8, color_role: str = "primary",
+        node_size: float = 0.8,
+        color_role: str = "primary",
     ) -> list[object]:
         shapes = []
         ring = self.add_ring_node(
-            slide, center_x - ring_size / 2, center_y - ring_size / 2,
-            ring_size, label=center_label, font_size=16, color_role=color_role,
+            slide,
+            center_x - ring_size / 2,
+            center_y - ring_size / 2,
+            ring_size,
+            label=center_label,
+            font_size=16,
+            color_role=color_role,
         )
         shapes.append(ring)
 
@@ -349,7 +463,11 @@ class ShapeFactory:
             nx = center_x + radius * math.cos(angle) - node_size / 2
             ny = center_y + radius * math.sin(angle) - node_size / 2
             oval = self.add_glow_oval(
-                slide, nx, ny, node_size, node_size,
+                slide,
+                nx,
+                ny,
+                node_size,
+                node_size,
                 label=node.get("label", ""),
                 font_size=node.get("font_size", 11),
                 color_role=node.get("color_role", "accent"),

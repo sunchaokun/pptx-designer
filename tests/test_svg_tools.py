@@ -6,8 +6,8 @@ import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
-from pptx_designer.tools.svg import svg_chart
 from pptx_designer.compiler import SVGCompileError
+from pptx_designer.tools.svg import svg_chart
 
 
 def _slide():
@@ -31,8 +31,8 @@ class TestSvgChart:
 
     def test_with_color_context(self):
         svg = '<svg viewBox="0 0 400 300"><rect x="50" y="50" width="300" height="200" fill="#FFF"/></svg>'
-        C = {"primary": "#4472C4", "text_dark": "#333"}
-        result = svg_chart(_slide(), svg, C=C)
+        colors = {"primary": "#4472C4", "text_dark": "#333"}
+        result = svg_chart(_slide(), svg, C=colors)
         assert result.shape_count >= 1
 
     def test_invalid_svg_raises(self):
@@ -45,11 +45,11 @@ class TestSvgChart:
         assert result.shape_count >= 1
 
     def test_svg_with_gradient(self):
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0" stop-color="#4472C4"/><stop offset="1" stop-color="#2E75B6"/>
             </linearGradient></defs>
             <rect x="0" y="0" width="400" height="300" fill="url(#g1)"/>
-        </svg>'''
+        </svg>"""
         result = svg_chart(_slide(), svg)
         assert result.shape_count >= 1

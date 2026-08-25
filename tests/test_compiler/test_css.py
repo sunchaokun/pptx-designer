@@ -11,7 +11,6 @@ from pptx_designer.compiler._css import (
 )
 from pptx_designer.compiler._sanitizer import sanitize
 
-
 SVG_NS = "http://www.w3.org/2000/svg"
 SVG = f"{{{SVG_NS}}}"
 
@@ -137,7 +136,7 @@ class TestApplyCssBlocks:
     def test_class_selector_applies_fill(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.box { fill: #3366FF; }</style>'
+            "<style>.box { fill: #3366FF; }</style>"
             '<rect class="box" x="10" y="10" width="100" height="50"/>'
             "</svg>"
         )
@@ -152,7 +151,7 @@ class TestApplyCssBlocks:
     def test_id_selector(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>#icon { stroke: #000; stroke-width: 2; }</style>'
+            "<style>#icon { stroke: #000; stroke-width: 2; }</style>"
             '<circle id="icon" cx="200" cy="150" r="50"/>'
             "</svg>"
         )
@@ -165,7 +164,7 @@ class TestApplyCssBlocks:
     def test_tag_selector(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>rect { stroke-width: 3; }</style>'
+            "<style>rect { stroke-width: 3; }</style>"
             '<rect x="10" y="10" width="100" height="50" fill="red"/>'
             "</svg>"
         )
@@ -178,7 +177,7 @@ class TestApplyCssBlocks:
     def test_stylesheet_overrides_presentation_attribute(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.box { fill: red; }</style>'
+            "<style>.box { fill: red; }</style>"
             '<rect class="box" fill="green" x="10" y="10" width="100" height="50"/>'
             "</svg>"
         )
@@ -192,7 +191,7 @@ class TestApplyCssBlocks:
     def test_css_var_definition(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>:root { --primary: #1D78FA; }</style>'
+            "<style>:root { --primary: #1D78FA; }</style>"
             '<rect fill="var(--primary)" x="10" y="10" width="100" height="50"/>'
             "</svg>"
         )
@@ -204,7 +203,7 @@ class TestApplyCssBlocks:
     def test_later_rule_wins_with_same_specificity(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<style>.a { fill: red; } .b { fill: blue; }</style>'
+            "<style>.a { fill: red; } .b { fill: blue; }</style>"
             '<rect class="a b" width="10" height="10"/>'
             "</svg>"
         )
@@ -215,7 +214,7 @@ class TestApplyCssBlocks:
     def test_class_overrides_tag_and_presentation_attribute(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<style>rect { fill: red; } .accent { fill: blue; }</style>'
+            "<style>rect { fill: red; } .accent { fill: blue; }</style>"
             '<rect class="accent" fill="green" width="10" height="10"/>'
             "</svg>"
         )
@@ -226,7 +225,7 @@ class TestApplyCssBlocks:
     def test_inline_style_and_important_precedence(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<style>.accent { fill: blue !important; }</style>'
+            "<style>.accent { fill: blue !important; }</style>"
             '<rect class="accent" style="fill: green" width="10" height="10"/>'
             "</svg>"
         )
@@ -237,7 +236,7 @@ class TestApplyCssBlocks:
     def test_inline_important_overrides_stylesheet_important(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<style>.accent { fill: blue !important; }</style>'
+            "<style>.accent { fill: blue !important; }</style>"
             '<rect class="accent" style="fill: green !important" width="10" height="10"/>'
             "</svg>"
         )
@@ -246,11 +245,7 @@ class TestApplyCssBlocks:
         assert _find(root, "rect").get("fill") == "green"
 
     def test_opacity_is_not_inherited(self):
-        svg = (
-            '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<g style="opacity: 0.3"><rect width="10" height="10"/></g>'
-            "</svg>"
-        )
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"><g style="opacity: 0.3"><rect width="10" height="10"/></g></svg>'
         root = etree.fromstring(svg.encode())
         apply_css_blocks(root)
         assert _find(root, "rect").get("opacity") is None
@@ -258,7 +253,7 @@ class TestApplyCssBlocks:
     def test_inheritance_fill(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.parent { fill: blue; }</style>'
+            "<style>.parent { fill: blue; }</style>"
             '<g class="parent">'
             '<rect x="10" y="10" width="100" height="50"/>'
             "</g>"
@@ -273,7 +268,7 @@ class TestApplyCssBlocks:
     def test_group_opacity_is_not_inherited(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.faded { opacity: 0.3; }</style>'
+            "<style>.faded { opacity: 0.3; }</style>"
             '<g class="faded">'
             '<rect x="10" y="10" width="100" height="50"/>'
             '<circle cx="200" cy="150" r="50"/>'
@@ -292,7 +287,7 @@ class TestApplyCssBlocks:
     def test_child_overrides_inherited(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.parent { fill: blue; } .child { fill: red; }</style>'
+            "<style>.parent { fill: blue; } .child { fill: red; }</style>"
             '<g class="parent">'
             '<rect class="child" x="10" y="10" width="100" height="50"/>'
             "</g>"
@@ -317,8 +312,8 @@ class TestApplyCssBlocks:
     def test_multiple_style_blocks(self):
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.a { fill: red; }</style>'
-            '<style>.b { stroke: blue; }</style>'
+            "<style>.a { fill: red; }</style>"
+            "<style>.b { stroke: blue; }</style>"
             '<rect class="a" x="10" y="10" width="100" height="50"/>'
             '<circle class="b" cx="200" cy="150" r="50"/>'
             "</svg>"
@@ -337,9 +332,10 @@ class TestSanitizeWithCSS:
     """Test CSS parsing integrated into the full sanitize() pipeline."""
 
     def test_class_based_svg_compiles(self):
-        from pptx_designer.compiler import SVGCompiler
         from pptx import Presentation
         from pptx.util import Inches
+
+        from pptx_designer.compiler import SVGCompiler
 
         prs = Presentation()
         prs.slide_width = Inches(13.333)
@@ -348,7 +344,7 @@ class TestSanitizeWithCSS:
 
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>.box { fill: #3366FF; stroke: #000; stroke-width: 2; }</style>'
+            "<style>.box { fill: #3366FF; stroke: #000; stroke-width: 2; }</style>"
             '<rect class="box" x="50" y="50" width="300" height="200"/>'
             "</svg>"
         )
@@ -357,9 +353,10 @@ class TestSanitizeWithCSS:
 
     def test_llm_typical_svg(self):
         """Typical LLM-generated SVG with class-based styling."""
-        from pptx_designer.compiler import SVGCompiler
         from pptx import Presentation
         from pptx.util import Inches
+
+        from pptx_designer.compiler import SVGCompiler
 
         prs = Presentation()
         prs.slide_width = Inches(13.333)
@@ -368,7 +365,7 @@ class TestSanitizeWithCSS:
 
         svg = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
-            '<style>'
+            "<style>"
             ".background { fill: #1a1a2e; }"
             ".card { fill: #16213e; stroke: #0f3460; stroke-width: 1; }"
             ".title { fill: #e94560; font-size: 18px; font-weight: bold; }"

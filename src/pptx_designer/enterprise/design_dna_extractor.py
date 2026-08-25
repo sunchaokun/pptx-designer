@@ -1,4 +1,4 @@
-﻿"""Design DNA extractor — extract design patterns from PPT files."""
+"""Design DNA extractor — extract design patterns from PPT files."""
 
 from __future__ import annotations
 

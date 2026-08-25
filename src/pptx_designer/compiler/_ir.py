@@ -5,6 +5,7 @@ IR deliberately mirrors that tree rather than replacing it: it provides stable
 node identities, source-order information and pre-render capability analysis
 for diagnostics and later backend selection.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -48,9 +49,17 @@ class SVGIRDocument:
         return tuple(self.nodes[index] for index in indices)
 
 
-_GEOMETRY_TAGS = frozenset({
-    "rect", "circle", "ellipse", "line", "polygon", "polyline", "path",
-})
+_GEOMETRY_TAGS = frozenset(
+    {
+        "rect",
+        "circle",
+        "ellipse",
+        "line",
+        "polygon",
+        "polyline",
+        "path",
+    }
+)
 _DEFINITION_TAGS = frozenset({"linearGradient", "radialGradient", "clipPath", "symbol"})
 _RASTER_ONLY_TAGS = frozenset({"image", "filter", "mask", "pattern", "marker"})
 
@@ -97,11 +106,7 @@ def build_svg_ir(root: etree._Element) -> SVGIRDocument:
         source_id = attributes_dict.get("id")
         if source_id:
             source_index.setdefault(source_id, []).append(index)
-        child_indices = tuple(
-            child_index
-            for child in element
-            if (child_index := visit(child, index)) is not None
-        )
+        child_indices = tuple(child_index for child in element if (child_index := visit(child, index)) is not None)
         tag = element.tag.split("}")[-1]
         nodes[index] = SVGIRNode(
             index=index,

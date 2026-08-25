@@ -53,25 +53,211 @@ class ContentGenerator:
     def _build_context(self, query: str, product_type: str) -> dict[str, Any]:
         q = query.lower()
         ctx: dict[str, Any] = {
-            "is_tech": any(k in q for k in ["tech", "software", "saas", "app", "platform", "sdk", "api", "cloud", "data", "neural", "算法", "技术", "软件", "平台"]),
-            "is_finance": any(k in q for k in ["investor", "pitch", "seed", "funding", "路演", "融资", "投资", "估值", "arr", "mrr"]),
+            "is_tech": any(
+                k in q
+                for k in [
+                    "tech",
+                    "software",
+                    "saas",
+                    "app",
+                    "platform",
+                    "sdk",
+                    "api",
+                    "cloud",
+                    "data",
+                    "neural",
+                    "算法",
+                    "技术",
+                    "软件",
+                    "平台",
+                ]
+            ),
+            "is_finance": any(
+                k in q for k in ["investor", "pitch", "seed", "funding", "路演", "融资", "投资", "估值", "arr", "mrr"]
+            ),
             "is_product": any(k in q for k in ["product", "demo", "展示", "产品", "launch", "发布"]),
             "is_sales": any(k in q for k in ["sales", "报价", "销售", "advisory", "premium", "高端"]),
-            "is_sustainability": any(k in q for k in ["sustainability", "green", "carbon", "esg", "可持续", "环保", "零碳"]),
-            "is_deep_tech": any(k in q for k in ["deep tech", "neural", " ml ", "gpu", "深度", "神经", " ai ", "ai ", " ai,"]),
+            "is_sustainability": any(
+                k in q for k in ["sustainability", "green", "carbon", "esg", "可持续", "环保", "零碳"]
+            ),
+            "is_deep_tech": any(
+                k in q for k in ["deep tech", "neural", " ml ", "gpu", "深度", "神经", " ai ", "ai ", " ai,"]
+            ),
         }
         if ctx["is_sustainability"]:
-            ctx.update({"industry": "Sustainability / CleanTech", "product_name": "Carbon Tracking Platform", "pain1": "Carbon reporting is manual, error-prone, and months late", "pain2": "No real-time visibility into supply chain emissions", "pain3": "Regulatory compliance demands are accelerating globally", "solution_title": "Automated Carbon Intelligence", "solution_sub": "Real-time carbon tracking across your entire value chain", "feat1": "Scope 1-3 auto-calculation", "feat2": "Supply chain mapping", "feat3": "Regulatory report generator", "m1_label": "Carbon Reduced", "m1_value": "45K tons", "m2_label": "Companies", "m2_value": "2,800+", "m3_label": "Countries", "m3_value": "32", "m4_label": "Cost Savings", "m4_value": "$12M", "hook_title": "Every ton of carbon you can't measure, you can't reduce", "hook_sub": "GreenPath gives you real-time visibility and automated reporting across your entire value chain.", "cta_title": "Start tracking for free", "cta_sub": "Free for companies under 100 employees. No setup fee.", "chart_labels": ["2022", "2023", "2024", "2025"], "chart_values": [5, 18, 42, 78]})
+            ctx.update(
+                {
+                    "industry": "Sustainability / CleanTech",
+                    "product_name": "Carbon Tracking Platform",
+                    "pain1": "Carbon reporting is manual, error-prone, and months late",
+                    "pain2": "No real-time visibility into supply chain emissions",
+                    "pain3": "Regulatory compliance demands are accelerating globally",
+                    "solution_title": "Automated Carbon Intelligence",
+                    "solution_sub": "Real-time carbon tracking across your entire value chain",
+                    "feat1": "Scope 1-3 auto-calculation",
+                    "feat2": "Supply chain mapping",
+                    "feat3": "Regulatory report generator",
+                    "m1_label": "Carbon Reduced",
+                    "m1_value": "45K tons",
+                    "m2_label": "Companies",
+                    "m2_value": "2,800+",
+                    "m3_label": "Countries",
+                    "m3_value": "32",
+                    "m4_label": "Cost Savings",
+                    "m4_value": "$12M",
+                    "hook_title": "Every ton of carbon you can't measure, you can't reduce",
+                    "hook_sub": "GreenPath gives you real-time visibility and automated reporting across your entire value chain.",
+                    "cta_title": "Start tracking for free",
+                    "cta_sub": "Free for companies under 100 employees. No setup fee.",
+                    "chart_labels": ["2022", "2023", "2024", "2025"],
+                    "chart_values": [5, 18, 42, 78],
+                }
+            )
         elif ctx["is_deep_tech"]:
-            ctx.update({"industry": "Deep Tech / AI", "product_name": "AI Platform", "pain1": "Training takes weeks for production models", "pain2": "GPU cloud costs are exploding 3x year-over-year", "pain3": "Lab models fail silently in production environments", "solution_title": "One-Click Model Deployment", "solution_sub": "From notebook to production in 5 minutes, not 5 weeks", "feat1": "Auto-optimized inference", "feat2": "Built-in model monitoring", "feat3": "Zero-config scaling", "m1_label": "Models Deployed", "m1_value": "500+", "m2_label": "P99 Latency", "m2_value": "<10ms", "m3_label": "Accuracy", "m3_value": "99.7%", "m4_label": "Developers", "m4_value": "12K+", "hook_title": "What if deploying AI was as easy as git push?", "hook_sub": "NeuralForge makes production AI deployment instant, reliable, and cost-effective.", "cta_title": "Start deploying in minutes", "cta_sub": "Free tier available. No credit card required.", "chart_labels": ["Baseline", "v1.0", "v2.0", "v3.0"], "chart_values": [45, 72, 88, 97]})
+            ctx.update(
+                {
+                    "industry": "Deep Tech / AI",
+                    "product_name": "AI Platform",
+                    "pain1": "Training takes weeks for production models",
+                    "pain2": "GPU cloud costs are exploding 3x year-over-year",
+                    "pain3": "Lab models fail silently in production environments",
+                    "solution_title": "One-Click Model Deployment",
+                    "solution_sub": "From notebook to production in 5 minutes, not 5 weeks",
+                    "feat1": "Auto-optimized inference",
+                    "feat2": "Built-in model monitoring",
+                    "feat3": "Zero-config scaling",
+                    "m1_label": "Models Deployed",
+                    "m1_value": "500+",
+                    "m2_label": "P99 Latency",
+                    "m2_value": "<10ms",
+                    "m3_label": "Accuracy",
+                    "m3_value": "99.7%",
+                    "m4_label": "Developers",
+                    "m4_value": "12K+",
+                    "hook_title": "What if deploying AI was as easy as git push?",
+                    "hook_sub": "NeuralForge makes production AI deployment instant, reliable, and cost-effective.",
+                    "cta_title": "Start deploying in minutes",
+                    "cta_sub": "Free tier available. No credit card required.",
+                    "chart_labels": ["Baseline", "v1.0", "v2.0", "v3.0"],
+                    "chart_values": [45, 72, 88, 97],
+                }
+            )
         elif ctx["is_finance"] and ctx["is_tech"]:
-            ctx.update({"industry": "AI / Technology", "product_name": "AI Platform", "pain1": "Manual data analysis takes 80% of analyst time", "pain2": "Legacy systems can't process real-time signals", "pain3": "Talent shortage: 3.5M unfilled AI roles by 2025", "solution_title": "AI-Powered Decision Engine", "solution_sub": "Transform raw data into actionable insights in seconds, not days", "feat1": "Real-time signal processing", "feat2": "Explainable AI models", "feat3": "One-click compliance reports", "m1_label": "Data Processed", "m1_value": "50TB/day", "m2_label": "Latency", "m2_value": "<100ms", "m3_label": "Accuracy", "m3_value": "94.2%", "m4_label": "Enterprise Clients", "m4_value": "200+", "hook_title": "The future of finance is AI-native", "hook_sub": "We built the infrastructure that makes institutional AI not just possible, but profitable.", "cta_title": "Schedule a demo", "cta_sub": "See the platform in action with your own data.", "chart_labels": ["Q1", "Q2", "Q3", "Q4"], "chart_values": [12, 34, 78, 156]})
+            ctx.update(
+                {
+                    "industry": "AI / Technology",
+                    "product_name": "AI Platform",
+                    "pain1": "Manual data analysis takes 80% of analyst time",
+                    "pain2": "Legacy systems can't process real-time signals",
+                    "pain3": "Talent shortage: 3.5M unfilled AI roles by 2025",
+                    "solution_title": "AI-Powered Decision Engine",
+                    "solution_sub": "Transform raw data into actionable insights in seconds, not days",
+                    "feat1": "Real-time signal processing",
+                    "feat2": "Explainable AI models",
+                    "feat3": "One-click compliance reports",
+                    "m1_label": "Data Processed",
+                    "m1_value": "50TB/day",
+                    "m2_label": "Latency",
+                    "m2_value": "<100ms",
+                    "m3_label": "Accuracy",
+                    "m3_value": "94.2%",
+                    "m4_label": "Enterprise Clients",
+                    "m4_value": "200+",
+                    "hook_title": "The future of finance is AI-native",
+                    "hook_sub": "We built the infrastructure that makes institutional AI not just possible, but profitable.",
+                    "cta_title": "Schedule a demo",
+                    "cta_sub": "See the platform in action with your own data.",
+                    "chart_labels": ["Q1", "Q2", "Q3", "Q4"],
+                    "chart_values": [12, 34, 78, 156],
+                }
+            )
         elif ctx["is_sales"]:
-            ctx.update({"industry": "Financial Services", "product_name": "Premium Advisory Service", "pain1": "Portfolio management is fragmented across 5+ platforms", "pain2": "Risk exposure is invisible until it's too late", "pain3": "Client reporting takes 20+ hours per quarter", "solution_title": "Unified Wealth Intelligence", "solution_sub": "One dashboard for every asset, every risk, every client", "feat1": "Multi-custodian aggregation", "feat2": "Real-time risk analytics", "feat3": "Automated client reporting", "m1_label": "AUM", "m1_value": "$2.4B", "m2_label": "Satisfaction", "m2_value": "99%", "m3_label": "YoY Growth", "m3_value": "28%", "m4_label": "Clients", "m4_value": "400+", "hook_title": "Your clients deserve better than spreadsheets", "hook_sub": "Aurum Partners delivers institutional-grade wealth management with personal attention.", "cta_title": "Book a consultation", "cta_sub": "Complimentary portfolio review for qualified investors.", "chart_labels": ["2021", "2022", "2023", "2024"], "chart_values": [1.2, 1.6, 2.1, 2.4]})
+            ctx.update(
+                {
+                    "industry": "Financial Services",
+                    "product_name": "Premium Advisory Service",
+                    "pain1": "Portfolio management is fragmented across 5+ platforms",
+                    "pain2": "Risk exposure is invisible until it's too late",
+                    "pain3": "Client reporting takes 20+ hours per quarter",
+                    "solution_title": "Unified Wealth Intelligence",
+                    "solution_sub": "One dashboard for every asset, every risk, every client",
+                    "feat1": "Multi-custodian aggregation",
+                    "feat2": "Real-time risk analytics",
+                    "feat3": "Automated client reporting",
+                    "m1_label": "AUM",
+                    "m1_value": "$2.4B",
+                    "m2_label": "Satisfaction",
+                    "m2_value": "99%",
+                    "m3_label": "YoY Growth",
+                    "m3_value": "28%",
+                    "m4_label": "Clients",
+                    "m4_value": "400+",
+                    "hook_title": "Your clients deserve better than spreadsheets",
+                    "hook_sub": "Aurum Partners delivers institutional-grade wealth management with personal attention.",
+                    "cta_title": "Book a consultation",
+                    "cta_sub": "Complimentary portfolio review for qualified investors.",
+                    "chart_labels": ["2021", "2022", "2023", "2024"],
+                    "chart_values": [1.2, 1.6, 2.1, 2.4],
+                }
+            )
         elif ctx["is_product"]:
-            ctx.update({"industry": "SaaS / Cloud", "product_name": "Cloud Platform", "pain1": "Teams waste 30% of time on repetitive manual workflows", "pain2": "Average team uses 12+ disconnected tools daily", "pain3": "Managers have zero visibility into actual progress", "solution_title": "Intelligent Workflow Automation", "solution_sub": "Connect, automate, and optimize your entire operation", "feat1": "Visual workflow builder", "feat2": "500+ native integrations", "feat3": "AI-powered optimization", "m1_label": "Active Users", "m1_value": "50K+", "m2_label": "Retention", "m2_value": "97%", "m3_label": "Growth", "m3_value": "4.2x", "m4_label": "ARR", "m4_value": "$8M", "hook_title": "Your best people are doing your worst work", "hook_sub": "CloudFlow automates the repetitive so your team can focus on what matters.", "cta_title": "Try CloudFlow free", "cta_sub": "14-day free trial. No credit card required.", "chart_labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"], "chart_values": [80, 120, 190, 310, 480, 720]})
+            ctx.update(
+                {
+                    "industry": "SaaS / Cloud",
+                    "product_name": "Cloud Platform",
+                    "pain1": "Teams waste 30% of time on repetitive manual workflows",
+                    "pain2": "Average team uses 12+ disconnected tools daily",
+                    "pain3": "Managers have zero visibility into actual progress",
+                    "solution_title": "Intelligent Workflow Automation",
+                    "solution_sub": "Connect, automate, and optimize your entire operation",
+                    "feat1": "Visual workflow builder",
+                    "feat2": "500+ native integrations",
+                    "feat3": "AI-powered optimization",
+                    "m1_label": "Active Users",
+                    "m1_value": "50K+",
+                    "m2_label": "Retention",
+                    "m2_value": "97%",
+                    "m3_label": "Growth",
+                    "m3_value": "4.2x",
+                    "m4_label": "ARR",
+                    "m4_value": "$8M",
+                    "hook_title": "Your best people are doing your worst work",
+                    "hook_sub": "CloudFlow automates the repetitive so your team can focus on what matters.",
+                    "cta_title": "Try CloudFlow free",
+                    "cta_sub": "14-day free trial. No credit card required.",
+                    "chart_labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                    "chart_values": [80, 120, 190, 310, 480, 720],
+                }
+            )
         else:
-            ctx.update({"industry": "Technology", "product_name": "Innovation Platform", "pain1": "Existing solutions are fragmented and slow to adapt", "pain2": "Teams lack the tools to move at market speed", "pain3": "Data-driven decisions are impossible without real-time insights", "solution_title": "Next-Generation Platform", "solution_sub": "One intelligent platform that adapts to how you work", "feat1": "Real-time analytics", "feat2": "Seamless integrations", "feat3": "AI-powered automation", "m1_label": "Users", "m1_value": "10K+", "m2_label": "Retention", "m2_value": "95%", "m3_label": "Growth", "m3_value": "3x", "m4_label": "ARR", "m4_value": "$2M", "hook_title": "Build faster. Ship smarter. Scale effortlessly.", "hook_sub": "The platform that turns your team's potential into performance.", "cta_title": "Get started today", "cta_sub": "Free tier available. Scale as you grow.", "chart_labels": ["Q1", "Q2", "Q3", "Q4"], "chart_values": [10, 25, 45, 80]})
+            ctx.update(
+                {
+                    "industry": "Technology",
+                    "product_name": "Innovation Platform",
+                    "pain1": "Existing solutions are fragmented and slow to adapt",
+                    "pain2": "Teams lack the tools to move at market speed",
+                    "pain3": "Data-driven decisions are impossible without real-time insights",
+                    "solution_title": "Next-Generation Platform",
+                    "solution_sub": "One intelligent platform that adapts to how you work",
+                    "feat1": "Real-time analytics",
+                    "feat2": "Seamless integrations",
+                    "feat3": "AI-powered automation",
+                    "m1_label": "Users",
+                    "m1_value": "10K+",
+                    "m2_label": "Retention",
+                    "m2_value": "95%",
+                    "m3_label": "Growth",
+                    "m3_value": "3x",
+                    "m4_label": "ARR",
+                    "m4_value": "$2M",
+                    "hook_title": "Build faster. Ship smarter. Scale effortlessly.",
+                    "hook_sub": "The platform that turns your team's potential into performance.",
+                    "cta_title": "Get started today",
+                    "cta_sub": "Free tier available. Scale as you grow.",
+                    "chart_labels": ["Q1", "Q2", "Q3", "Q4"],
+                    "chart_values": [10, 25, 45, 80],
+                }
+            )
         return ctx
 
     def generate(self, page_designs: list[PageDesign], content_file: str | None = None) -> list[PageContent]:
@@ -149,7 +335,7 @@ class ContentGenerator:
         if content_file is None:
             return {}
         try:
-            with open(content_file, "r", encoding="utf-8") as f:
+            with open(content_file, encoding="utf-8") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return {}
@@ -169,7 +355,7 @@ def _generate_hook(goal: str, design: PageDesign, ctx: dict) -> dict:
     if not hook_sub and company:
         hook_sub = f"{company} — Innovation that delivers"
     elif not hook_sub and product:
-        hook_sub = f"The platform that turns your team's potential into performance."
+        hook_sub = "The platform that turns your team's potential into performance."
     return {"title": title, "subtitle": hook_sub}
 
 
@@ -191,7 +377,11 @@ def _generate_problem(goal: str, design: PageDesign, ctx: dict) -> dict:
             if pain:
                 bullets.append(pain)
     if not bullets:
-        bullets = ["Manual processes consume 80% of productive time", "Existing tools are fragmented and don't communicate", "Teams lack visibility into real-time performance"]
+        bullets = [
+            "Manual processes consume 80% of productive time",
+            "Existing tools are fragmented and don't communicate",
+            "Teams lack visibility into real-time performance",
+        ]
     title = ctx.get("problem_title", "The problem is bigger than you think")
     return {"title": title, "bullets": bullets}
 
@@ -355,7 +545,10 @@ def _generate_demo(goal: str, design: PageDesign, ctx: dict) -> dict:
 def _generate_testimonials(goal: str, design: PageDesign, ctx: dict) -> dict:
     return {
         "title": "Trusted by industry leaders",
-        "quote": {"text": "This platform transformed how we operate. We went from weeks of manual work to minutes.", "author": "VP of Operations, Fortune 500 Company"},
+        "quote": {
+            "text": "This platform transformed how we operate. We went from weeks of manual work to minutes.",
+            "author": "VP of Operations, Fortune 500 Company",
+        },
         "bullets": [
             "Reduced processing time by 85% within first month",
             "Saved $1.2M annually in operational costs",
@@ -407,7 +600,10 @@ def _generate_cta(goal: str, design: PageDesign, ctx: dict) -> dict:
 
 def _generate_generic(goal: str, design: PageDesign, ctx: dict) -> dict:
     product = ctx.get("product", ctx.get("product_name", "our platform"))
-    return {"title": f"More about {product}", "bullets": [f"Key insight about {product}", f"Supporting evidence and data", f"Next steps and action items"]}
+    return {
+        "title": f"More about {product}",
+        "bullets": [f"Key insight about {product}", "Supporting evidence and data", "Next steps and action items"],
+    }
 
 
 def _build_chart(ctx: dict, chart_type: str) -> dict[str, Any]:

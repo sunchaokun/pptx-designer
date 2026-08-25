@@ -15,6 +15,7 @@ Usage::
     grad = mood_gradient("tech", C)
     # → '<defs><linearGradient id="mood-grad" ...>...</linearGradient></defs>'
 """
+
 from __future__ import annotations
 
 from ._compiler import _resolve_svg_color
@@ -59,7 +60,10 @@ def _safe_resolve(val: str, C: dict) -> str:
 _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     "tech": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 1.0),
             (0.5, "accent", 0.9),
@@ -68,7 +72,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "dark": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "0%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "0%",
+        "y2": "100%",
         "stops": [
             (0, "foreground", 1.0),
             (1, "muted", 0.6),
@@ -76,7 +83,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "warm": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (0.6, "accent", 1.0),
@@ -85,7 +95,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "elegant": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 1.0),
             (1, "accent", 0.85),
@@ -93,7 +106,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "luxury": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 1.0),
             (0.5, "accent", 0.95),
@@ -102,7 +118,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "vibrant": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "accent", 1.0),
             (0.5, "primary", 1.0),
@@ -111,7 +130,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "startup": {
         "type": "linear",
-        "x1": "0%", "y1": "100%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "100%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (1, "accent", 1.0),
@@ -119,7 +141,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "nature": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "0%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "0%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 1.0),
             (1, "muted", 0.8),
@@ -127,7 +152,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "calm": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 0.9),
             (1, "muted", 0.7),
@@ -135,7 +163,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "minimal": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 0.8),
             (1, "border", 0.5),
@@ -143,7 +174,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "bold": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 1.0),
             (1, "destructive", 0.9),
@@ -151,7 +185,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "fintech": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (0.7, "accent", 0.9),
@@ -160,7 +197,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "neon": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "accent", 1.0),
             (0.5, "primary", 1.0),
@@ -169,7 +209,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "ink-wash": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "0%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "0%",
+        "y2": "100%",
         "stops": [
             (0, "foreground", 0.9),
             (1, "muted", 0.4),
@@ -177,7 +220,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "professional": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (1, "secondary", 0.7),
@@ -185,7 +231,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "creative": {
         "type": "linear",
-        "x1": "0%", "y1": "100%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "100%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "accent", 1.0),
             (0.5, "primary", 0.9),
@@ -194,7 +243,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "mckinsey": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (1, "accent", 0.85),
@@ -202,7 +254,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "consulting": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 1.0),
             (1, "accent", 0.85),
@@ -210,7 +265,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "retro": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "100%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "100%",
         "stops": [
             (0, "primary", 0.9),
             (0.5, "accent", 0.85),
@@ -219,7 +277,10 @@ _MOOD_GRADIENT_PRESETS: dict[str, dict] = {
     },
     "pastel": {
         "type": "linear",
-        "x1": "0%", "y1": "0%", "x2": "100%", "y2": "0%",
+        "x1": "0%",
+        "y1": "0%",
+        "x2": "100%",
+        "y2": "0%",
         "stops": [
             (0, "primary", 0.7),
             (1, "accent", 0.6),
@@ -265,7 +326,9 @@ def mood_gradient_def(mood: str, C: dict | None = None) -> GradientDef:
     if preset["type"] == "radial":
         return GradientDef(
             stops=stops,
-            cx=0.5, cy=0.5, r=0.5,
+            cx=0.5,
+            cy=0.5,
+            r=0.5,
             gradient_type="radial",
         )
 
@@ -275,7 +338,10 @@ def mood_gradient_def(mood: str, C: dict | None = None) -> GradientDef:
     y2 = _parse_pct(preset.get("y2", "0%"))
     return GradientDef(
         stops=stops,
-        x1=x1, y1=y1, x2=x2, y2=y2,
+        x1=x1,
+        y1=y1,
+        x2=x2,
+        y2=y2,
         gradient_type="linear",
     )
 
@@ -297,14 +363,8 @@ def _build_linear_svg(preset: dict, C: dict, grad_id: str) -> str:
     stops_xml = ""
     for pos, color_key, opacity in preset["stops"]:
         resolved = _safe_resolve(C.get(color_key, "#000000"), C)
-        stops_xml += (
-            f'<stop offset="{pos}" stop-color="{resolved}"'
-            f' stop-opacity="{opacity}"/>\n'
-        )
-    return (
-        f'<defs><linearGradient {" ".join(attrs)}>\n'
-        f'{stops_xml}</linearGradient></defs>'
-    )
+        stops_xml += f'<stop offset="{pos}" stop-color="{resolved}" stop-opacity="{opacity}"/>\n'
+    return f"<defs><linearGradient {' '.join(attrs)}>\n{stops_xml}</linearGradient></defs>"
 
 
 def _build_radial_svg(preset: dict, C: dict, grad_id: str) -> str:
@@ -317,14 +377,8 @@ def _build_radial_svg(preset: dict, C: dict, grad_id: str) -> str:
     stops_xml = ""
     for pos, color_key, opacity in preset["stops"]:
         resolved = _safe_resolve(C.get(color_key, "#000000"), C)
-        stops_xml += (
-            f'<stop offset="{pos}" stop-color="{resolved}"'
-            f' stop-opacity="{opacity}"/>\n'
-        )
-    return (
-        f'<defs><radialGradient {" ".join(attrs)}>\n'
-        f'{stops_xml}</radialGradient></defs>'
-    )
+        stops_xml += f'<stop offset="{pos}" stop-color="{resolved}" stop-opacity="{opacity}"/>\n'
+    return f"<defs><radialGradient {' '.join(attrs)}>\n{stops_xml}</radialGradient></defs>"
 
 
 def c_to_svg_style(C: dict | None = None) -> str:

@@ -3,7 +3,6 @@ from __future__ import annotations
 from lxml import etree
 from pptx.oxml.ns import qn
 
-
 TRANSITION_TYPES = {
     "fade": ("p:fade", {"thruBlk": "0"}),
     "push": ("p:push", {}),
@@ -109,9 +108,14 @@ def add_entrance_animation(
 
     preset_id, preset_subtype = ENTRANCE_PRESETS[effect]
     _add_animation_to_timing(
-        slide, shape_id, preset_id, preset_subtype,
-        preset_class="entr", delay_ms=delay_ms,
-        duration_ms=duration_ms, click_triggered=click_triggered,
+        slide,
+        shape_id,
+        preset_id,
+        preset_subtype,
+        preset_class="entr",
+        delay_ms=delay_ms,
+        duration_ms=duration_ms,
+        click_triggered=click_triggered,
         visibility_val="visible",
     )
 
@@ -126,14 +130,20 @@ def add_animation_sequence(
     for i, sid in enumerate(shape_ids):
         if i == 0:
             add_entrance_animation(
-                slide, sid, effect=effect,
-                delay_ms=0, duration_ms=duration_ms,
+                slide,
+                sid,
+                effect=effect,
+                delay_ms=0,
+                duration_ms=duration_ms,
                 click_triggered=True,
             )
         else:
             add_entrance_animation(
-                slide, sid, effect=effect,
-                delay_ms=interval_ms, duration_ms=duration_ms,
+                slide,
+                sid,
+                effect=effect,
+                delay_ms=interval_ms,
+                duration_ms=duration_ms,
                 click_triggered=False,
             )
 
@@ -151,9 +161,14 @@ def add_exit_animation(
 
     preset_id, preset_subtype = EXIT_PRESETS[effect]
     _add_animation_to_timing(
-        slide, shape_id, preset_id, preset_subtype,
-        preset_class="exit", delay_ms=delay_ms,
-        duration_ms=duration_ms, click_triggered=click_triggered,
+        slide,
+        shape_id,
+        preset_id,
+        preset_subtype,
+        preset_class="exit",
+        delay_ms=delay_ms,
+        duration_ms=duration_ms,
+        click_triggered=click_triggered,
         visibility_val="hidden",
     )
 
@@ -171,14 +186,19 @@ def add_emphasis_animation(
 
     preset_id, preset_subtype = EMPHASIS_PRESETS[effect]
     _add_animation_to_timing(
-        slide, shape_id, preset_id, preset_subtype,
-        preset_class="emph", delay_ms=delay_ms,
-        duration_ms=duration_ms, click_triggered=click_triggered,
+        slide,
+        shape_id,
+        preset_id,
+        preset_subtype,
+        preset_class="emph",
+        delay_ms=delay_ms,
+        duration_ms=duration_ms,
+        click_triggered=click_triggered,
         visibility_val=None,
     )
 
 
-def _make_cTn(**kwargs) -> etree._Element:
+def _make_ctn(**kwargs) -> etree._Element:
     elem = etree.Element(qn("p:cTn"))
     for k, v in kwargs.items():
         elem.set(k, v)
@@ -209,14 +229,14 @@ def _ensure_timing(sld):
     timing = etree.SubElement(sld, qn("p:timing"))
     tnLst = etree.SubElement(timing, qn("p:tnLst"))
     par_root = etree.SubElement(tnLst, qn("p:par"))
-    cTn_root = _make_cTn(id="1", dur="indefinite", restart="never", nodeType="tmRoot")
+    cTn_root = _make_ctn(id="1", dur="indefinite", restart="never", nodeType="tmRoot")
     par_root.append(cTn_root)
     childTnLst = etree.SubElement(cTn_root, qn("p:childTnLst"))
 
     seq = etree.SubElement(childTnLst, qn("p:seq"))
     seq.set("concurrent", "1")
     seq.set("nextAc", "seek")
-    cTn_seq = _make_cTn(id="2", dur="indefinite", nodeType="mainSeq")
+    cTn_seq = _make_ctn(id="2", dur="indefinite", nodeType="mainSeq")
     seq.append(cTn_seq)
     seqChildTnLst = etree.SubElement(cTn_seq, qn("p:childTnLst"))
 
@@ -261,7 +281,7 @@ def _add_animation_to_timing(
     next_id = max(existing_ids, default=0) + 1
 
     click_par = etree.SubElement(seqChildTnLst, qn("p:par"))
-    cTn_click = _make_cTn(id=str(next_id), fill="hold")
+    cTn_click = _make_ctn(id=str(next_id), fill="hold")
     click_par.append(cTn_click)
     next_id += 1
 
@@ -272,14 +292,14 @@ def _add_animation_to_timing(
     clickChildTnLst = etree.SubElement(cTn_click, qn("p:childTnLst"))
 
     effect_par = etree.SubElement(clickChildTnLst, qn("p:par"))
-    cTn_effect = _make_cTn(id=str(next_id), fill="hold")
+    cTn_effect = _make_ctn(id=str(next_id), fill="hold")
     effect_par.append(cTn_effect)
     next_id += 1
 
     effectChildTnLst = etree.SubElement(cTn_effect, qn("p:childTnLst"))
 
     anim_par = etree.SubElement(effectChildTnLst, qn("p:par"))
-    cTn_anim = _make_cTn(
+    cTn_anim = _make_ctn(
         id=str(next_id),
         presetID=str(preset_id),
         presetClass=preset_class,
@@ -298,7 +318,7 @@ def _add_animation_to_timing(
     if visibility_val is not None:
         set_elem = etree.SubElement(animChildTnLst, qn("p:set"))
         cBhvr = etree.SubElement(set_elem, qn("p:cBhvr"))
-        cTn_set = _make_cTn(id=str(next_id), dur="1", fill="hold")
+        cTn_set = _make_ctn(id=str(next_id), dur="1", fill="hold")
         cBhvr.append(cTn_set)
         next_id += 1
 
@@ -320,7 +340,7 @@ def _add_animation_to_timing(
     else:
         set_elem = etree.SubElement(animChildTnLst, qn("p:set"))
         cBhvr = etree.SubElement(set_elem, qn("p:cBhvr"))
-        cTn_set = _make_cTn(id=str(next_id), dur="1", fill="hold")
+        cTn_set = _make_ctn(id=str(next_id), dur="1", fill="hold")
         cBhvr.append(cTn_set)
         next_id += 1
 

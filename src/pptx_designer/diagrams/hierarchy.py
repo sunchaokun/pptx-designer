@@ -6,7 +6,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class HierarchyDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         nodes_data = self.data.get("nodes", [])
         if not nodes_data:
@@ -43,12 +42,17 @@ class HierarchyDiagram(BaseDiagram):
                 label = nd.get("label", nd.get("name", f"L{lvl}-{i + 1}"))
                 node_id = nd.get("id", label)
 
-                self._nodes.append({
-                    "x": x, "y": y, "width": node_w, "height": level_h,
-                    "label": label,
-                    "fill_role": nd.get("fill_role", self.style.node_fill),
-                    "font_color_role": nd.get("font_color_role", self.style.node_font_color),
-                })
+                self._nodes.append(
+                    {
+                        "x": x,
+                        "y": y,
+                        "width": node_w,
+                        "height": level_h,
+                        "label": label,
+                        "fill_role": nd.get("fill_role", self.style.node_fill),
+                        "font_color_role": nd.get("font_color_role", self.style.node_font_color),
+                    }
+                )
                 node_positions[node_id] = (x, y, node_w, level_h)
 
         for nd in nodes_data:
@@ -57,7 +61,11 @@ class HierarchyDiagram(BaseDiagram):
             if parent_id and parent_id in node_positions and child_id in node_positions:
                 px, py, pw, ph = node_positions[parent_id]
                 cx, cy, cw, ch = node_positions[child_id]
-                self._connectors.append({
-                    "x1": px + pw / 2, "y1": py + ph,
-                    "x2": cx + cw / 2, "y2": cy,
-                })
+                self._connectors.append(
+                    {
+                        "x1": px + pw / 2,
+                        "y1": py + ph,
+                        "x2": cx + cw / 2,
+                        "y2": cy,
+                    }
+                )

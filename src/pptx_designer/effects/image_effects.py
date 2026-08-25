@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import os
 
+from lxml import etree
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.oxml.ns import qn
 from pptx.util import Inches
-from lxml import etree
-
 
 ARTISTIC_EFFECTS: dict[str, tuple[str, dict[str, str]]] = {
     "watercolor_sponge": ("a:artisticWatercolorSponge", {"brushSize": "2", "smoothing": "3"}),
@@ -64,9 +63,7 @@ def _set_no_line(spPr: etree._Element) -> None:
     etree.SubElement(ln, qn("a:noFill"))
 
 
-def fill_shape_with_image(shape, slide, image_path: str,
-                          crop_mode: str = "stretch",
-                          alpha: int = 100) -> str | None:
+def fill_shape_with_image(shape, slide, image_path: str, crop_mode: str = "stretch", alpha: int = 100) -> str | None:
     if not image_path or not _file_exists(image_path):
         return None
     rId = _register_image(slide, image_path)
@@ -92,14 +89,20 @@ def fill_shape_with_image(shape, slide, image_path: str,
     return rId
 
 
-def add_image_in_shape(slide, shape_type, x: float, y: float,
-                       w: float, h: float, image_path: str,
-                       crop_mode: str = "stretch", alpha: int = 100,
-                       border_hex: str | None = None) -> object:
-    shape = slide.shapes.add_shape(shape_type, Inches(x), Inches(y),
-                                   Inches(w), Inches(h))
-    rId = fill_shape_with_image(shape, slide, image_path,
-                                crop_mode=crop_mode, alpha=alpha)
+def add_image_in_shape(
+    slide,
+    shape_type,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    image_path: str,
+    crop_mode: str = "stretch",
+    alpha: int = 100,
+    border_hex: str | None = None,
+) -> object:
+    shape = slide.shapes.add_shape(shape_type, Inches(x), Inches(y), Inches(w), Inches(h))
+    rId = fill_shape_with_image(shape, slide, image_path, crop_mode=crop_mode, alpha=alpha)
     if rId is None:
         return shape
     if border_hex:
@@ -115,29 +118,29 @@ def add_image_in_shape(slide, shape_type, x: float, y: float,
     return shape
 
 
-def add_circle_image(slide, cx: float, cy: float, radius: float,
-                     image_path: str, border_hex: str | None = None) -> object:
+def add_circle_image(
+    slide, cx: float, cy: float, radius: float, image_path: str, border_hex: str | None = None
+) -> object:
     x = cx - radius
     y = cy - radius
     size = radius * 2
-    return add_image_in_shape(slide, MSO_SHAPE.OVAL, x, y, size, size,
-                              image_path, border_hex=border_hex)
+    return add_image_in_shape(slide, MSO_SHAPE.OVAL, x, y, size, size, image_path, border_hex=border_hex)
 
 
-def add_hexagon_image(slide, cx: float, cy: float, size: float,
-                      image_path: str, border_hex: str | None = None) -> object:
+def add_hexagon_image(
+    slide, cx: float, cy: float, size: float, image_path: str, border_hex: str | None = None
+) -> object:
     x = cx - size / 2
     y = cy - size * 0.87 / 2
-    return add_image_in_shape(slide, MSO_SHAPE.HEXAGON, x, y, size, size * 0.87,
-                              image_path, border_hex=border_hex)
+    return add_image_in_shape(slide, MSO_SHAPE.HEXAGON, x, y, size, size * 0.87, image_path, border_hex=border_hex)
 
 
-def add_diamond_image(slide, cx: float, cy: float, size: float,
-                      image_path: str, border_hex: str | None = None) -> object:
+def add_diamond_image(
+    slide, cx: float, cy: float, size: float, image_path: str, border_hex: str | None = None
+) -> object:
     x = cx - size / 2
     y = cy - size / 2
-    return add_image_in_shape(slide, MSO_SHAPE.DIAMOND, x, y, size, size,
-                              image_path, border_hex=border_hex)
+    return add_image_in_shape(slide, MSO_SHAPE.DIAMOND, x, y, size, size, image_path, border_hex=border_hex)
 
 
 # ── OOXML blip effects ──
@@ -177,8 +180,7 @@ def apply_blip_duotone(shape, color1: str, color2: str) -> None:
     srgb2.set("val", color2.lstrip("#"))
 
 
-def apply_blip_brightness_contrast(shape, bright_pct: int = 0,
-                                   contrast_pct: int = 0) -> None:
+def apply_blip_brightness_contrast(shape, bright_pct: int = 0, contrast_pct: int = 0) -> None:
     blip = _get_blip(shape)
     if blip is None:
         return
@@ -201,8 +203,7 @@ def apply_blip_saturation(shape, saturation_pct: int = 100) -> None:
     sat.set("val", str(saturation_pct * 1000))
 
 
-def apply_blip_artistic(shape, effect: str,
-                        params: dict[str, str] | None = None) -> None:
+def apply_blip_artistic(shape, effect: str, params: dict[str, str] | None = None) -> None:
     blip = _get_blip(shape)
     if blip is None:
         return

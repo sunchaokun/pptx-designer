@@ -8,6 +8,7 @@ Handles:
 - Stripping ``<script>``, ``<style>`` elements
 - Normalizing whitespace
 """
+
 from __future__ import annotations
 
 import re
@@ -41,8 +42,19 @@ _STYLE_PROPS = {
 }
 
 _SELF_CLOSING = {
-    "rect", "circle", "ellipse", "line", "polyline", "polygon",
-    "path", "stop", "use", "image", "br", "hr", "input",
+    "rect",
+    "circle",
+    "ellipse",
+    "line",
+    "polyline",
+    "polygon",
+    "path",
+    "stop",
+    "use",
+    "image",
+    "br",
+    "hr",
+    "input",
 }
 
 _STRIP_ELEMENTS = {"script", "style"}

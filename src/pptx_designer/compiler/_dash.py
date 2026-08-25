@@ -7,6 +7,7 @@ Adds:
 - stroke-miterlimit
 - Dash pattern application via OOXML XML injection (python-pptx has no dash API)
 """
+
 from __future__ import annotations
 
 import re
@@ -109,10 +110,7 @@ _NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 
 
 def apply_stroke_style(shape, style: StrokeStyle) -> None:
-    if hasattr(shape, "_element"):
-        sp = shape._element
-    else:
-        sp = shape
+    sp = shape._element if hasattr(shape, "_element") else shape
 
     if not hasattr(sp, "find"):
         return

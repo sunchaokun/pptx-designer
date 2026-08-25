@@ -28,7 +28,7 @@ Usage:
 """
 
 from pptx_designer.data.colors import PALETTES
-from pptx_designer.data.typography import TYPOGRAPHY
 from pptx_designer.data.styles import STYLES
+from pptx_designer.data.typography import TYPOGRAPHY
 
 __all__ = ["PALETTES", "TYPOGRAPHY", "STYLES"]

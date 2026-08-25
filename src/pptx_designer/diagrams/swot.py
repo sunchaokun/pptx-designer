@@ -4,7 +4,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class SwotDiagram(BaseDiagram):
-
     _QUADRANT_COLORS = {
         "strengths": "primary",
         "weaknesses": "secondary",
@@ -45,24 +44,34 @@ class SwotDiagram(BaseDiagram):
             label = q.get("label", keys[i].title())
             fill_role = q.get("fill_role", self._QUADRANT_COLORS.get(keys[i], self.style.node_fill))
 
-            self._nodes.append({
-                "x": qx, "y": qy, "width": half_w, "height": half_h,
-                "label": label,
-                "shape": "rectangle",
-                "fill_role": fill_role,
-                "font_color_role": q.get("font_color_role", self.style.node_font_color),
-                "font_size_pt": self.style.cell_header_font_size_pt,
-                "font_weight": "bold",
-            })
+            self._nodes.append(
+                {
+                    "x": qx,
+                    "y": qy,
+                    "width": half_w,
+                    "height": half_h,
+                    "label": label,
+                    "shape": "rectangle",
+                    "fill_role": fill_role,
+                    "font_color_role": q.get("font_color_role", self.style.node_font_color),
+                    "font_size_pt": self.style.cell_header_font_size_pt,
+                    "font_weight": "bold",
+                }
+            )
 
             items = q.get("items", [])
             if items:
                 item_text = "\n".join(f"• {item}" if not item.startswith(("• ", "- ")) else item for item in items[:8])
-                self._nodes.append({
-                    "x": qx + 0.1, "y": qy + 0.4, "width": half_w - 0.2, "height": half_h - 0.5,
-                    "label": item_text,
-                    "shape": "rectangle",
-                    "fill_role": "background",
-                    "font_color_role": "foreground",
-                    "font_size_pt": self.style.cell_body_font_size_pt,
-                })
+                self._nodes.append(
+                    {
+                        "x": qx + 0.1,
+                        "y": qy + 0.4,
+                        "width": half_w - 0.2,
+                        "height": half_h - 0.5,
+                        "label": item_text,
+                        "shape": "rectangle",
+                        "fill_role": "background",
+                        "font_color_role": "foreground",
+                        "font_size_pt": self.style.cell_body_font_size_pt,
+                    }
+                )

@@ -6,8 +6,7 @@ import tempfile
 from pathlib import Path
 
 from PIL import Image as PILImage
-from PIL import ImageFilter, ImageDraw
-
+from PIL import ImageDraw, ImageFilter
 
 _CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", ".cache", "graded")
 _CACHE_DIR = os.path.normpath(_CACHE_DIR)
@@ -21,17 +20,13 @@ def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
 
-def grade_image_to_palette(image_path: str, palette_hex: str,
-                            alpha: float = 0.10) -> str:
+def grade_image_to_palette(image_path: str, palette_hex: str, alpha: float = 0.10) -> str:
     src = Path(image_path)
     if not src.exists():
         return image_path
     key = hashlib.md5(f"{src.stat().st_mtime}_{palette_hex}_{alpha}".encode()).hexdigest()
     ext = src.suffix.lower()
-    if ext in (".jpg", ".jpeg"):
-        out_name = f"{key}.jpg"
-    else:
-        out_name = f"{key}.png"
+    out_name = f"{key}.jpg" if ext in (".jpg", ".jpeg") else f"{key}.png"
     out_dir = Path(_CACHE_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / out_name
@@ -47,8 +42,7 @@ def grade_image_to_palette(image_path: str, palette_hex: str,
     return str(out_path)
 
 
-def generate_noise_tile(size: int = 200, opacity: float = 0.02,
-                         deck_title: str = "") -> str:
+def generate_noise_tile(size: int = 200, opacity: float = 0.02, deck_title: str = "") -> str:
     noise_dir = os.path.join(tempfile.gettempdir(), "ppt-noise")
     os.makedirs(noise_dir, exist_ok=True)
     seed_part = hashlib.md5(deck_title.encode()).hexdigest()[:8] if deck_title else "default"
@@ -118,17 +112,14 @@ def apply_sepia(image_path: str, intensity: float = 0.5) -> str:
 
     try:
         import numpy as np
+
         arr = np.array(img, dtype=np.float32)
-        sepia_matrix = np.array([
-            [0.393, 0.769, 0.189],
-            [0.349, 0.686, 0.168],
-            [0.272, 0.534, 0.131]
-        ])
+        sepia_matrix = np.array([[0.393, 0.769, 0.189], [0.349, 0.686, 0.168], [0.272, 0.534, 0.131]])
         sepia = arr @ sepia_matrix.T
         sepia = np.clip(sepia, 0, 255)
         result = arr + (sepia - arr) * intensity
         result = np.clip(result, 0, 255).astype(np.uint8)
-        img = PILImage.fromarray(result, 'RGB')
+        img = PILImage.fromarray(result, "RGB")
     except ImportError:
         pixels = img.load()
         w, h = img.size
@@ -159,12 +150,13 @@ def apply_duotone(image_path: str, color1: str, color2: str) -> str:
 
     try:
         import numpy as np
+
         gray = np.array(img, dtype=np.float32) / 255.0
         result = np.zeros((*gray.shape, 3), dtype=np.float32)
         for i in range(3):
             result[:, :, i] = c2[i] + (c1[i] - c2[i]) * gray
         result = np.clip(result, 0, 255).astype(np.uint8)
-        img = PILImage.fromarray(result, 'RGB')
+        img = PILImage.fromarray(result, "RGB")
     except ImportError:
         result = PILImage.new("RGB", img.size)
         pixels = result.load()
@@ -181,17 +173,16 @@ def apply_duotone(image_path: str, color1: str, color2: str) -> str:
     return _save_with_format(img, out_path, image_path)
 
 
-def apply_ink_wash(image_path: str, contrast: float = 1.5,
-                   brightness: float = 0.0) -> str:
+def apply_ink_wash(image_path: str, contrast: float = 1.5, brightness: float = 0.0) -> str:
     src = Path(image_path)
     if not src.exists():
         return image_path
-    out_path = _effects_cache_path(image_path, "ink_wash",
-                                   contrast=contrast, brightness=brightness)
+    out_path = _effects_cache_path(image_path, "ink_wash", contrast=contrast, brightness=brightness)
     if out_path.exists():
         return str(out_path)
     img = PILImage.open(str(src)).convert("L")
     from PIL import ImageEnhance
+
     enhancer = ImageEnhance.Contrast(img)
     img = enhancer.enhance(contrast)
     if brightness != 0.0:
@@ -242,13 +233,11 @@ def apply_vignette(image_path: str, intensity: float = 0.5) -> str:
     return _save_with_format(img, out_path, image_path)
 
 
-def apply_edge_fade(image_path: str, margin_pct: float = 0.1,
-                    bg_color: str | None = None) -> str:
+def apply_edge_fade(image_path: str, margin_pct: float = 0.1, bg_color: str | None = None) -> str:
     src = Path(image_path)
     if not src.exists():
         return image_path
-    out_path = _effects_cache_path(image_path, "edge_fade",
-                                   margin=margin_pct, bg=bg_color or "none")
+    out_path = _effects_cache_path(image_path, "edge_fade", margin=margin_pct, bg=bg_color or "none")
     if out_path.exists():
         return str(out_path)
     img = PILImage.open(str(src)).convert("RGBA")
@@ -281,7 +270,8 @@ def apply_edge_fade(image_path: str, margin_pct: float = 0.1,
 
 # ── Multi-layer Composition ──
 
-def compose_images(layers, width=1920, height=1080, bg_color='#000000'):
+
+def compose_images(layers, width=1920, height=1080, bg_color="#000000"):
     """Composite multiple PIL Image layers into a single image.
 
     Args:
@@ -296,33 +286,44 @@ def compose_images(layers, width=1920, height=1080, bg_color='#000000'):
     Returns:
         PILImage.Image (RGBA)
     """
-    result = PILImage.new('RGBA', (width, height), _hex_to_rgb(bg_color) + (255,))
+    result = PILImage.new("RGBA", (width, height), _hex_to_rgb(bg_color) + (255,))
 
     for layer in layers:
-        img = layer.get('image')
+        img = layer.get("image")
         if isinstance(img, (str, Path)):
             img = PILImage.open(img)
         if img is None:
             continue
 
-        img = img.convert('RGBA')
-        opacity = layer.get('opacity', 1.0)
-        pos = layer.get('position', (0, 0))
+        img = img.convert("RGBA")
+        opacity = layer.get("opacity", 1.0)
+        pos = layer.get("position", (0, 0))
 
         if opacity < 1.0:
             alpha = img.split()[3]
-            alpha = alpha.point(lambda p: int(p * opacity))
+            alpha = alpha.point(lambda p, opacity=opacity: int(p * opacity))
             img.putalpha(alpha)
 
-        result.paste(img, pos, img)
+        # ``paste(..., mask=img)`` also blends the destination alpha channel,
+        # which can turn an opaque canvas translucent.  Crop first so layers
+        # partially outside the canvas retain the previous paste semantics,
+        # then use real RGBA compositing to preserve correct alpha.
+        x, y = pos
+        left, top = max(0, x), max(0, y)
+        right, bottom = min(width, x + img.width), min(height, y + img.height)
+        if right <= left or bottom <= top:
+            continue
+        source_left, source_top = left - x, top - y
+        cropped = img.crop((source_left, source_top, source_left + right - left, source_top + bottom - top))
+        result.alpha_composite(cropped, dest=(left, top))
 
     return result
 
 
 # ── Directional Gradient Mask ──
 
-def apply_gradient_mask(image_path, direction='bottom', color='#000000',
-                        start_opacity=0.0, end_opacity=0.8):
+
+def apply_gradient_mask(image_path, direction="bottom", color="#000000", start_opacity=0.0, end_opacity=0.8):
     """Apply directional gradient mask to an image.
 
     Args:
@@ -339,32 +340,30 @@ def apply_gradient_mask(image_path, direction='bottom', color='#000000',
     if not src.exists():
         return image_path
 
-    out_path = _effects_cache_path(image_path, "grad_mask",
-                                   dir=direction, c=color,
-                                   s=start_opacity, e=end_opacity)
+    out_path = _effects_cache_path(image_path, "grad_mask", dir=direction, c=color, s=start_opacity, e=end_opacity)
     if out_path.exists():
         return str(out_path)
 
-    img = PILImage.open(str(src)).convert('RGBA')
+    img = PILImage.open(str(src)).convert("RGBA")
     w, h = img.size
-    mask = PILImage.new('L', (w, h), 0)
+    mask = PILImage.new("L", (w, h), 0)
     pixels = mask.load()
 
     r, g, b = _hex_to_rgb(color)
 
     for y in range(h):
         for x in range(w):
-            if direction == 'bottom':
+            if direction == "bottom":
                 t = y / max(h - 1, 1)
-            elif direction == 'top':
+            elif direction == "top":
                 t = 1.0 - y / max(h - 1, 1)
-            elif direction == 'right':
+            elif direction == "right":
                 t = x / max(w - 1, 1)
-            elif direction == 'left':
+            elif direction == "left":
                 t = 1.0 - x / max(w - 1, 1)
-            elif direction == 'diagonal_tl':
+            elif direction == "diagonal_tl":
                 t = (x / max(w - 1, 1) + y / max(h - 1, 1)) / 2
-            elif direction == 'diagonal_br':
+            elif direction == "diagonal_br":
                 t = 1.0 - (x / max(w - 1, 1) + y / max(h - 1, 1)) / 2
             else:
                 t = 0
@@ -372,7 +371,7 @@ def apply_gradient_mask(image_path, direction='bottom', color='#000000',
             opacity = start_opacity + (end_opacity - start_opacity) * t
             pixels[x, y] = int(opacity * 255)
 
-    overlay = PILImage.new('RGBA', (w, h), (r, g, b, 0))
+    overlay = PILImage.new("RGBA", (w, h), (r, g, b, 0))
     overlay.putalpha(mask)
     result = PILImage.alpha_composite(img, overlay)
 
@@ -381,9 +380,18 @@ def apply_gradient_mask(image_path, direction='bottom', color='#000000',
 
 # ── Scatter Particles ──
 
-def apply_scatter(image_path, count=50, color='#FFFFFF',
-                  min_size=2, max_size=15, min_alpha=20, max_alpha=120,
-                  distribution='random', seed=None):
+
+def apply_scatter(
+    image_path,
+    count=50,
+    color="#FFFFFF",
+    min_size=2,
+    max_size=15,
+    min_alpha=20,
+    max_alpha=120,
+    distribution="random",
+    seed=None,
+):
     """Add scattered particles to an image.
 
     Args:
@@ -406,15 +414,13 @@ def apply_scatter(image_path, count=50, color='#FFFFFF',
     if not src.exists():
         return image_path
 
-    out_path = _effects_cache_path(image_path, "scatter",
-                                   count=count, c=color, dist=distribution,
-                                   seed=seed)
+    out_path = _effects_cache_path(image_path, "scatter", count=count, c=color, dist=distribution, seed=seed)
     if out_path.exists():
         return str(out_path)
 
-    img = PILImage.open(str(src)).convert('RGBA')
+    img = PILImage.open(str(src)).convert("RGBA")
     w, h = img.size
-    overlay = PILImage.new('RGBA', (w, h), (0, 0, 0, 0))
+    overlay = PILImage.new("RGBA", (w, h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
     rng = _random.Random(seed)
@@ -424,18 +430,18 @@ def apply_scatter(image_path, count=50, color='#FFFFFF',
         size = rng.randint(min_size, max_size)
         alpha = rng.randint(min_alpha, max_alpha)
 
-        if distribution == 'center':
+        if distribution == "center":
             cx, cy = w // 2 + rng.randint(-w // 4, w // 4), h // 2 + rng.randint(-h // 4, h // 4)
-        elif distribution == 'edge':
+        elif distribution == "edge":
             if rng.random() < 0.5:
                 cx = rng.choice([rng.randint(0, w // 6), rng.randint(w * 5 // 6, w - 1)])
                 cy = rng.randint(0, h - 1)
             else:
                 cx = rng.randint(0, w - 1)
                 cy = rng.choice([rng.randint(0, h // 6), rng.randint(h * 5 // 6, h - 1)])
-        elif distribution == 'top':
+        elif distribution == "top":
             cx, cy = rng.randint(0, w - 1), rng.randint(0, h // 3)
-        elif distribution == 'bottom':
+        elif distribution == "bottom":
             cx, cy = rng.randint(0, w - 1), rng.randint(h * 2 // 3, h - 1)
         else:  # random
             cx, cy = rng.randint(0, w - 1), rng.randint(0, h - 1)

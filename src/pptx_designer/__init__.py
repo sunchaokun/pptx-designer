@@ -48,6 +48,7 @@ from pptx_designer.ai import fetch_image
 from pptx_designer.core.pipeline import Presentation, generate_ppt
 from pptx_designer.data import PALETTES, STYLES, TYPOGRAPHY
 from pptx_designer.enterprise.design_dna_extractor import extract_design_dna
+from pptx_designer.renderer.theme import recommend_styles
 
 __all__ = [
     "__version__",
@@ -58,4 +59,5 @@ __all__ = [
     "generate_ppt",
     "fetch_image",
     "extract_design_dna",
+    "recommend_styles",
 ]

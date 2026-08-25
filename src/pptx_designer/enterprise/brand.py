@@ -1,8 +1,8 @@
-﻿"""Brand specification for enterprise mode."""
+"""Brand specification for enterprise mode."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -33,5 +33,3 @@ class BrandSpec:
             footer=data.get("footer"),
             watermark=data.get("watermark"),
         )
-
-

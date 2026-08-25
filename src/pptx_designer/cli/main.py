@@ -16,6 +16,7 @@ from pptx_designer import extract_design_dna, fetch_image, generate_ppt  # noqa:
 
 def _load_dotenv():
     from pptx_designer.utils.env import load_project_dotenv
+
     load_project_dotenv()
 
 
@@ -30,11 +31,31 @@ def _add_image_options(parser):
     img.add_argument("--fetch-images", action="store_true", help="Shortcut for --image-mode search")
     img.add_argument("--unsplash-key", help="Unsplash API access key (or set UNSPLASH_ACCESS_KEY)")
     img.add_argument("--pexels-key", help="Pexels API key (or set PEXELS_API_KEY)")
-    img.add_argument("--llm-provider", choices=["seedream", "doubao", "volcengine", "gpt-image", "dalle", "openai", "wanx", "tongyi", "aliyun", "kimi", "moonshot", "gemini", "google"], help="LLM image provider")
+    img.add_argument(
+        "--llm-provider",
+        choices=[
+            "seedream",
+            "doubao",
+            "volcengine",
+            "gpt-image",
+            "dalle",
+            "openai",
+            "wanx",
+            "tongyi",
+            "aliyun",
+            "kimi",
+            "moonshot",
+            "gemini",
+            "google",
+        ],
+        help="LLM image provider",
+    )
     img.add_argument("--llm-api-key", help="LLM API key (or set PPT_IMAGE_LLM_API_KEY)")
     img.add_argument("--llm-base-url", help="LLM API base URL override")
     img.add_argument("--llm-model", help="LLM model name override")
-    img.add_argument("--no-auto-detect", action="store_true", help="Disable auto-detection of LLM config from host tools")
+    img.add_argument(
+        "--no-auto-detect", action="store_true", help="Disable auto-detection of LLM config from host tools"
+    )
 
 
 def _build_image_config(args):
@@ -143,7 +164,9 @@ def main():
     parser.add_argument("--strategy", help="Override presentation strategy")
     parser.add_argument("--theme", help="Theme preset name (backward compatible)")
     parser.add_argument("--style", help='Natural language style, e.g. "warm fintech pitch" or "dark cyberpunk"')
-    parser.add_argument("--palette", help="Color palette name (25+ options: ocean-blue, cyber-neon, golden-luxury, ...)")
+    parser.add_argument(
+        "--palette", help="Color palette name (25+ options: ocean-blue, cyber-neon, golden-luxury, ...)"
+    )
     parser.add_argument("--fonts", help="Font pair name (20+ options: modern-sans, serif-editorial, tech-mono, ...)")
     parser.add_argument("--decoration", help="Decoration style (10+ options: accent-bar, neon-lines, gold-trim, ...)")
     parser.add_argument("--layout-variant", help="Layout variant (8+ options: sidebar-left, centered, grid-2x2, ...)")
@@ -165,14 +188,36 @@ def main():
     img_group.add_argument("--fetch-images", action="store_true", help="Shortcut for --image-mode search")
     img_group.add_argument("--unsplash-key", help="Unsplash API access key (or set UNSPLASH_ACCESS_KEY)")
     img_group.add_argument("--pexels-key", help="Pexels API key (or set PEXELS_API_KEY)")
-    img_group.add_argument("--llm-provider", choices=["seedream", "doubao", "volcengine", "gpt-image", "dalle", "openai", "wanx", "tongyi", "aliyun", "kimi", "moonshot", "gemini", "google"], help="LLM image provider")
+    img_group.add_argument(
+        "--llm-provider",
+        choices=[
+            "seedream",
+            "doubao",
+            "volcengine",
+            "gpt-image",
+            "dalle",
+            "openai",
+            "wanx",
+            "tongyi",
+            "aliyun",
+            "kimi",
+            "moonshot",
+            "gemini",
+            "google",
+        ],
+        help="LLM image provider",
+    )
     img_group.add_argument("--llm-api-key", help="LLM API key (or set PPT_IMAGE_LLM_API_KEY)")
     img_group.add_argument("--llm-base-url", help="LLM API base URL override")
     img_group.add_argument("--llm-model", help="LLM model name override")
-    img_group.add_argument("--no-auto-detect", action="store_true", help="Disable auto-detection of LLM config from host tools")
+    img_group.add_argument(
+        "--no-auto-detect", action="store_true", help="Disable auto-detection of LLM config from host tools"
+    )
 
     proposal_group = parser.add_argument_group("proposal options")
-    proposal_group.add_argument("--proposal", action="store_true", help="Generate 2-3 style preview PPTs instead of full PPT")
+    proposal_group.add_argument(
+        "--proposal", action="store_true", help="Generate 2-3 style preview PPTs instead of full PPT"
+    )
     proposal_group.add_argument("--confirmed-proposal", help="Resume from a confirmed proposal (e.g. 'A', 'B', 'C')")
     proposal_group.add_argument("--materials-dir", help="Project materials directory for proposals")
 
@@ -247,7 +292,9 @@ def main():
             print(f"Theme: {result['theme']}")
         if result.get("theme_atoms"):
             atoms = result["theme_atoms"]
-            print(f"Style: palette={atoms.get('palette')}, fonts={atoms.get('fonts')}, decoration={atoms.get('decoration')}, layout={atoms.get('layout')}")
+            print(
+                f"Style: palette={atoms.get('palette')}, fonts={atoms.get('fonts')}, decoration={atoms.get('decoration')}, layout={atoms.get('layout')}"
+            )
         if result.get("mode"):
             print(f"Mode: {result['mode']}")
 

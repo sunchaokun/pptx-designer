@@ -24,6 +24,7 @@ def fetch_image(
         "detected_from": fetcher._detected_from or None,
     }
 
+
 __all__ = [
     "ImageFetcher",
     "fetch_image",

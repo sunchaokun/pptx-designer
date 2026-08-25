@@ -1,4 +1,4 @@
-﻿"""Slide utilities �?helper functions for slide manipulation."""
+"""Slide utilities �?helper functions for slide manipulation."""
 
 from __future__ import annotations
 
@@ -14,5 +14,3 @@ def remove_slide(prs: Any, index: int) -> None:
     """
     slide_id = prs.slides._sldIdLst[index]
     prs.slides._sldIdLst.remove(slide_id)
-
-

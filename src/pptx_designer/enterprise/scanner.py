@@ -1,4 +1,4 @@
-﻿"""ProjectScanner �?scan project folder for assets."""
+"""ProjectScanner �?scan project folder for assets."""
 
 from __future__ import annotations
 
@@ -6,8 +6,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
-
+from typing import Any
 
 _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".svg", ".webp"}
 
@@ -17,11 +16,11 @@ _LOGO_PATTERN = re.compile(r"^logo([_-]|$)", re.IGNORECASE)
 @dataclass
 class ProjectAsset:
     project_dir: str
-    template_path: Optional[str] = None
-    logo_path: Optional[str] = None
-    brand_raw: Optional[dict[str, Any]] = None
-    content_raw: Optional[dict[str, Any]] = None
-    readme_path: Optional[str] = None
+    template_path: str | None = None
+    logo_path: str | None = None
+    brand_raw: dict[str, Any] | None = None
+    content_raw: dict[str, Any] | None = None
+    readme_path: str | None = None
     image_pool: list[str] = field(default_factory=list)
 
 
@@ -29,7 +28,6 @@ _TEMPLATE_PATTERN = re.compile(r"template", re.IGNORECASE)
 
 
 class ProjectScanner:
-
     def scan(self, project_dir: str) -> ProjectAsset:
         project = Path(project_dir)
         asset = ProjectAsset(project_dir=project_dir)
@@ -84,5 +82,3 @@ class ProjectScanner:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return None
-
-

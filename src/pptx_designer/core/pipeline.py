@@ -32,10 +32,7 @@ def Presentation(template_path: str | None = None) -> _PptxPresentation:
     Returns:
         A python-pptx Presentation object.
     """
-    if template_path:
-        prs = _PptxPresentation(template_path)
-    else:
-        prs = _PptxPresentation()
+    prs = _PptxPresentation(template_path) if template_path else _PptxPresentation()
     # Set widescreen 16:9
     prs.slide_width = 12192000  # 13.333 inches
     prs.slide_height = 6858000  # 7.5 inches
@@ -49,6 +46,11 @@ def generate_ppt(
     style: str | None = None,
     palette: str | None = None,
     fonts: str | None = None,
+    decoration: str | None = None,
+    layout: str | None = None,
+    layout_variant: str | None = None,
+    mood: str | None = None,
+    style_seed: int | None = None,
     template: str | None = None,
     output: str = "output.pptx",
     slides: int | None = None,
@@ -65,6 +67,11 @@ def generate_ppt(
         style: Design style (e.g., "dark cyberpunk", "warm elegant").
         palette: Exact color palette name.
         fonts: Exact font pair name.
+        decoration: Exact decoration style name.
+        layout: Exact layout variant name.
+        layout_variant: Backward-compatible alias for ``layout``.
+        mood: Optional mood hint used when composing a theme.
+        style_seed: Optional seed for reproducible theme selection.
         template: Path to a .pptx template.
         output: Output file path.
         slides: Number of slides (FreeStyle mode).
@@ -73,25 +80,30 @@ def generate_ppt(
         Dictionary with keys: output_path, slide_count, shapes_count.
     """
     from pptx_designer.renderer.theme import ThemeComposer
-    from pptx_designer.tools.shapes import rect, oval
-    from pptx_designer.tools.text import text, multiline
-    from pptx_designer.tools.cards import kpi_card, highlight_cards, code_block
-    from pptx_designer.tools.layout import page_header, top_bar, page_number
-    from pptx_designer.tools.charts import bar_chart, donut_chart
 
     # ── Step 1: Get theme ──────────────────────────────────────────
     composer = ThemeComposer()
-    theme = composer.compose(style=style, palette=palette, fonts=fonts)
+    layout = layout or layout_variant
+    theme = composer.compose(
+        style=style,
+        palette=palette,
+        fonts=fonts,
+        decoration=decoration,
+        layout=layout,
+        mood=mood,
+        seed=style_seed,
+        query=query,
+    )
     C = theme.get("colors", {})
 
     # ── Step 2: Get pages ──────────────────────────────────────────
     if content:
         # Build mode: user provided structure
         pages = content.get("pages", [])
-        title = content.get("title", query)
     else:
         # FreeStyle mode: use planner
         from pptx_designer.core.planner import StoryPlanner
+
         planner = StoryPlanner()
         story = planner.plan(query, slide_count_override=slides)
         pages = [
@@ -103,11 +115,19 @@ def generate_ppt(
             }
             for p in story.pages
         ]
-        title = story.title
         # Auto-select style if not specified
         if not style:
             style = story.style_hint
-            theme = composer.compose(style=style)
+            theme = composer.compose(
+                style=style,
+                palette=palette,
+                fonts=fonts,
+                decoration=decoration,
+                layout=layout,
+                mood=mood,
+                seed=style_seed,
+                query=query,
+            )
             C = theme.get("colors", {})
 
     # ── Step 3: Create presentation ────────────────────────────────
@@ -138,6 +158,8 @@ def generate_ppt(
         "output_path": output,
         "slide_count": len(prs.slides),
         "shapes_count": shape_count,
+        "theme": theme["name"],
+        "theme_atoms": theme["atoms"],
     }
 
 
@@ -152,10 +174,10 @@ def _render_page(
     total_pages: int,
 ) -> None:
     """Render a single page based on its goal type."""
-    from pptx_designer.tools.shapes import rect, rrect, oval
-    from pptx_designer.tools.text import text, multiline
-    from pptx_designer.tools.cards import kpi_card, highlight_cards, code_block
-    from pptx_designer.tools.layout import page_header, top_bar, page_number
+    from pptx_designer.tools.cards import code_block, highlight_cards, kpi_card
+    from pptx_designer.tools.layout import page_header, page_number, top_bar
+    from pptx_designer.tools.shapes import oval, rect, rrect
+    from pptx_designer.tools.text import text
 
     # Common: top accent bar
     top_bar(slide, C.get("primary", "#1D78FA"))
@@ -163,11 +185,9 @@ def _render_page(
     if goal == "hook":
         # ── Hero slide ───────────────────────────────────────────
         # Large title centered
-        text(slide, 0.5, 1.8, 12.333, 1.5, title,
-             font_size=44, bold=True, color="text_dark", C=C, anchor="middle")
+        text(slide, 0.5, 1.8, 12.333, 1.5, title, font_size=44, bold=True, color="text_dark", C=C, anchor="middle")
         if subtitle:
-            text(slide, 0.5, 3.5, 12.333, 0.8, subtitle,
-                 font_size=20, color="text_body", C=C, anchor="middle")
+            text(slide, 0.5, 3.5, 12.333, 0.8, subtitle, font_size=20, color="text_body", C=C, anchor="middle")
         # Decorative line
         rect(slide, 5.5, 4.5, 2.333, 0.04, C.get("accent", "#FF6B35"))
 
@@ -176,11 +196,10 @@ def _render_page(
         page_header(slide, title, subtitle or "Why this matters", C=C)
         if bullets:
             y = 2.3
-            for j, bullet in enumerate(bullets):
+            for bullet in bullets:
                 # Red accent bullet
                 oval(slide, 1.0, y + 0.08, 0.16, 0.16, C.get("destructive", "#EF4444"))
-                text(slide, 1.4, y, 10.5, 0.4, bullet,
-                     font_size=15, color="text_body", C=C)
+                text(slide, 1.4, y, 10.5, 0.4, bullet, font_size=15, color="text_body", C=C)
                 y += 0.6
 
     elif goal == "solution":
@@ -188,11 +207,10 @@ def _render_page(
         page_header(slide, title, subtitle or "How we solve it", C=C)
         if bullets:
             y = 2.3
-            for j, bullet in enumerate(bullets):
+            for bullet in bullets:
                 # Green accent bullet
                 oval(slide, 1.0, y + 0.08, 0.16, 0.16, "#22C55E")
-                text(slide, 1.4, y, 10.5, 0.4, bullet,
-                     font_size=15, color="text_body", C=C)
+                text(slide, 1.4, y, 10.5, 0.4, bullet, font_size=15, color="text_body", C=C)
                 y += 0.6
 
     elif goal == "features":
@@ -234,8 +252,7 @@ def _render_page(
                 # Bullet list fallback
                 y = 2.3
                 for bullet in bullets:
-                    text(slide, 1.0, y, 11.0, 0.4, f"• {bullet}",
-                         font_size=14, color="text_body", C=C)
+                    text(slide, 1.0, y, 11.0, 0.4, f"• {bullet}", font_size=14, color="text_body", C=C)
                     y += 0.5
 
     elif goal == "code":
@@ -251,28 +268,35 @@ def _render_page(
             y = 2.3
             for j, bullet in enumerate(bullets):
                 # Numbered steps
-                num_box = rrect(slide, 1.0, y, 0.4, 0.35, C.get("primary", "#1D78FA"))
-                text(slide, 1.05, y + 0.02, 0.3, 0.3, str(j + 1),
-                     font_size=12, color="#FFFFFF", bold=True, align="center", C=C)
-                text(slide, 1.6, y, 10.0, 0.4, bullet,
-                     font_size=14, color="text_body", C=C)
+                rrect(slide, 1.0, y, 0.4, 0.35, C.get("primary", "#1D78FA"))
+                text(
+                    slide,
+                    1.05,
+                    y + 0.02,
+                    0.3,
+                    0.3,
+                    str(j + 1),
+                    font_size=12,
+                    color="#FFFFFF",
+                    bold=True,
+                    align="center",
+                    C=C,
+                )
+                text(slide, 1.6, y, 10.0, 0.4, bullet, font_size=14, color="text_body", C=C)
                 y += 0.6
 
     elif goal == "overview":
         # ── Overview with sidebar ────────────────────────────────
         # Left sidebar
         rect(slide, 0, 0, 4.5, 7.5, C.get("primary", "#1D78FA"))
-        text(slide, 0.5, 2.0, 3.5, 1.0, title,
-             font_size=28, bold=True, color="#FFFFFF", C=C)
+        text(slide, 0.5, 2.0, 3.5, 1.0, title, font_size=28, bold=True, color="#FFFFFF", C=C)
         if subtitle:
-            text(slide, 0.5, 3.2, 3.5, 0.5, subtitle,
-                 font_size=14, color="#FFFFFF", C=C)
+            text(slide, 0.5, 3.2, 3.5, 0.5, subtitle, font_size=14, color="#FFFFFF", C=C)
         # Right content
         if bullets:
             y = 2.0
             for bullet in bullets:
-                text(slide, 5.2, y, 7.5, 0.4, f"• {bullet}",
-                     font_size=14, color="text_body", C=C)
+                text(slide, 5.2, y, 7.5, 0.4, f"• {bullet}", font_size=14, color="text_body", C=C)
                 y += 0.5
 
     else:
@@ -281,8 +305,7 @@ def _render_page(
         if bullets:
             y = 2.3
             for bullet in bullets:
-                text(slide, 1.0, y, 11.0, 0.4, f"• {bullet}",
-                     font_size=14, color="text_body", C=C)
+                text(slide, 1.0, y, 11.0, 0.4, f"• {bullet}", font_size=14, color="text_body", C=C)
                 y += 0.5
 
     # ── Page number (all slides except first) ─────────────────────

@@ -1,4 +1,4 @@
-﻿"""TemplateAnalyzer �?extract brand spec from template .pptx."""
+"""TemplateAnalyzer �?extract brand spec from template .pptx."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from pptx.oxml.ns import qn
 
 from pptx_designer.enterprise.brand import BrandSpec
 
-
 _SYS_CLR_FALLBACK = {
     "windowText": "#000000",
     "WindowText": "#000000",
@@ -21,7 +20,6 @@ _SYS_CLR_FALLBACK = {
 
 
 class TemplateAnalyzer:
-
     def analyze(self, template_path: str) -> BrandSpec:
         try:
             prs = Presentation(template_path)
@@ -125,15 +123,19 @@ class TemplateAnalyzer:
         for i, layout in enumerate(slide_master.slide_layouts):
             placeholders = []
             for ph in layout.placeholders:
-                placeholders.append({
-                    "idx": ph.placeholder_format.idx,
-                    "type": str(ph.placeholder_format.type),
-                })
-            layouts.append({
-                "index": i,
-                "name": layout.name,
-                "placeholders": placeholders,
-            })
+                placeholders.append(
+                    {
+                        "idx": ph.placeholder_format.idx,
+                        "type": str(ph.placeholder_format.type),
+                    }
+                )
+            layouts.append(
+                {
+                    "index": i,
+                    "name": layout.name,
+                    "placeholders": placeholders,
+                }
+            )
         return layouts
 
     def _detect_dark_mode(self, colors: dict[str, str]) -> bool:
@@ -143,5 +145,3 @@ class TemplateAnalyzer:
             return (r * 0.299 + g * 0.587 + b * 0.114) < 128
         except (ValueError, IndexError):
             return False
-
-

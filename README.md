@@ -109,6 +109,39 @@ result = generate_ppt(
 result = generate_ppt("AI startup pitch deck", style="dark cyberpunk")
 ```
 
+### Pick a distinct style instead of relying on the default
+
+When `style` is omitted, the planner may choose similar themes for similar
+requests. Ask the library for deterministic, topic-aware presets, then pass one
+choice back into `generate_ppt()` explicitly:
+
+```python
+from pptx_designer import generate_ppt, recommend_styles
+
+options = recommend_styles("AI technology platform")
+# AI/technology -> dark-tech, neon, sci
+chosen = options[0]
+
+result = generate_ppt(
+    "AI technology platform",
+    style=chosen["style"],
+    # Optional atom overrides. Use `layout` in Python; the CLI accepts
+    # `--layout-variant` for the same setting.
+    decoration=chosen["decoration"],
+    layout=chosen["layout"],
+    style_seed=17,
+    output="output/ai-platform.pptx",
+)
+
+print(result["theme_atoms"])  # Persist the actual palette/font/decor/layout selected.
+```
+
+`style_seed` makes automatic atom selection reproducible. Explicit `palette`,
+`fonts`, `decoration`, `layout`, and `mood` values take precedence over a preset.
+The current professional renderer applies the palette to slide rendering;
+decoration and layout atoms are returned and reserved for renderer-level layout
+composition, rather than promising a visual rearrangement they do not yet make.
+
 ---
 
 ## Build Mode

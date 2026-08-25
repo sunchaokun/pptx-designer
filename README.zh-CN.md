@@ -109,6 +109,33 @@ result = generate_ppt(
 result = generate_ppt("AI 创业融资路演", style="dark cyberpunk")
 ```
 
+### 显式选择差异化风格，避免依赖默认值
+
+未传入 `style` 时，规划器对相近请求可能选出相似主题。可先让库基于主题返回稳定的预设候选，再将其中一个候选显式传回 `generate_ppt()`：
+
+```python
+from pptx_designer import generate_ppt, recommend_styles
+
+options = recommend_styles("AI 技术平台")
+# AI/技术类主题 -> dark-tech、neon、sci
+chosen = options[0]
+
+result = generate_ppt(
+    "AI 技术平台",
+    style=chosen["style"],
+    # 可选：锁定候选中的原子参数。Python API 使用 layout；
+    # 命令行等价参数为 --layout-variant。
+    decoration=chosen["decoration"],
+    layout=chosen["layout"],
+    style_seed=17,
+    output="output/ai-platform.pptx",
+)
+
+print(result["theme_atoms"])  # 保存实际使用的色板、字体、装饰和布局参数。
+```
+
+`style_seed` 会让自动选择的原子参数可复现。显式传入的 `palette`、`fonts`、`decoration`、`layout` 和 `mood` 优先于预设。当前专业渲染器会将色板应用到页面绘制；装饰与布局原子会被返回并为渲染器级的布局组合保留，当前不承诺它们已导致页面重新排版。
+
 ---
 
 ## Build 模式

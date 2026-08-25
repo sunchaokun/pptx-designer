@@ -14,16 +14,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from pptx_designer.adapters.ui_ux_adapter import (
-    get_design_system,
-    search_style,
-    is_available,
-)
 from pptx_designer.adapters.slide_search_adapter import (
-    layout_for_goal,
     background_config,
     full_bleed,
+    layout_for_goal,
     pattern_break,
+)
+from pptx_designer.adapters.ui_ux_adapter import (
+    get_design_system,
+    is_available,
+    search_style,
 )
 
 
@@ -112,9 +112,7 @@ class DesignDecider:
         query = getattr(story_plan, "product_type", "general") or "general"
         style_rec = getattr(story_plan, "style_recommendation", "") or ""
 
-        self._design_system = get_design_system(
-            query, variance=variance, motion=motion, density=density
-        )
+        self._design_system = get_design_system(query, variance=variance, motion=motion, density=density)
         self._extract_ux_intelligence(self._design_system)
 
         if is_available() and style_rec:

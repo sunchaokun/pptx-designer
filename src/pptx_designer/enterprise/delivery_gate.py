@@ -1,4 +1,4 @@
-﻿"""Delivery gate — quality checks for PPT output."""
+"""Delivery gate — quality checks for PPT output."""
 
 from __future__ import annotations
 
@@ -60,13 +60,15 @@ class DeliveryGate:
             # Check for blank slides
             for i, slide in enumerate(prs.slides):
                 if len(slide.shapes) == 0:
-                    report.checks.append(CheckItem(
-                        category="content",
-                        check_id="blank_page",
-                        severity="fatal",
-                        slide_index=i,
-                        message=f"Slide {i + 1} is blank",
-                    ))
+                    report.checks.append(
+                        CheckItem(
+                            category="content",
+                            check_id="blank_page",
+                            severity="fatal",
+                            slide_index=i,
+                            message=f"Slide {i + 1} is blank",
+                        )
+                    )
                     report.fatals += 1
                 else:
                     report.passed += 1
@@ -74,18 +76,21 @@ class DeliveryGate:
             report.total_checks = len(report.checks)
 
         except Exception as e:
-            report.checks.append(CheckItem(
-                category="error",
-                check_id="read_error",
-                severity="fatal",
-                message=f"Error reading PPTX: {str(e)}",
-            ))
+            report.checks.append(
+                CheckItem(
+                    category="error",
+                    check_id="read_error",
+                    severity="fatal",
+                    message=f"Error reading PPTX: {str(e)}",
+                )
+            )
             report.fatals += 1
 
         return report
 
-    def auto_fix(self, pptx_path: str, dna: Any = None, plans: list | None = None,
-                 report: QualityReport | None = None) -> None:
+    def auto_fix(
+        self, pptx_path: str, dna: Any = None, plans: list | None = None, report: QualityReport | None = None
+    ) -> None:
         """Auto-fix quality issues.
 
         Args:

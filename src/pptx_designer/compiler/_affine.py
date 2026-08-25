@@ -2,6 +2,7 @@
 
 Pure-Python, no external dependencies. Translated from probe with type annotations.
 """
+
 from __future__ import annotations
 
 import math
@@ -12,8 +13,8 @@ from dataclasses import dataclass
 @dataclass
 class Affine:
     """2D affine matrix | a c e |
-                        | b d f |
-                        | 0 0 1 |
+    | b d f |
+    | 0 0 1 |
     """
 
     a: float = 1.0

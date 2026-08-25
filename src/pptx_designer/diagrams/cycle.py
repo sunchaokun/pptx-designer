@@ -6,7 +6,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class CycleDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         nodes_data = self.data.get("nodes", self.data.get("stages", []))
         if not nodes_data:
@@ -30,12 +29,17 @@ class CycleDiagram(BaseDiagram):
 
             label = nd.get("label", nd.get("name", f"Step {i + 1}"))
 
-            self._nodes.append({
-                "x": nx, "y": ny, "width": node_w, "height": node_h,
-                "label": label,
-                "fill_role": nd.get("fill_role", self.style.node_fill),
-                "font_color_role": nd.get("font_color_role", self.style.node_font_color),
-            })
+            self._nodes.append(
+                {
+                    "x": nx,
+                    "y": ny,
+                    "width": node_w,
+                    "height": node_h,
+                    "label": label,
+                    "fill_role": nd.get("fill_role", self.style.node_fill),
+                    "font_color_role": nd.get("font_color_role", self.style.node_font_color),
+                }
+            )
 
             next_i = (i + 1) % n
             next_angle = 2 * math.pi * next_i / n - math.pi / 2
@@ -45,6 +49,11 @@ class CycleDiagram(BaseDiagram):
             x2 = cx + radius * math.cos(next_angle)
             y2 = cy + radius * math.sin(next_angle)
 
-            self._connectors.append({
-                "x1": x1, "y1": y1, "x2": x2, "y2": y2,
-            })
+            self._connectors.append(
+                {
+                    "x1": x1,
+                    "y1": y1,
+                    "x2": x2,
+                    "y2": y2,
+                }
+            )

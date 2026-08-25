@@ -6,6 +6,7 @@ Extracts paint resolution from _compiler.py and adds:
 - Multi-stop gradient with per-stop alpha
 - spreadMethod (pad/reflect/repeat) — pad only, others raise SVGCompileError
 """
+
 from __future__ import annotations
 
 import math

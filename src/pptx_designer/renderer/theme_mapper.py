@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
-
 # CJK font companions
 CJK_COMPANIONS = {
     "Arial": "Microsoft YaHei",

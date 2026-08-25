@@ -1,4 +1,4 @@
-﻿"""Version manager �?output directory and version numbering."""
+"""Version manager �?output directory and version numbering."""
 
 from __future__ import annotations
 
@@ -35,5 +35,3 @@ def read_meta(version_dir: str) -> dict[str, Any] | None:
         return json.loads(meta_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
-
-

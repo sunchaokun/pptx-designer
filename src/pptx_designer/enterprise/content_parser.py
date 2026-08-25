@@ -1,11 +1,8 @@
-﻿"""Content parser — parse content.json slides[] to PageContent-like dicts."""
+"""Content parser — parse content.json slides[] to PageContent-like dicts."""
 
 from __future__ import annotations
 
 import os
-import re
-from typing import Any
-
 
 _GOAL_KEYWORDS: list[tuple[str, list[str]]] = [
     ("problem", ["problem", "pain point", "challenge"]),

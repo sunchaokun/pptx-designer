@@ -1,4 +1,4 @@
-﻿"""ProposalGenerator �?generate 2-3 style preview PPTs for user selection.
+"""ProposalGenerator �?generate 2-3 style preview PPTs for user selection.
 
 Flow:
   1. Get 2-3 sets of design atoms from ThemeComposer
@@ -89,7 +89,6 @@ _PREVIEW_PAGES: list[dict[str, Any]] = [
 
 
 class ProposalGenerator:
-
     def generate(
         self,
         query: str,
@@ -115,7 +114,9 @@ class ProposalGenerator:
             mood_palettes = all_palettes
             for p in mood_palettes:
                 if p != atoms_a["palette"]:
-                    theme_b = composer.compose(style=style_text, palette=p, seed=(seed + 1) if seed is not None else None)
+                    theme_b = composer.compose(
+                        style=style_text, palette=p, seed=(seed + 1) if seed is not None else None
+                    )
                     atoms_b = theme_b["atoms"]
                     break
 
@@ -132,11 +133,11 @@ class ProposalGenerator:
                     break
 
         proposals: list[dict[str, Any]] = []
-        for idx, (label, theme, atoms) in enumerate([
+        for label, _theme, atoms in [
             ("A", theme_a, atoms_a),
             ("B", theme_b, atoms_b),
             ("C", theme_c, atoms_c),
-        ]):
+        ]:
             filename = f"proposal_{label}.pptx"
             filepath = os.path.join(output_dir, filename)
 
@@ -151,12 +152,14 @@ class ProposalGenerator:
             renderer.save(prs, filepath)
 
             description = self._describe(label, atoms, primary_mood, alt_mood)
-            proposals.append({
-                "id": label,
-                "path": filepath,
-                "atoms": atoms,
-                "description": description,
-            })
+            proposals.append(
+                {
+                    "id": label,
+                    "path": filepath,
+                    "atoms": atoms,
+                    "description": description,
+                }
+            )
 
         return proposals
 
@@ -193,6 +196,3 @@ class ProposalGenerator:
             return f"Same mood, different palette �?{palette} palette, {mood_str} mood"
         else:
             return f"Alternative mood ({alt_mood}) �?{palette} palette, {mood_str} mood"
-
-
-

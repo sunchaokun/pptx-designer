@@ -81,6 +81,36 @@ target-version = "py310"
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
 ignore = ["E501"]
 
+# `C` is the documented palette context argument in the build API.  The
+# affected legacy modules also use OOXML element abbreviations (for example,
+# `spPr`) that mirror the underlying presentation schema.  Scope these
+# compatibility exceptions to existing files; new modules remain checked.
+[tool.ruff.lint.per-file-ignores]
+"src/pptx_designer/compiler/_paint.py" = ["N803"]
+"src/pptx_designer/compiler/_path.py" = ["N806"]
+"src/pptx_designer/compiler/_text.py" = ["N803"]
+"src/pptx_designer/compiler/_theme.py" = ["N803", "N806"]
+"src/pptx_designer/core/decider.py" = ["N806"]
+"src/pptx_designer/core/pipeline.py" = ["N802", "N803", "N806"]
+"src/pptx_designer/core/professional_renderer.py" = ["N803"]
+"src/pptx_designer/effects/animation.py" = ["N806"]
+"src/pptx_designer/effects/image_effects.py" = ["N803", "N806"]
+"src/pptx_designer/effects/shape_effects.py" = ["N803", "N806"]
+"src/pptx_designer/effects/text_effects.py" = ["N803", "N806"]
+"src/pptx_designer/renderer/boolean_shapes.py" = ["N803", "N806"]
+"src/pptx_designer/renderer/freeform_builder.py" = ["N806"]
+"src/pptx_designer/renderer/precision.py" = ["N806"]
+"src/pptx_designer/renderer/shape_utils.py" = ["N806"]
+"src/pptx_designer/renderer/shapes.py" = ["N806"]
+"src/pptx_designer/renderer/theme.py" = ["N806"]
+"src/pptx_designer/tools/cards.py" = ["N803", "N806"]
+"src/pptx_designer/tools/charts.py" = ["N803", "N806"]
+"src/pptx_designer/tools/images.py" = ["N806"]
+"src/pptx_designer/tools/layout.py" = ["N803", "N806"]
+"src/pptx_designer/tools/shapes.py" = ["N803", "N806"]
+"src/pptx_designer/tools/svg.py" = ["N803"]
+"src/pptx_designer/tools/text.py" = ["N803", "N806"]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true

@@ -4,7 +4,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class TableDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         headers = self.data.get("headers", [])
         rows = self.data.get("rows", [])
@@ -32,32 +31,36 @@ class TableDiagram(BaseDiagram):
         col_w = self.region.width / n_cols
 
         for j, hdr in enumerate(headers):
-            self._nodes.append({
-                "x": self.region.left + j * col_w,
-                "y": self.region.top,
-                "width": col_w - gap,
-                "height": header_h,
-                "label": str(hdr),
-                "shape": "rectangle",
-                "fill_role": "primary",
-                "font_color_role": "on-primary",
-                "font_size_pt": self.style.cell_header_font_size_pt,
-                "font_weight": "bold",
-            })
+            self._nodes.append(
+                {
+                    "x": self.region.left + j * col_w,
+                    "y": self.region.top,
+                    "width": col_w - gap,
+                    "height": header_h,
+                    "label": str(hdr),
+                    "shape": "rectangle",
+                    "fill_role": "primary",
+                    "font_color_role": "on-primary",
+                    "font_size_pt": self.style.cell_header_font_size_pt,
+                    "font_weight": "bold",
+                }
+            )
 
         for i, row in enumerate(rows):
             ry = self.region.top + header_h + gap + i * (row_h + gap)
             fill = "background" if i % 2 == 0 else "muted"
             for j in range(n_cols):
                 val = row[j] if j < len(row) else ""
-                self._nodes.append({
-                    "x": self.region.left + j * col_w,
-                    "y": ry,
-                    "width": col_w - gap,
-                    "height": row_h,
-                    "label": str(val),
-                    "shape": "rectangle",
-                    "fill_role": fill,
-                    "font_color_role": "foreground",
-                    "font_size_pt": self.style.cell_body_font_size_pt,
-                })
+                self._nodes.append(
+                    {
+                        "x": self.region.left + j * col_w,
+                        "y": ry,
+                        "width": col_w - gap,
+                        "height": row_h,
+                        "label": str(val),
+                        "shape": "rectangle",
+                        "fill_role": fill,
+                        "font_color_role": "foreground",
+                        "font_size_pt": self.style.cell_body_font_size_pt,
+                    }
+                )

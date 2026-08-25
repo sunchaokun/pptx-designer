@@ -11,20 +11,20 @@ class ChartBuilder:
     def __init__(self, brand_colors: dict | None = None):
         self._colors = brand_colors or {}
 
-    def add_bar_chart(self, slide: Any, left: float, top: float,
-                      width: float, height: float, categories: list,
-                      series: list, **kwargs) -> Any:
+    def add_bar_chart(
+        self, slide: Any, left: float, top: float, width: float, height: float, categories: list, series: list, **kwargs
+    ) -> Any:
         """Add bar chart."""
         pass
 
-    def add_line_chart(self, slide: Any, left: float, top: float,
-                       width: float, height: float, categories: list,
-                       series: list, **kwargs) -> Any:
+    def add_line_chart(
+        self, slide: Any, left: float, top: float, width: float, height: float, categories: list, series: list, **kwargs
+    ) -> Any:
         """Add line chart."""
         pass
 
-    def add_pie_chart(self, slide: Any, left: float, top: float,
-                      width: float, height: float, categories: list,
-                      values: list, **kwargs) -> Any:
+    def add_pie_chart(
+        self, slide: Any, left: float, top: float, width: float, height: float, categories: list, values: list, **kwargs
+    ) -> Any:
         """Add pie chart."""
         pass

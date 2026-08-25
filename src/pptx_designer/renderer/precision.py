@@ -16,9 +16,8 @@ import hashlib
 import logging
 import os
 import tempfile
+from contextlib import suppress
 from typing import Any
-
-logger = logging.getLogger(__name__)
 
 from lxml import etree
 from PIL import Image as PILImage
@@ -29,25 +28,40 @@ from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Inches, Pt
 
-from pptx_designer.enterprise.brand import BrandSpec
-from pptx_designer.renderer.layout import SLIDE_WIDTH, SLIDE_HEIGHT
-from pptx_designer.effects.shape_effects import (
-    apply_gradient, apply_shadow, apply_glow, GradientFill, GradientStop,
-)
-from pptx_designer.effects.text_effects import (
-    apply_text_gradient, apply_text_gradient_preset, set_vertical_text,
-    set_text_rotation, apply_text_outline,
-)
 from pptx_designer.effects.image_effects import (
     add_circle_image as _add_circle_image,
+)
+from pptx_designer.effects.image_effects import (
     add_image_in_shape as _add_image_in_shape,
-    apply_blip_duotone, apply_blip_artistic,
 )
-from pptx_designer.effects.shape_effects import apply_soft_edge
+from pptx_designer.effects.image_effects import (
+    apply_blip_artistic,
+    apply_blip_duotone,
+)
 from pptx_designer.effects.shape_effects import (
-    apply_3d, apply_bevel, apply_pattern_fill, apply_frosted_glass,
+    GradientFill,
+    GradientStop,
+    apply_3d,
+    apply_bevel,
+    apply_frosted_glass,
+    apply_glow,
+    apply_gradient,
+    apply_pattern_fill,
+    apply_shadow,
+    apply_soft_edge,
 )
+from pptx_designer.effects.text_effects import (
+    apply_text_gradient,
+    apply_text_gradient_preset,
+    apply_text_outline,
+    set_text_rotation,
+    set_vertical_text,
+)
+from pptx_designer.enterprise.brand import BrandSpec
+from pptx_designer.renderer.layout import SLIDE_HEIGHT, SLIDE_WIDTH
 from pptx_designer.renderer.shapes import ShapeFactory
+
+logger = logging.getLogger(__name__)
 
 CORNER_RADIUS_SCALE = {
     "sm": 4,
@@ -71,7 +85,6 @@ LAYOUT_GRID = {
 
 
 class PrecisionRenderer:
-
     def __init__(self, brand_spec: BrandSpec | None = None, template_path: str | None = None):
         self._brand = brand_spec
         self._template_path = template_path
@@ -79,8 +92,9 @@ class PrecisionRenderer:
         self._crop_cache_dir = os.path.join(tempfile.gettempdir(), "ppt-precision-crops")
         os.makedirs(self._crop_cache_dir, exist_ok=True)
         self._shape_factory: ShapeFactory | None = None
-        from pptx_designer.renderer.layout import LayoutEngine
         from pptx_designer.effects.decoration_renderer import DecorationRenderer
+        from pptx_designer.renderer.layout import LayoutEngine
+
         self._layout_engine = LayoutEngine()
         self._decoration_renderer = DecorationRenderer()
 
@@ -128,6 +142,7 @@ class PrecisionRenderer:
         if self._has_template:
             try:
                 from pptx_designer.enterprise.slide_utils import remove_slide
+
                 prs = Presentation(self._template_path)
                 while len(prs.slides) > 0:
                     remove_slide(prs, 0)
@@ -158,10 +173,21 @@ class PrecisionRenderer:
 
     # ── Text helpers (run-level fonts) ──
 
-    def add_text(self, slide, text: str, x: float, y: float, w: float, h: float,
-                 font: str | None = None, size: int = 20, color_role: str = "foreground",
-                 color_hex: str | None = None,
-                 bold: bool = False, align: str = "left") -> object:
+    def add_text(
+        self,
+        slide,
+        text: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        font: str | None = None,
+        size: int = 20,
+        color_role: str = "foreground",
+        color_hex: str | None = None,
+        bold: bool = False,
+        align: str = "left",
+    ) -> object:
         font = font or self._font_h()
         color = color_hex or self._c(color_role)
         tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
@@ -176,20 +202,34 @@ class PrecisionRenderer:
         run.font.color.rgb = self._rgb(color)
         run.font.bold = bold
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         cjk = get_cjk_companion(font, "heading" if size >= 20 else "body")
         self._set_font_with_cjk(run, font, cjk)
         return tb
 
-    def add_multiline(self, slide, lines: list[str], x: float, y: float, w: float, h: float,
-                      font: str | None = None, size: int = 14, color_role: str = "foreground",
-                      color_hex: str | None = None,
-                      bold: bool = False, align: str = "left", spacing: int = 6) -> object:
+    def add_multiline(
+        self,
+        slide,
+        lines: list[str],
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        font: str | None = None,
+        size: int = 14,
+        color_role: str = "foreground",
+        color_hex: str | None = None,
+        bold: bool = False,
+        align: str = "left",
+        spacing: int = 6,
+    ) -> object:
         font = font or self._font_b()
         color = color_hex or self._c(color_role)
         tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
         tf = tb.text_frame
         tf.word_wrap = True
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         cjk = get_cjk_companion(font, "heading" if size >= 20 else "body")
         for i, line in enumerate(lines):
             p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
@@ -206,12 +246,21 @@ class PrecisionRenderer:
 
     # ── Text effects helpers (Phase 1) ──
 
-    def add_text_with_gradient(self, slide, x: float, y: float, w: float, h: float,
-                               text: str, gradient_preset: str = "gold-shine",
-                               gradient_stops: list[tuple[str, int]] | None = None,
-                               font_size: int = 44, bold: bool = False,
-                               font: str | None = None,
-                               align: str = "left") -> object:
+    def add_text_with_gradient(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        text: str,
+        gradient_preset: str = "gold-shine",
+        gradient_stops: list[tuple[str, int]] | None = None,
+        font_size: int = 44,
+        bold: bool = False,
+        font: str | None = None,
+        align: str = "left",
+    ) -> object:
         font = font or self._font_h()
         tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
         tf = tb.text_frame
@@ -224,6 +273,7 @@ class PrecisionRenderer:
         run.font.size = Pt(font_size)
         run.font.bold = bold
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         cjk = get_cjk_companion(font, "heading" if font_size >= 20 else "body")
         self._set_font_with_cjk(run, font, cjk)
         if gradient_stops:
@@ -232,12 +282,21 @@ class PrecisionRenderer:
             apply_text_gradient_preset(run, gradient_preset)
         return tb
 
-    def add_vertical_text(self, slide, x: float, y: float, w: float, h: float,
-                          text: str, direction: str = "ea",
-                          font_name: str = "STKaiti", font_size: int = 24,
-                          color_role: str = "foreground",
-                          color_hex: str | None = None,
-                          bold: bool = False) -> object:
+    def add_vertical_text(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        text: str,
+        direction: str = "ea",
+        font_name: str = "STKaiti",
+        font_size: int = 24,
+        color_role: str = "foreground",
+        color_hex: str | None = None,
+        bold: bool = False,
+    ) -> object:
         color = color_hex or self._c(color_role)
         tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
         tf = tb.text_frame
@@ -252,15 +311,23 @@ class PrecisionRenderer:
         run.font.color.rgb = self._rgb(color)
         run.font.bold = bold
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         cjk = get_cjk_companion(font_name, "heading" if font_size >= 20 else "body")
         self._set_font_with_cjk(run, font_name, cjk)
         return tb
 
-    def add_seal_stamp(self, slide, x: float, y: float, size: float,
-                       text: str, fill_hex: str = "#C41E3A",
-                       font_name: str = "SimSun", rotation: float = -15) -> object:
-        sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                                    Inches(x), Inches(y), Inches(size), Inches(size))
+    def add_seal_stamp(
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        text: str,
+        fill_hex: str = "#C41E3A",
+        font_name: str = "SimSun",
+        rotation: float = -15,
+    ) -> object:
+        sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(size), Inches(size))
         sh.fill.solid()
         sh.fill.fore_color.rgb = self._rgb(fill_hex)
         border_hex = self._lighten(fill_hex.lstrip("#"), 40)
@@ -283,84 +350,121 @@ class PrecisionRenderer:
 
     # ── Image effects helpers (Phase 2) ──
 
-    def add_circle_image(self, slide, cx: float, cy: float, radius: float,
-                         image_path: str, border_hex: str | None = None) -> object:
+    def add_circle_image(
+        self, slide, cx: float, cy: float, radius: float, image_path: str, border_hex: str | None = None
+    ) -> object:
         if not image_path or not os.path.isfile(image_path):
             return None
         border = border_hex or self._c("border", None)
-        return _add_circle_image(slide, cx, cy, radius, image_path,
-                                 border_hex=border)
+        return _add_circle_image(slide, cx, cy, radius, image_path, border_hex=border)
 
-    def add_image_with_soft_edge(self, slide, image_path: str,
-                                 x: float, y: float, w: float, h: float,
-                                 radius_pt: float = 10) -> object:
+    def add_image_with_soft_edge(
+        self, slide, image_path: str, x: float, y: float, w: float, h: float, radius_pt: float = 10
+    ) -> object:
         if not image_path or not os.path.isfile(image_path):
             return None
-        shape = slide.shapes.add_picture(image_path, Inches(x), Inches(y),
-                                         Inches(w), Inches(h))
+        shape = slide.shapes.add_picture(image_path, Inches(x), Inches(y), Inches(w), Inches(h))
         apply_soft_edge(shape, radius_pt=radius_pt)
         return shape
 
-    def add_image_with_duotone(self, slide, image_path: str,
-                               x: float, y: float, w: float, h: float,
-                               color1: str = "#0000FF",
-                               color2: str = "#FF0000") -> object:
+    def add_image_with_duotone(
+        self,
+        slide,
+        image_path: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        color1: str = "#0000FF",
+        color2: str = "#FF0000",
+    ) -> object:
         if not image_path or not os.path.isfile(image_path):
             return None
-        shape = _add_image_in_shape(slide, MSO_SHAPE.RECTANGLE, x, y, w, h,
-                                    image_path)
+        shape = _add_image_in_shape(slide, MSO_SHAPE.RECTANGLE, x, y, w, h, image_path)
         apply_blip_duotone(shape, color1, color2)
         return shape
 
-    def add_image_with_artistic(self, slide, image_path: str,
-                                x: float, y: float, w: float, h: float,
-                                effect: str = "watercolor_sponge",
-                                params: dict | None = None) -> object:
+    def add_image_with_artistic(
+        self,
+        slide,
+        image_path: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        effect: str = "watercolor_sponge",
+        params: dict | None = None,
+    ) -> object:
         if not image_path or not os.path.isfile(image_path):
             return None
-        shape = _add_image_in_shape(slide, MSO_SHAPE.RECTANGLE, x, y, w, h,
-                                    image_path)
+        shape = _add_image_in_shape(slide, MSO_SHAPE.RECTANGLE, x, y, w, h, image_path)
         apply_blip_artistic(shape, effect, params)
         return shape
 
     # ── 3D / Pattern / Frosted helpers (Phase 4) ──
 
-    def add_3d_shape(self, slide, x: float, y: float, w: float, h: float,
-                     depth_pt: float = 10.0, material: str = "powder",
-                     extrusion_color: str = "#000000",
-                     shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE) -> object:
-        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y),
-                                    Inches(w), Inches(h))
-        apply_3d(sh, depth_pt=depth_pt, material=material,
-                 extrusion_color=extrusion_color)
+    def add_3d_shape(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        depth_pt: float = 10.0,
+        material: str = "powder",
+        extrusion_color: str = "#000000",
+        shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE,
+    ) -> object:
+        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y), Inches(w), Inches(h))
+        apply_3d(sh, depth_pt=depth_pt, material=material, extrusion_color=extrusion_color)
         return sh
 
-    def add_bevel_shape(self, slide, x: float, y: float, w: float, h: float,
-                        top_w: float = 4.0, top_h: float = 2.0,
-                        material: str = "powder",
-                        shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE) -> object:
-        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y),
-                                    Inches(w), Inches(h))
+    def add_bevel_shape(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        top_w: float = 4.0,
+        top_h: float = 2.0,
+        material: str = "powder",
+        shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE,
+    ) -> object:
+        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y), Inches(w), Inches(h))
         apply_bevel(sh, top_w=top_w, top_h=top_h, material=material)
         return sh
 
-    def add_pattern_fill_shape(self, slide, x: float, y: float, w: float, h: float,
-                               pattern_type: str, fg_color: str, bg_color: str,
-                               fg_alpha: int | None = None,
-                               shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE) -> object:
-        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y),
-                                    Inches(w), Inches(h))
-        apply_pattern_fill(sh, pattern_type, fg_color, bg_color,
-                           fg_alpha=fg_alpha)
+    def add_pattern_fill_shape(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        pattern_type: str,
+        fg_color: str,
+        bg_color: str,
+        fg_alpha: int | None = None,
+        shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE,
+    ) -> object:
+        sh = slide.shapes.add_shape(shape_type, Inches(x), Inches(y), Inches(w), Inches(h))
+        apply_pattern_fill(sh, pattern_type, fg_color, bg_color, fg_alpha=fg_alpha)
         return sh
 
-    def add_frosted_panel(self, slide, x: float, y: float, w: float, h: float,
-                          tint_color: str = "#FFFFFF", tint_alpha: int = 50,
-                          soft_edge: float = 8) -> object:
-        sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y),
-                                    Inches(w), Inches(h))
-        apply_frosted_glass(sh, tint_color=tint_color, tint_alpha=tint_alpha,
-                            soft_edge=soft_edge)
+    def add_frosted_panel(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        tint_color: str = "#FFFFFF",
+        tint_alpha: int = 50,
+        soft_edge: float = 8,
+    ) -> object:
+        sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+        apply_frosted_glass(sh, tint_color=tint_color, tint_alpha=tint_alpha, soft_edge=soft_edge)
         return sh
 
     # ── Image helpers (Pillow pre-crop) ──
@@ -379,18 +483,27 @@ class PrecisionRenderer:
                 cw, ch = iw, int(iw / box_ratio)
                 cl, ct = 0, (ih - ch) // 2
             cropped = img.crop((cl, ct, cl + cw, ct + ch))
-            cp = os.path.join(self._crop_cache_dir,
-                              hashlib.md5(f"{path}:{w}x{h}".encode()).hexdigest() + ".png")
+            cp = os.path.join(self._crop_cache_dir, hashlib.md5(f"{path}:{w}x{h}".encode()).hexdigest() + ".png")
             if not os.path.isfile(cp):
                 cropped.save(cp, "PNG")
         slide.shapes.add_picture(cp, Inches(x), Inches(y), Inches(w), Inches(h))
 
     # ── Shape helpers ──
 
-    def add_rect(self, slide, x: float, y: float, w: float, h: float,
-                 fill_role: str | None = None, fill_hex: str | None = None,
-                 border_role: str | None = None, border_hex: str | None = None,
-                 gradient: bool = False, shadow: bool = False) -> object:
+    def add_rect(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        fill_role: str | None = None,
+        fill_hex: str | None = None,
+        border_role: str | None = None,
+        border_hex: str | None = None,
+        gradient: bool = False,
+        shadow: bool = False,
+    ) -> object:
         fill = fill_hex or self._c(fill_role or "muted")
         sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
         if gradient:
@@ -408,17 +521,24 @@ class PrecisionRenderer:
             sh.line.fill.background()
         return sh
 
-    def add_rounded_rect(self, slide, x: float, y: float, w: float, h: float,
-                         fill_role: str | None = None, fill_hex: str | None = None,
-                         border_role: str | None = None, border_hex: str | None = None,
-                         gradient: bool = False, shadow: bool = False,
-                         corner_radius: str | int = "md") -> object:
+    def add_rounded_rect(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        fill_role: str | None = None,
+        fill_hex: str | None = None,
+        border_role: str | None = None,
+        border_hex: str | None = None,
+        gradient: bool = False,
+        shadow: bool = False,
+        corner_radius: str | int = "md",
+    ) -> object:
         fill = fill_hex or self._c(fill_role or "muted")
         sh = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
-        if isinstance(corner_radius, str):
-            radius_pt = CORNER_RADIUS_SCALE.get(corner_radius, 8)
-        else:
-            radius_pt = corner_radius
+        radius_pt = CORNER_RADIUS_SCALE.get(corner_radius, 8) if isinstance(corner_radius, str) else corner_radius
         min_dim = min(Inches(w), Inches(h))
         adj_val = int((radius_pt * 12700) / (min_dim / 2) * 100000) if min_dim > 0 else 16667
         adj_val = min(100000, max(0, adj_val))
@@ -451,15 +571,27 @@ class PrecisionRenderer:
             sh.line.fill.background()
         return sh
 
-    def add_oval(self, slide, x: float, y: float, w: float, h: float,
-                 fill_role: str | None = None, fill_hex: str | None = None,
-                 gradient: bool = True, shadow: bool = True,
-                 label: str = "", font_size: int = 16,
-                 font_color: str | None = None) -> object:
+    def add_oval(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        fill_role: str | None = None,
+        fill_hex: str | None = None,
+        gradient: bool = True,
+        shadow: bool = True,
+        label: str = "",
+        font_size: int = 16,
+        font_color: str | None = None,
+    ) -> object:
         if fill_role is None and fill_hex is None:
             fill_role = "muted" if self._is_dark() else "primary"
         fill = fill_hex or self._c(fill_role)
-        effective_font_color = font_color or (self._c("foreground", "#FFFFFF") if self._is_dark() else self._c("on-primary", "#FFFFFF"))
+        effective_font_color = font_color or (
+            self._c("foreground", "#FFFFFF") if self._is_dark() else self._c("on-primary", "#FFFFFF")
+        )
         sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(x), Inches(y), Inches(w), Inches(h))
         if gradient:
             apply_gradient(sh, fill, self._darken(fill), gradient_type="path")
@@ -481,10 +613,19 @@ class PrecisionRenderer:
             run.font.bold = True
         return sh
 
-    def add_donut(self, slide, x: float, y: float, size: float,
-                  fill_role: str | None = None, fill_hex: str | None = None,
-                  gradient: bool = True, shadow: bool = True,
-                  label: str = "", font_size: int = 18) -> object:
+    def add_donut(
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        fill_role: str | None = None,
+        fill_hex: str | None = None,
+        gradient: bool = True,
+        shadow: bool = True,
+        label: str = "",
+        font_size: int = 18,
+    ) -> object:
         if fill_role is None and fill_hex is None:
             fill_role = "muted" if self._is_dark() else "primary"
         fill = fill_hex or self._c(fill_role)
@@ -510,10 +651,19 @@ class PrecisionRenderer:
             run.font.bold = True
         return sh
 
-    def add_hexagon(self, slide, x: float, y: float, size: float,
-                    fill_role: str | None = None, fill_hex: str | None = None,
-                    gradient: bool = True, shadow: bool = True,
-                    label: str = "", font_size: int = 16) -> object:
+    def add_hexagon(
+        self,
+        slide,
+        x: float,
+        y: float,
+        size: float,
+        fill_role: str | None = None,
+        fill_hex: str | None = None,
+        gradient: bool = True,
+        shadow: bool = True,
+        label: str = "",
+        font_size: int = 16,
+    ) -> object:
         if fill_role is None and fill_hex is None:
             fill_role = "muted" if self._is_dark() else "primary"
         fill = fill_hex or self._c(fill_role)
@@ -561,8 +711,7 @@ class PrecisionRenderer:
 
     def add_dark_overlay(self, slide, opacity: float = 0.65) -> None:
         bg_hex = self._c("background", "#060B18" if self._is_dark() else "#000000")
-        ov = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0,
-                                    Inches(SLIDE_WIDTH), Inches(SLIDE_HEIGHT))
+        ov = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(SLIDE_WIDTH), Inches(SLIDE_HEIGHT))
         ov.fill.solid()
         ov.fill.fore_color.rgb = self._rgb(bg_hex)
         ov.line.fill.background()
@@ -571,12 +720,11 @@ class PrecisionRenderer:
             a = etree.SubElement(el, qn("a:alpha"))
             a.set("val", str(int(opacity * 100000)))
 
-    def add_gradient_overlay(self, slide, opacity_bottom: float = 0.72,
-                              opacity_top: float = 0.0,
-                              color_role: str = "background") -> None:
+    def add_gradient_overlay(
+        self, slide, opacity_bottom: float = 0.72, opacity_top: float = 0.0, color_role: str = "background"
+    ) -> None:
         bg_hex = self._c(color_role, "#000000")
-        ov = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0,
-                                    Inches(SLIDE_WIDTH), Inches(SLIDE_HEIGHT))
+        ov = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(SLIDE_WIDTH), Inches(SLIDE_HEIGHT))
         ov.line.fill.background()
         top_alpha = int(opacity_top * 100000)
         mid_alpha = int(opacity_bottom * 0.4 * 100000)
@@ -591,22 +739,28 @@ class PrecisionRenderer:
         )
         grad.apply(ov)
 
-    def add_overlay(self, slide, x: float, y: float, w: float, h: float,
-                    color_hex: str = "#000000", opacity: float = 0.65) -> None:
+    def add_overlay(
+        self, slide, x: float, y: float, w: float, h: float, color_hex: str = "#000000", opacity: float = 0.65
+    ) -> None:
         ov = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
         ov.fill.solid()
         ov.fill.fore_color.rgb = self._rgb(color_hex)
         ov.line.fill.background()
-        el = ov._element.find(qn('p:spPr')).find(qn('a:solidFill')).find(qn('a:srgbClr'))
+        el = ov._element.find(qn("p:spPr")).find(qn("a:solidFill")).find(qn("a:srgbClr"))
         if el is not None:
-            a = etree.SubElement(el, qn('a:alpha'))
-            a.set('val', str(int(opacity * 100000)))
+            a = etree.SubElement(el, qn("a:alpha"))
+            a.set("val", str(int(opacity * 100000)))
 
     # ── Brand visual design ──
 
-    def render_slide(self, prs: Presentation, page: dict[str, Any],
-                     layout_variant: dict | None = None,
-                     page_index: int = 0, total_pages: int = 0) -> object:
+    def render_slide(
+        self,
+        prs: Presentation,
+        page: dict[str, Any],
+        layout_variant: dict | None = None,
+        page_index: int = 0,
+        total_pages: int = 0,
+    ) -> object:
         elements = page.get("elements")
         if elements:
             slide_layout = prs.slide_layouts[6]
@@ -664,8 +818,7 @@ class PrecisionRenderer:
             has_image = bool(image_path and os.path.isfile(image_path))
             self.apply_hero_overlay(slide, prs, image_path=image_path if has_image else None)
             if has_blocks:
-                self._render_hero_content(slide, title, subtitle, bullets,
-                                          has_image=has_image, compact=True)
+                self._render_hero_content(slide, title, subtitle, bullets, has_image=has_image, compact=True)
                 self._render_blocks(slide, blocks, is_hero=True)
             else:
                 self._render_hero_content(slide, title, subtitle, bullets, has_image=has_image)
@@ -673,15 +826,14 @@ class PrecisionRenderer:
         else:
             self._draw_sidebar(slide, variant)
             deco_cfg = variant.get("decoration") or {}
-            self.apply_brand_background(slide, prs, goal=goal,
-                                        page_index=page_index, total_pages=total_pages,
-                                        decoration=deco_cfg)
+            self.apply_brand_background(
+                slide, prs, goal=goal, page_index=page_index, total_pages=total_pages, decoration=deco_cfg
+            )
 
             sidebar_side = (variant or {}).get("sidebar_side")
             sidebar_width = (variant or {}).get("sidebar_width", 0)
-            if sidebar_side and sidebar_width:
-                if sidebar_side == "left":
-                    margin_left = max(margin_left, sidebar_width + 0.6)
+            if sidebar_side and sidebar_width and sidebar_side == "left":
+                margin_left = max(margin_left, sidebar_width + 0.6)
 
             cx, cy, cw, ch = self._content_rect(margin_left, has_subtitle=bool(subtitle))
 
@@ -750,13 +902,24 @@ class PrecisionRenderer:
         edge_x = x + width - 0.05 if side == "right" else x
         self.add_rect(slide, edge_x, 0, 0.05, SLIDE_HEIGHT, fill_hex=accent)
 
-    def _render_title_band(self, slide, title: str, subtitle, margin_left: float,
-                           title_align: str, decoration_style: str) -> None:
+    def _render_title_band(
+        self, slide, title: str, subtitle, margin_left: float, title_align: str, decoration_style: str
+    ) -> None:
         align = "center" if title_align == "center" else "left"
         tw = SLIDE_WIDTH - margin_left - LAYOUT_GRID["margin_right"]
         tx = margin_left if align == "left" else (SLIDE_WIDTH - tw) / 2
-        self.add_text(slide, title, tx, LAYOUT_GRID["title_y"], tw, 0.9,
-                      size=LAYOUT_GRID["title_size"], color_role="foreground", bold=True, align=align)
+        self.add_text(
+            slide,
+            title,
+            tx,
+            LAYOUT_GRID["title_y"],
+            tw,
+            0.9,
+            size=LAYOUT_GRID["title_size"],
+            color_role="foreground",
+            bold=True,
+            align=align,
+        )
 
         colors = {
             "primary": self._c("primary", "#2563EB"),
@@ -766,26 +929,60 @@ class PrecisionRenderer:
             "border": self._c("border", "#E2E8F0"),
         }
         self._decoration_renderer.apply_title_decoration(
-            slide, tx, LAYOUT_GRID["title_y"], tw, decoration_style, colors,
+            slide,
+            tx,
+            LAYOUT_GRID["title_y"],
+            tw,
+            decoration_style,
+            colors,
             add_rect_fn=lambda sl, x, y, w, h, **kw: self.add_rect(sl, x, y, w, h, **kw),
             add_oval_fn=lambda sl, x, y, w, h, **kw: self.add_oval(sl, x, y, w, h, **kw),
             add_text_fn=lambda sl, t, x, y, w, h, **kw: self.add_text(sl, t, x, y, w, h, **kw),
             apply_glow_fn=apply_glow,
         )
         if subtitle:
-            self.add_text(slide, subtitle, tx, LAYOUT_GRID["subtitle_y"], tw, 0.5,
-                          font=self._font_b(), size=14, color_role="muted-foreground", align=align)
+            self.add_text(
+                slide,
+                subtitle,
+                tx,
+                LAYOUT_GRID["subtitle_y"],
+                tw,
+                0.5,
+                font=self._font_b(),
+                size=14,
+                color_role="muted-foreground",
+                align=align,
+            )
 
-    def _render_hero_content(self, slide, title, subtitle, bullets, has_image: bool,
-                             compact: bool = False) -> None:
+    def _render_hero_content(self, slide, title, subtitle, bullets, has_image: bool, compact: bool = False) -> None:
         main_role = "on-primary"  # white on gradient or scrim; scrim guarantees contrast
         if compact:
             if title:
-                self.add_text(slide, title, 0.75, 0.6, SLIDE_WIDTH - 1.5, 0.9,
-                              size=30, color_role=main_role, bold=True, align="left")
+                self.add_text(
+                    slide,
+                    title,
+                    0.75,
+                    0.6,
+                    SLIDE_WIDTH - 1.5,
+                    0.9,
+                    size=30,
+                    color_role=main_role,
+                    bold=True,
+                    align="left",
+                )
             if subtitle:
-                self.add_text(slide, subtitle, 0.75, 1.5, SLIDE_WIDTH - 1.5, 0.5,
-                              font=self._font_b(), size=14, color_role=main_role, align="left")
+                self.add_text(
+                    slide,
+                    subtitle,
+                    0.75,
+                    1.5,
+                    SLIDE_WIDTH - 1.5,
+                    0.5,
+                    font=self._font_b(),
+                    size=14,
+                    color_role=main_role,
+                    align="left",
+                )
             return
 
         # ── Tier 4 — Hero/CTA adaptive vertical layout ──
@@ -793,14 +990,14 @@ class PrecisionRenderer:
         #   top padding (10%), title block (28-32%), subtitle (8-12%),
         #   bullets (16-22%), bottom padding (15-25%)
         accent = self._c("accent", self._c("primary", "#2563EB"))
-        SLIDE_TOP_Y    = 0.55              # top safe margin (above title)
-        SLIDE_BOTTOM_Y = SLIDE_HEIGHT - 0.55   # bottom safe margin
-        USABLE_H       = SLIDE_BOTTOM_Y - SLIDE_TOP_Y   # ≈ 6.4
+        SLIDE_TOP_Y = 0.55  # top safe margin (above title)
+        SLIDE_BOTTOM_Y = SLIDE_HEIGHT - 0.55  # bottom safe margin
+        USABLE_H = SLIDE_BOTTOM_Y - SLIDE_TOP_Y  # ≈ 6.4
 
         # Component heights — adapt to presence/absence
         components = []
         if title:
-            components.append(("title", 1.75))     # baseline 1.75" tall
+            components.append(("title", 1.75))  # baseline 1.75" tall
         if subtitle:
             components.append(("subtitle", 0.85))
         if bullets:
@@ -838,13 +1035,13 @@ class PrecisionRenderer:
             if name == "title":
                 tx = 1.5
                 tw = SLIDE_WIDTH - 3.0
-                self.add_text(slide, title, tx, py, tw, ph,
-                              size=44, color_role=main_role, bold=True, align="center")
+                self.add_text(slide, title, tx, py, tw, ph, size=44, color_role=main_role, bold=True, align="center")
             elif name == "subtitle":
                 sx = 2.0
                 sw = SLIDE_WIDTH - 4.0
-                self.add_text(slide, subtitle, sx, py, sw, ph,
-                              font=self._font_b(), size=18, color_role=main_role, align="center")
+                self.add_text(
+                    slide, subtitle, sx, py, sw, ph, font=self._font_b(), size=18, color_role=main_role, align="center"
+                )
             elif name == "bullets":
                 n = min(4, len(bullets))
                 bullet_lines = [b for b in bullets[:n]]
@@ -854,12 +1051,20 @@ class PrecisionRenderer:
                 # If only 1-2 bullets, make them feel weighty by adding divider
                 if n <= 2 and ph > 1.0:
                     # Add accent divider above bullets (≤2 bullets case)
-                    self.add_rect(slide, (SLIDE_WIDTH - 1.2) / 2, py,
-                                  1.2, 0.04, fill_hex=accent)
+                    self.add_rect(slide, (SLIDE_WIDTH - 1.2) / 2, py, 1.2, 0.04, fill_hex=accent)
                     py += 0.18
-                self.add_multiline(slide, bullet_lines, bx, py, bw,
-                                   ph, size=size, color_role="muted-foreground",
-                                   spacing=8, align="center")
+                self.add_multiline(
+                    slide,
+                    bullet_lines,
+                    bx,
+                    py,
+                    bw,
+                    ph,
+                    size=size,
+                    color_role="muted-foreground",
+                    spacing=8,
+                    align="center",
+                )
 
     def _render_standalone_links(self, slide, links: list | None) -> None:
         """Render standalone link buttons (text + url + position) for hero/cta pages.
@@ -870,6 +1075,7 @@ class PrecisionRenderer:
         if not links:
             return
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         body_font = self._font_b()
         cjk = get_cjk_companion(body_font, "body")
         accent = self._c("accent", self._c("primary", "#2563EB"))
@@ -914,11 +1120,9 @@ class PrecisionRenderer:
             xx = x0 + i * (card_w + gap)
             card_title = card.get("title", "")
             card_body = card.get("text", card.get("body", ""))
-            self.add_card(slide, xx, cy, card_w, ch, card_title, card_body,
-                          featured=(i == 0))
+            self.add_card(slide, xx, cy, card_w, ch, card_title, card_body, featured=(i == 0))
 
-    def _render_content_image(self, slide, image_path, cx: float, cy: float,
-                              cw: float, ch: float) -> None:
+    def _render_content_image(self, slide, image_path, cx: float, cy: float, cw: float, ch: float) -> None:
         img_w = min(4.0, cw * 0.34)
         self.add_masked_image(slide, image_path, cx + cw - img_w, cy, img_w, ch)
 
@@ -926,17 +1130,27 @@ class PrecisionRenderer:
         if total_pages <= 0:
             return
         line_y = SLIDE_HEIGHT - 0.05
-        self.add_rect(slide, 0, line_y, SLIDE_WIDTH, 0.05,
-                      fill_hex=self._c("border", "#E2E8F0"))
+        self.add_rect(slide, 0, line_y, SLIDE_WIDTH, 0.05, fill_hex=self._c("border", "#E2E8F0"))
         accent = self._c("accent", self._c("primary", "#2563EB"))
         fill_w = SLIDE_WIDTH * ((page_index + 1) / total_pages)
         self.add_rect(slide, 0, line_y, fill_w, 0.05, fill_hex=accent)
         num = str(page_index + 1)
-        self.add_text(slide, num, SLIDE_WIDTH - 0.9, LAYOUT_GRID["footer_y"], 0.6, 0.3,
-                      font=self._font_b(), size=11, color_role="muted-foreground", align="right")
+        self.add_text(
+            slide,
+            num,
+            SLIDE_WIDTH - 0.9,
+            LAYOUT_GRID["footer_y"],
+            0.6,
+            0.3,
+            font=self._font_b(),
+            size=11,
+            color_role="muted-foreground",
+            align="right",
+        )
 
     def _render_blocks(self, slide, blocks: list[dict], is_hero: bool = False) -> None:
         from pptx_designer.enterprise.block_renderer import BlockRenderer
+
         br = BlockRenderer(self)
         br.render(slide, blocks, is_hero=is_hero)
 
@@ -955,48 +1169,78 @@ class PrecisionRenderer:
             color = el.get("color")
             color_role = el.get("color_role")
             effective_color = color or self._c(color_role or "foreground", "#1A1A1A")
-            self.add_text(slide, el.get("text", ""), x, y, w, h,
-                          font=el.get("font", self._font_h()),
-                          size=el.get("size", 18),
-                          color_hex=effective_color,
-                          bold=el.get("bold", False),
-                          align=el.get("align", "left"))
+            self.add_text(
+                slide,
+                el.get("text", ""),
+                x,
+                y,
+                w,
+                h,
+                font=el.get("font", self._font_h()),
+                size=el.get("size", 18),
+                color_hex=effective_color,
+                bold=el.get("bold", False),
+                align=el.get("align", "left"),
+            )
 
         elif kind == "multiline":
             lines = el.get("lines", [])
             color = el.get("color")
             color_role = el.get("color_role")
             effective_color = color or self._c(color_role or "foreground", "#1A1A1A")
-            self.add_multiline(slide, lines, x, y, w, h,
-                               font=el.get("font", self._font_b()),
-                               size=el.get("size", 14),
-                               color_hex=effective_color,
-                               bold=el.get("bold", False),
-                               align=el.get("align", "left"),
-                               spacing=el.get("spacing", 6))
+            self.add_multiline(
+                slide,
+                lines,
+                x,
+                y,
+                w,
+                h,
+                font=el.get("font", self._font_b()),
+                size=el.get("size", 14),
+                color_hex=effective_color,
+                bold=el.get("bold", False),
+                align=el.get("align", "left"),
+                spacing=el.get("spacing", 6),
+            )
 
         elif kind == "rect":
             fill = el.get("fill")
             fill_role = el.get("fill_role")
             border = el.get("border")
             border_role = el.get("border_role")
-            self.add_rect(slide, x, y, w, h,
-                          fill_hex=fill, fill_role=fill_role,
-                          border_hex=border, border_role=border_role,
-                          gradient=el.get("gradient", False),
-                          shadow=el.get("shadow", False))
+            self.add_rect(
+                slide,
+                x,
+                y,
+                w,
+                h,
+                fill_hex=fill,
+                fill_role=fill_role,
+                border_hex=border,
+                border_role=border_role,
+                gradient=el.get("gradient", False),
+                shadow=el.get("shadow", False),
+            )
 
         elif kind == "rounded_rect":
             fill = el.get("fill")
             fill_role = el.get("fill_role")
             border = el.get("border")
             border_role = el.get("border_role")
-            self.add_rounded_rect(slide, x, y, w, h,
-                                  fill_hex=fill, fill_role=fill_role,
-                                  border_hex=border, border_role=border_role,
-                                  gradient=el.get("gradient", False),
-                                  shadow=el.get("shadow", False),
-                                  corner_radius=el.get("radius", "md"))
+            self.add_rounded_rect(
+                slide,
+                x,
+                y,
+                w,
+                h,
+                fill_hex=fill,
+                fill_role=fill_role,
+                border_hex=border,
+                border_role=border_role,
+                gradient=el.get("gradient", False),
+                shadow=el.get("shadow", False),
+                corner_radius=el.get("radius", "md"),
+            )
 
         elif kind == "image":
             path = el.get("path", "")
@@ -1016,38 +1260,63 @@ class PrecisionRenderer:
             size = el.get("size", min(w, h))
             fill = el.get("fill")
             fill_role = el.get("fill_role", "primary")
-            self.add_hexagon(slide, x, y, size,
-                             fill_hex=fill, fill_role=fill_role,
-                             gradient=el.get("gradient", True),
-                             shadow=el.get("shadow", True),
-                             label=el.get("label", ""),
-                             font_size=el.get("font_size", 16))
+            self.add_hexagon(
+                slide,
+                x,
+                y,
+                size,
+                fill_hex=fill,
+                fill_role=fill_role,
+                gradient=el.get("gradient", True),
+                shadow=el.get("shadow", True),
+                label=el.get("label", ""),
+                font_size=el.get("font_size", 16),
+            )
 
         elif kind == "oval":
             fill = el.get("fill")
             fill_role = el.get("fill_role", "primary")
-            self.add_oval(slide, x, y, w, h,
-                          fill_hex=fill, fill_role=fill_role,
-                          gradient=el.get("gradient", True),
-                          shadow=el.get("shadow", True),
-                          label=el.get("label", ""),
-                          font_size=el.get("font_size", 16))
+            self.add_oval(
+                slide,
+                x,
+                y,
+                w,
+                h,
+                fill_hex=fill,
+                fill_role=fill_role,
+                gradient=el.get("gradient", True),
+                shadow=el.get("shadow", True),
+                label=el.get("label", ""),
+                font_size=el.get("font_size", 16),
+            )
 
         elif kind == "donut":
             size = el.get("size", min(w, h))
             fill = el.get("fill")
             fill_role = el.get("fill_role", "primary")
-            self.add_donut(slide, x, y, size,
-                           fill_hex=fill, fill_role=fill_role,
-                           gradient=el.get("gradient", True),
-                           shadow=el.get("shadow", True),
-                           label=el.get("label", ""),
-                           font_size=el.get("font_size", 18))
+            self.add_donut(
+                slide,
+                x,
+                y,
+                size,
+                fill_hex=fill,
+                fill_role=fill_role,
+                gradient=el.get("gradient", True),
+                shadow=el.get("shadow", True),
+                label=el.get("label", ""),
+                font_size=el.get("font_size", 18),
+            )
 
-    def _render_bullets_on_slide(self, slide, bullets: list,
-                                 cx: float = 0.75, cy: float = 2.05,
-                                 cw: float = 11.83, ch: float = 4.8,
-                                 links: list | None = None) -> None:
+    def _render_bullets_on_slide(
+        self,
+        slide,
+        bullets: list,
+        cx: float = 0.75,
+        cy: float = 2.05,
+        cw: float = 11.83,
+        ch: float = 4.8,
+        links: list | None = None,
+    ) -> None:
         accent = self._c("accent", self._c("primary", "#2563EB"))
         links = links or []
 
@@ -1057,9 +1326,9 @@ class PrecisionRenderer:
         if len(bullets) <= 4:
             # Use full width, single column
             size = self._fit_bullet_size(bullets, cw, ch, base=16, target_fill=0.75, lo=14, hi=24)
-            tb = self._render_bullet_column(slide, bullets[:8], cx, cy, cw, ch, accent,
-                                            links=links, link_base_index=0,
-                                            override_size=size)
+            self._render_bullet_column(
+                slide, bullets[:8], cx, cy, cw, ch, accent, links=links, link_base_index=0, override_size=size
+            )
             # After rendering, check if bottom of content area is near-empty
             # and fill with a subtle decorative element
             total_h = self._estimate_bullet_height(bullets, cw, size, max(11, int(size * 0.9)))
@@ -1067,21 +1336,19 @@ class PrecisionRenderer:
             if bottom_gap > 0.6:
                 # Place a subtle accent separator at ~70% of the content area
                 sep_y = cy + total_h + 0.2
-                self.add_rect(slide, cx + 1.0, sep_y, cw - 2.0, 0.03,
-                              fill_hex=accent)
+                self.add_rect(slide, cx + 1.0, sep_y, cw - 2.0, 0.03, fill_hex=accent)
             return
 
         if len(bullets) >= 6:
             mid = (len(bullets) + 1) // 2
             col_gap = 0.6
             col_w = (cw - col_gap) / 2
-            self._render_bullet_column(slide, bullets[:mid], cx, cy, col_w, ch, accent,
-                                       links=links, link_base_index=0)
-            self._render_bullet_column(slide, bullets[mid:], cx + col_w + col_gap, cy, col_w, ch, accent,
-                                       links=links, link_base_index=mid)
+            self._render_bullet_column(slide, bullets[:mid], cx, cy, col_w, ch, accent, links=links, link_base_index=0)
+            self._render_bullet_column(
+                slide, bullets[mid:], cx + col_w + col_gap, cy, col_w, ch, accent, links=links, link_base_index=mid
+            )
         else:
-            self._render_bullet_column(slide, bullets[:8], cx, cy, cw, ch, accent,
-                                       links=links, link_base_index=0)
+            self._render_bullet_column(slide, bullets[:8], cx, cy, cw, ch, accent, links=links, link_base_index=0)
 
     def _estimate_bullet_height(self, bullets: list, w: float, size: int, spacing: int) -> float:
         """Rough text-height estimate (CJK-aware) to drive adaptive sizing."""
@@ -1094,9 +1361,9 @@ class PrecisionRenderer:
         sp = spacing / 72.0
         return lines * line_h + max(0, len(bullets) - 1) * sp
 
-    def _fit_bullet_size(self, bullets: list, w: float, h: float,
-                         base: int = 15, target_fill: float = 0.66,
-                         lo: int = 13, hi: int = 20) -> int:
+    def _fit_bullet_size(
+        self, bullets: list, w: float, h: float, base: int = 15, target_fill: float = 0.66, lo: int = 13, hi: int = 20
+    ) -> int:
         size = base
         for _ in range(14):
             spacing = max(10, int(size * 0.8))
@@ -1109,12 +1376,21 @@ class PrecisionRenderer:
                 break
         return max(lo, min(hi, size))
 
-    def _render_bullet_column(self, slide, bullets: list, x: float, y: float,
-                              w: float, h: float, accent: str,
-                              links: list | None = None,
-                              link_base_index: int = 0,
-                              override_size: int | None = None) -> object:
+    def _render_bullet_column(
+        self,
+        slide,
+        bullets: list,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        accent: str,
+        links: list | None = None,
+        link_base_index: int = 0,
+        override_size: int | None = None,
+    ) -> object:
         from pptx_designer.renderer.theme_mapper import get_cjk_companion
+
         size = override_size if override_size else self._fit_bullet_size(bullets, w, h)
         spacing = max(11, int(size * 0.9))
         total_h = self._estimate_bullet_height(bullets, w, size, spacing)
@@ -1140,7 +1416,7 @@ class PrecisionRenderer:
         cjk = get_cjk_companion(body_font, "body")
         text_color = self._c("foreground", "#1E293B")
         accent_rgb = self._rgb(accent)
-        marker = "\u25AA  "
+        marker = "\u25aa  "
         for i, b in enumerate(bullets):
             p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
             p.space_after = Pt(spacing)
@@ -1219,12 +1495,20 @@ class PrecisionRenderer:
         }
         return layout_to_goal.get(layout_name, fallback_goal)
 
-    def _render_diagram_on_slide(self, slide, diagram_type: str, diagram_data: dict,
-                                 cx: float | None = None, cy: float | None = None,
-                                 cw: float | None = None, ch: float | None = None) -> None:
-        from pptx_designer.renderer.diagram_engine import DiagramEngine
+    def _render_diagram_on_slide(
+        self,
+        slide,
+        diagram_type: str,
+        diagram_data: dict,
+        cx: float | None = None,
+        cy: float | None = None,
+        cw: float | None = None,
+        ch: float | None = None,
+    ) -> None:
         from pptx_designer.renderer.diagram.diagram_style import DiagramStyle
         from pptx_designer.renderer.diagram.layout_engine import Region
+        from pptx_designer.renderer.diagram_engine import DiagramEngine
+
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         style = DiagramStyle.from_brand_spec(self.brand) if self._brand else DiagramStyle()
@@ -1235,10 +1519,17 @@ class PrecisionRenderer:
         except Exception as e:
             logger.error("Diagram engine failed for %s: %s", diagram_type, e)
 
-    def _render_svg_diagram_on_slide(self, slide, svg_diagram,
-                                     cx: float | None = None, cy: float | None = None,
-                                     cw: float | None = None, ch: float | None = None):
+    def _render_svg_diagram_on_slide(
+        self,
+        slide,
+        svg_diagram,
+        cx: float | None = None,
+        cy: float | None = None,
+        cw: float | None = None,
+        ch: float | None = None,
+    ):
         from pptx_designer.compiler import SVGCompileError, SVGCompiler
+
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         svg_text = svg_diagram if isinstance(svg_diagram, str) else svg_diagram.get("svg", "")
@@ -1268,9 +1559,15 @@ class PrecisionRenderer:
             C["dark_mode"] = True
         return C
 
-    def _render_code_on_slide(self, slide, code_data,
-                              cx: float | None = None, cy: float | None = None,
-                              cw: float | None = None, ch: float | None = None) -> None:
+    def _render_code_on_slide(
+        self,
+        slide,
+        code_data,
+        cx: float | None = None,
+        cy: float | None = None,
+        cw: float | None = None,
+        ch: float | None = None,
+    ) -> None:
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         code_text = code_data if isinstance(code_data, str) else code_data.get("source", code_data.get("code", ""))
@@ -1282,21 +1579,55 @@ class PrecisionRenderer:
             badge_text = language.upper()
             badge_w = len(badge_text) * 0.1 + 0.3
             badge_y = cy + 0.15
-            self.add_rounded_rect(slide, cx + 0.15, badge_y, badge_w, 0.3,
-                                  fill_role="primary", corner_radius="sm")
-            self.add_text(slide, badge_text, cx + 0.25, badge_y + 0.02, badge_w - 0.2, 0.26,
-                          size=11, color_role="on-primary", bold=True)
+            self.add_rounded_rect(slide, cx + 0.15, badge_y, badge_w, 0.3, fill_role="primary", corner_radius="sm")
+            self.add_text(
+                slide,
+                badge_text,
+                cx + 0.25,
+                badge_y + 0.02,
+                badge_w - 0.2,
+                0.26,
+                size=11,
+                color_role="on-primary",
+                bold=True,
+            )
             code_lines = [f"  {line}" for line in lines[:30]]
-            self.add_multiline(slide, code_lines, cx + 0.35, cy + 0.6, cw - 0.7, ch - 0.7,
-                               font="Consolas", size=12, color_role="muted-foreground", spacing=5)
+            self.add_multiline(
+                slide,
+                code_lines,
+                cx + 0.35,
+                cy + 0.6,
+                cw - 0.7,
+                ch - 0.7,
+                font="Consolas",
+                size=12,
+                color_role="muted-foreground",
+                spacing=5,
+            )
         else:
             code_lines = [f"  {line}" for line in lines[:30]]
-            self.add_multiline(slide, code_lines, cx + 0.35, cy + 0.3, cw - 0.7, ch - 0.5,
-                               font="Consolas", size=12, color_role="muted-foreground", spacing=5)
+            self.add_multiline(
+                slide,
+                code_lines,
+                cx + 0.35,
+                cy + 0.3,
+                cw - 0.7,
+                ch - 0.5,
+                font="Consolas",
+                size=12,
+                color_role="muted-foreground",
+                spacing=5,
+            )
 
-    def _render_exercise_on_slide(self, slide, exercise_data,
-                                  cx: float | None = None, cy: float | None = None,
-                                  cw: float | None = None, ch: float | None = None) -> None:
+    def _render_exercise_on_slide(
+        self,
+        slide,
+        exercise_data,
+        cx: float | None = None,
+        cy: float | None = None,
+        cw: float | None = None,
+        ch: float | None = None,
+    ) -> None:
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         instructions = exercise_data.get("instructions", "") if isinstance(exercise_data, dict) else str(exercise_data)
@@ -1306,19 +1637,26 @@ class PrecisionRenderer:
         self.add_badge(slide, badge_text, cx, cy + 0.15, variant="solid")
         y = cy + 0.55
         if instructions:
-            self.add_text(slide, instructions, cx, y, cw, 0.7,
-                          font=self._font_b(), size=15, color_role="muted-foreground")
+            self.add_text(
+                slide, instructions, cx, y, cw, 0.7, font=self._font_b(), size=15, color_role="muted-foreground"
+            )
             y += 0.9
         if steps:
             step_lines = [f"{i + 1}.  {s}" for i, s in enumerate(steps)]
             steps_h = max(0.5, ch - (y - cy))
-            self.add_multiline(slide, step_lines, cx, y, cw, steps_h,
-                               size=16, color_role="foreground", spacing=10)
+            self.add_multiline(slide, step_lines, cx, y, cw, steps_h, size=16, color_role="foreground", spacing=10)
 
-    def _render_chart_on_slide(self, slide, chart_config: dict,
-                               cx: float | None = None, cy: float | None = None,
-                               cw: float | None = None, ch: float | None = None) -> None:
+    def _render_chart_on_slide(
+        self,
+        slide,
+        chart_config: dict,
+        cx: float | None = None,
+        cy: float | None = None,
+        cw: float | None = None,
+        ch: float | None = None,
+    ) -> None:
         from pptx_designer.renderer.chart_builder import ChartBuilder
+
         if cx is None:
             cx, cy, cw, ch = self._content_rect(LAYOUT_GRID["margin_left"])
         brand_colors = None
@@ -1330,19 +1668,22 @@ class PrecisionRenderer:
                 brand_fonts = self._brand.fonts
         position = {"x": cx, "y": cy, "width": cw, "height": ch}
         builder = ChartBuilder()
-        try:
-            builder.build(slide, chart_config, position=position,
-                          brand_colors=brand_colors, brand_fonts=brand_fonts)
-        except Exception:
-            pass
+        with suppress(Exception):
+            builder.build(slide, chart_config, position=position, brand_colors=brand_colors, brand_fonts=brand_fonts)
 
     def _render_notes_on_slide(self, slide, notes_text: str) -> None:
         notes_slide = slide.notes_slide
         notes_slide.notes_text_frame.text = notes_text
 
-    def apply_brand_background(self, slide, prs: Presentation, goal: str = "content",
-                                page_index: int = 0, total_pages: int = 0,
-                                decoration: dict | None = None) -> None:
+    def apply_brand_background(
+        self,
+        slide,
+        prs: Presentation,
+        goal: str = "content",
+        page_index: int = 0,
+        total_pages: int = 0,
+        decoration: dict | None = None,
+    ) -> None:
         deco = decoration or {}
         bg_hex = self._c("background", "#FFFFFF")
         try:
@@ -1362,28 +1703,27 @@ class PrecisionRenderer:
         # Style-driven background decoration.
         if deco.get("grid_background"):
             from pptx_designer.effects.decoration import add_grid_background
-            try:
+
+            with suppress(Exception):
                 add_grid_background(slide, spacing=1.2, color=primary_hex, alpha=7)
-            except Exception:
-                pass
         if deco.get("neon_accent"):
             self._add_bg_glow(slide, accent_hex)
         if deco.get("circle_decoration") or deco.get("left_accent"):
             self._add_bg_circle(slide, primary_hex)
         if deco.get("seal_decoration"):
             from pptx_designer.effects.decoration import add_seal_stamp
-            try:
-                add_seal_stamp(slide, SLIDE_WIDTH - 1.15, 0.35, 0.5, "智",
-                               fill_hex=self._lighten(accent_hex, 45), style="zhu")
-            except Exception:
-                pass
+
+            with suppress(Exception):
+                add_seal_stamp(
+                    slide, SLIDE_WIDTH - 1.15, 0.35, 0.5, "智", fill_hex=self._lighten(accent_hex, 45), style="zhu"
+                )
         if deco.get("brush_divider"):
             from pptx_designer.effects.decoration import add_brush_divider
-            try:
-                add_brush_divider(slide, 0, SLIDE_HEIGHT - 0.18, SLIDE_WIDTH,
-                                  color=self._lighten(accent_hex, 20), thickness=0.06)
-            except Exception:
-                pass
+
+            with suppress(Exception):
+                add_brush_divider(
+                    slide, 0, SLIDE_HEIGHT - 0.18, SLIDE_WIDTH, color=self._lighten(accent_hex, 20), thickness=0.06
+                )
         if deco.get("left_accent"):
             self.add_rect(slide, 0, 0, 0.05, SLIDE_HEIGHT, fill_hex=accent_hex, gradient=True)
 
@@ -1391,12 +1731,10 @@ class PrecisionRenderer:
         self._add_bg_corner_accent(slide, accent_hex, top_left=(page_index % 2 == 0))
 
         # Consistent top accent line — the "format anchor".
-        self.add_rect(slide, 0, 0, SLIDE_WIDTH, LAYOUT_GRID["top_accent_h"],
-                      fill_hex=accent_hex)
+        self.add_rect(slide, 0, 0, SLIDE_WIDTH, LAYOUT_GRID["top_accent_h"], fill_hex=accent_hex)
 
     def _add_bg_circle(self, slide, color_hex: str) -> None:
-        sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(-0.8), Inches(SLIDE_HEIGHT - 3.2),
-                                    Inches(4.0), Inches(4.0))
+        sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(-0.8), Inches(SLIDE_HEIGHT - 3.2), Inches(4.0), Inches(4.0))
         sh.fill.solid()
         sh.fill.fore_color.rgb = self._rgb(color_hex)
         sh.line.fill.background()
@@ -1420,8 +1758,7 @@ class PrecisionRenderer:
             a.set("val", str(int(0.12 * 100000)))
 
     def _add_bg_glow(self, slide, color_hex: str) -> None:
-        sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(0.2), Inches(0.0),
-                                    Inches(2.6), Inches(1.1))
+        sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(0.2), Inches(0.0), Inches(2.6), Inches(1.1))
         sh.fill.solid()
         sh.fill.fore_color.rgb = self._rgb(color_hex)
         sh.line.fill.background()
@@ -1429,10 +1766,8 @@ class PrecisionRenderer:
         if el is not None:
             a = etree.SubElement(el, qn("a:alpha"))
             a.set("val", str(int(0.10 * 100000)))
-        try:
+        with suppress(Exception):
             apply_glow(sh, radius_pt=14, color=color_hex, alpha_pct=28)
-        except Exception:
-            pass
 
     def apply_hero_overlay(self, slide, prs: Presentation, image_path: str | None = None) -> None:
         if image_path and os.path.isfile(image_path):
@@ -1440,16 +1775,15 @@ class PrecisionRenderer:
             # Light bottom gradient so the image stays visible.
             self.add_gradient_overlay(slide, opacity_bottom=0.42, opacity_top=0.0)
             # Soft dark scrim behind the title band for text contrast.
-            self.add_overlay(slide, 0, 2.0, SLIDE_WIDTH, 2.5,
-                             color_hex="#000000", opacity=0.30)
+            self.add_overlay(slide, 0, 2.0, SLIDE_WIDTH, 2.5, color_hex="#000000", opacity=0.30)
         else:
             primary_hex = self._c("primary", "#2563EB")
-            self.add_rect(slide, 0, 0, SLIDE_WIDTH, SLIDE_HEIGHT,
-                          fill_hex=self._darken(primary_hex, 12), gradient=True)
+            self.add_rect(slide, 0, 0, SLIDE_WIDTH, SLIDE_HEIGHT, fill_hex=self._darken(primary_hex, 12), gradient=True)
             accent_hex = self._c("accent", self._c("primary", "#2563EB"))
             # soft radial glow in a corner for depth
-            sh = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(SLIDE_WIDTH - 4.5), Inches(-2.5),
-                                        Inches(7.0), Inches(7.0))
+            sh = slide.shapes.add_shape(
+                MSO_SHAPE.OVAL, Inches(SLIDE_WIDTH - 4.5), Inches(-2.5), Inches(7.0), Inches(7.0)
+            )
             sh.fill.solid()
             sh.fill.fore_color.rgb = self._rgb(accent_hex)
             sh.line.fill.background()
@@ -1458,8 +1792,9 @@ class PrecisionRenderer:
                 a = etree.SubElement(el, qn("a:alpha"))
                 a.set("val", str(int(0.14 * 100000)))
             # bottom-left secondary glow
-            sh2 = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(-3.0), Inches(SLIDE_HEIGHT - 4.0),
-                                         Inches(6.0), Inches(6.0))
+            sh2 = slide.shapes.add_shape(
+                MSO_SHAPE.OVAL, Inches(-3.0), Inches(SLIDE_HEIGHT - 4.0), Inches(6.0), Inches(6.0)
+            )
             sh2.fill.solid()
             sh2.fill.fore_color.rgb = self._rgb(primary_hex)
             sh2.line.fill.background()
@@ -1470,34 +1805,53 @@ class PrecisionRenderer:
 
     # ── Card component ──
 
-    def add_card(self, slide, x: float, y: float, w: float, h: float,
-                 title: str, body: str, accent_role: str = "primary",
-                 featured: bool = False) -> None:
+    def add_card(
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        title: str,
+        body: str,
+        accent_role: str = "primary",
+        featured: bool = False,
+    ) -> None:
         accent_hex = self._c(accent_role)
         card_bg = self._c("muted", "#0D152A" if self._is_dark() else "#F8FAFC")
         card_bd = self._c("border", "#1A2A4A" if self._is_dark() else "#E2E8F0")
         pad = 0.32
         title_size = 22 if featured else 20
-        self.add_rounded_rect(slide, x, y, w, h, fill_hex=card_bg, border_hex=card_bd,
-                              gradient=True, shadow=True, corner_radius="md")
+        self.add_rounded_rect(
+            slide, x, y, w, h, fill_hex=card_bg, border_hex=card_bd, gradient=True, shadow=True, corner_radius="md"
+        )
         bar_h = 0.08
         bar_w = (w - 2 * pad) if featured else (w - 2 * pad) * 0.4
-        self.add_rect(slide, x + pad, y + pad - 0.08, bar_w, bar_h,
-                      fill_hex=accent_hex, gradient=True)
-        self.add_text(slide, title, x + pad, y + pad + 0.1, w - 2 * pad, 0.55,
-                      self._font_h(), title_size, accent_role, bold=True)
+        self.add_rect(slide, x + pad, y + pad - 0.08, bar_w, bar_h, fill_hex=accent_hex, gradient=True)
+        self.add_text(
+            slide, title, x + pad, y + pad + 0.1, w - 2 * pad, 0.55, self._font_h(), title_size, accent_role, bold=True
+        )
         body_lines = body.split("\n")
         body_size = 15 if len(body_lines) <= 2 else 14
         # center body vertically within the remaining card space
         body_top = y + pad + 0.75
         body_h = h - pad - 0.75 - 0.2
-        self.add_multiline(slide, body_lines, x + pad, body_top, w - 2 * pad, body_h,
-                           self._font_b(), body_size, "muted-foreground", spacing=6)
+        self.add_multiline(
+            slide,
+            body_lines,
+            x + pad,
+            body_top,
+            w - 2 * pad,
+            body_h,
+            self._font_b(),
+            body_size,
+            "muted-foreground",
+            spacing=6,
+        )
 
     # ── Brand compliance: logo, footer, watermark ──
 
-    def apply_logo(self, slide, logo_path: str, prs: Presentation,
-                   current_goal: str | None = None) -> None:
+    def apply_logo(self, slide, logo_path: str, prs: Presentation, current_goal: str | None = None) -> None:
         if not self._brand or not self._brand.logo:
             return
         logo_spec = self._brand.logo
@@ -1647,11 +2001,10 @@ class PrecisionRenderer:
 
     # ── §2.3 Badge/Tag styling ──
 
-    def add_badge(self, slide, text: str, x: float, y: float,
-                  variant: str = "default", size: str = "sm") -> None:
+    def add_badge(self, slide, text: str, x: float, y: float, variant: str = "default", size: str = "sm") -> None:
         font_size = {"sm": 11, "md": 11, "lg": 12}.get(size, 11)
         badge_text = text.upper()
-        cjk_count = sum(1 for ch in badge_text if '\u4e00' <= ch <= '\u9fff' or '\u3000' <= ch <= '\u303f')
+        cjk_count = sum(1 for ch in badge_text if "\u4e00" <= ch <= "\u9fff" or "\u3000" <= ch <= "\u303f")
         latin_count = len(badge_text) - cjk_count
         char_width = font_size * 0.009
         cjk_width = font_size * 0.016
@@ -1659,53 +2012,106 @@ class PrecisionRenderer:
         badge_h = 0.35
         if variant == "default":
             tint_hex = self._lighten(self._c("primary", "#2563EB"))
-            self.add_rounded_rect(slide, x, y, badge_w, badge_h,
-                                  fill_hex=tint_hex, corner_radius="sm")
-            self.add_text(slide, badge_text, x + 0.1, y + 0.02, badge_w - 0.2, badge_h - 0.04,
-                          size=font_size, color_role="primary", bold=True)
+            self.add_rounded_rect(slide, x, y, badge_w, badge_h, fill_hex=tint_hex, corner_radius="sm")
+            self.add_text(
+                slide,
+                badge_text,
+                x + 0.1,
+                y + 0.02,
+                badge_w - 0.2,
+                badge_h - 0.04,
+                size=font_size,
+                color_role="primary",
+                bold=True,
+            )
         elif variant == "solid":
-            self.add_rounded_rect(slide, x, y, badge_w, badge_h,
-                                  fill_role="primary", corner_radius="sm")
-            self.add_text(slide, badge_text, x + 0.1, y + 0.02, badge_w - 0.2, badge_h - 0.04,
-                          size=font_size, color_role="on-primary", bold=True)
+            self.add_rounded_rect(slide, x, y, badge_w, badge_h, fill_role="primary", corner_radius="sm")
+            self.add_text(
+                slide,
+                badge_text,
+                x + 0.1,
+                y + 0.02,
+                badge_w - 0.2,
+                badge_h - 0.04,
+                size=font_size,
+                color_role="on-primary",
+                bold=True,
+            )
         elif variant == "outline":
-            self.add_rounded_rect(slide, x, y, badge_w, badge_h,
-                                  fill_hex=self._c("background", "#FFFFFF"),
-                                  border_role="primary", corner_radius="sm")
-            self.add_text(slide, badge_text, x + 0.1, y + 0.02, badge_w - 0.2, badge_h - 0.04,
-                          size=font_size, color_role="primary", bold=True)
+            self.add_rounded_rect(
+                slide,
+                x,
+                y,
+                badge_w,
+                badge_h,
+                fill_hex=self._c("background", "#FFFFFF"),
+                border_role="primary",
+                corner_radius="sm",
+            )
+            self.add_text(
+                slide,
+                badge_text,
+                x + 0.1,
+                y + 0.02,
+                badge_w - 0.2,
+                badge_h - 0.04,
+                size=font_size,
+                color_role="primary",
+                bold=True,
+            )
 
     # ── §2.4 Section divider ──
 
-    def render_section_divider(self, slide_or_prs, section_number: int,
-                                section_title: str, section_subtitle: str = "") -> object:
-        if hasattr(slide_or_prs, 'background'):
-            slide = slide_or_prs
-        else:
-            slide = self.add_slide(slide_or_prs)
+    def render_section_divider(
+        self, slide_or_prs, section_number: int, section_title: str, section_subtitle: str = ""
+    ) -> object:
+        slide = slide_or_prs if hasattr(slide_or_prs, "background") else self.add_slide(slide_or_prs)
         primary_hex = self._c("primary", "#2563EB")
-        if self._is_dark():
-            bg = self._lighten(primary_hex, 115)
-        else:
-            bg = self._lighten(primary_hex, 75)
+        bg = self._lighten(primary_hex, 115) if self._is_dark() else self._lighten(primary_hex, 75)
         fill = slide.background.fill
         fill.solid()
         fill.fore_color.rgb = self._rgb(bg)
-        if isinstance(section_number, str):
-            display_num = section_number
-        else:
-            display_num = f"{section_number:02d}"
-        self.add_text(slide, display_num, 1.5, 1.6, SLIDE_WIDTH - 3.0, 2.0,
-                      size=72, color_role="primary", bold=True, align="center")
-        self.add_text(slide, section_title, 1.5, 3.6, SLIDE_WIDTH - 3.0, 1.0,
-                      size=40, color_role="foreground", bold=True, align="center")
+        display_num = section_number if isinstance(section_number, str) else f"{section_number:02d}"
+        self.add_text(
+            slide,
+            display_num,
+            1.5,
+            1.6,
+            SLIDE_WIDTH - 3.0,
+            2.0,
+            size=72,
+            color_role="primary",
+            bold=True,
+            align="center",
+        )
+        self.add_text(
+            slide,
+            section_title,
+            1.5,
+            3.6,
+            SLIDE_WIDTH - 3.0,
+            1.0,
+            size=40,
+            color_role="foreground",
+            bold=True,
+            align="center",
+        )
         accent = self._c("accent", self._c("primary", "#2563EB"))
         bar_w = min(3.0, len(section_title) * 0.14 + 0.8)
-        self.add_rect(slide, (SLIDE_WIDTH - bar_w) / 2, 4.75, bar_w, 0.045,
-                      fill_hex=accent, gradient=True)
+        self.add_rect(slide, (SLIDE_WIDTH - bar_w) / 2, 4.75, bar_w, 0.045, fill_hex=accent, gradient=True)
         if section_subtitle:
-            self.add_text(slide, section_subtitle, 2.0, 4.95, SLIDE_WIDTH - 4.0, 0.5,
-                          font=self._font_b(), size=18, color_role="muted-foreground", align="center")
+            self.add_text(
+                slide,
+                section_subtitle,
+                2.0,
+                4.95,
+                SLIDE_WIDTH - 4.0,
+                0.5,
+                font=self._font_b(),
+                size=18,
+                color_role="muted-foreground",
+                align="center",
+            )
         return slide
 
     # ── §3.2 Progress bar ──
@@ -1713,24 +2119,21 @@ class PrecisionRenderer:
     def add_progress_bar(self, slide, current: int, total: int) -> None:
         bar_y = SLIDE_HEIGHT - 0.04
         bar_h = 0.03
-        self.add_rect(slide, 0, bar_y, SLIDE_WIDTH, bar_h,
-                      fill_hex=self._c("border", "#E2E8F0"))
+        self.add_rect(slide, 0, bar_y, SLIDE_WIDTH, bar_h, fill_hex=self._c("border", "#E2E8F0"))
         fill_w = SLIDE_WIDTH * (current / total)
-        self.add_rect(slide, 0, bar_y, fill_w, bar_h,
-                      fill_hex=self._c("primary", "#2563EB"))
+        self.add_rect(slide, 0, bar_y, fill_w, bar_h, fill_hex=self._c("primary", "#2563EB"))
 
     # ── §3.4 Gradient line ──
 
-    def add_gradient_line(self, slide, x: float, y: float, width: float, height: float,
-                           from_color: str, to_color: str = "transparent") -> object:
-        rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                                       Inches(x), Inches(y), Inches(width), Inches(height))
+    def add_gradient_line(
+        self, slide, x: float, y: float, width: float, height: float, from_color: str, to_color: str = "transparent"
+    ) -> object:
+        rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(width), Inches(height))
         rect.line.fill.background()
         grad = GradientFill(
             stops=[
                 GradientStop(color=from_color, position=0, alpha=100000),
-                GradientStop(color=from_color if to_color == "transparent" else to_color,
-                             position=100000, alpha=0),
+                GradientStop(color=from_color if to_color == "transparent" else to_color, position=100000, alpha=0),
             ],
             angle=0,
         )
@@ -1739,12 +2142,19 @@ class PrecisionRenderer:
 
     # ── §3.5 Image masking ──
 
-    def add_masked_image(self, slide, image_path: str, x: float, y: float,
-                          w: float, h: float, padding: float = 0.15,
-                          corner_radius: str = "md") -> None:
+    def add_masked_image(
+        self,
+        slide,
+        image_path: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        padding: float = 0.15,
+        corner_radius: str = "md",
+    ) -> None:
         frame_bg = "#FFFFFF" if not self._is_dark() else "#1E293B"
-        self.add_rounded_rect(slide, x, y, w, h, fill_hex=frame_bg,
-                              shadow=True, corner_radius=corner_radius)
+        self.add_rounded_rect(slide, x, y, w, h, fill_hex=frame_bg, shadow=True, corner_radius=corner_radius)
         img_x = x + padding
         img_y = y + padding
         img_w = w - 2 * padding

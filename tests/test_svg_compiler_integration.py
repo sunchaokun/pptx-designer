@@ -42,7 +42,9 @@ class TestBasicShapes:
         assert result.shape_count >= 1
 
     def test_line(self):
-        svg = '<svg viewBox="0 0 400 300"><line x1="50" y1="50" x2="350" y2="250" stroke="#333" stroke-width="3"/></svg>'
+        svg = (
+            '<svg viewBox="0 0 400 300"><line x1="50" y1="50" x2="350" y2="250" stroke="#333" stroke-width="3"/></svg>'
+        )
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
 
@@ -107,22 +109,22 @@ class TestText:
 
 class TestGradients:
     def test_linear_gradient(self):
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stop-color="#4472C4"/><stop offset="1" stop-color="#2E75B6"/>
             </linearGradient></defs>
             <rect x="50" y="50" width="300" height="200" fill="url(#g1)"/>
-        </svg>'''
+        </svg>"""
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
 
     def test_radial_gradient(self):
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><radialGradient id="g2" cx="50%" cy="50%" r="50%">
                 <stop offset="0" stop-color="#FFF"/><stop offset="1" stop-color="#4472C4"/>
             </radialGradient></defs>
             <circle cx="200" cy="150" r="120" fill="url(#g2)"/>
-        </svg>'''
+        </svg>"""
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
 
@@ -141,25 +143,40 @@ class TestTransform:
 
 class TestClipPath:
     def test_clip_path(self):
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><clipPath id="cp"><rect x="50" y="50" width="200" height="200"/></clipPath></defs>
             <rect x="0" y="0" width="400" height="300" fill="#4472C4" clip-path="url(#cp)"/>
-        </svg>'''
+        </svg>"""
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.shape_count >= 1
 
 
 class TestUseAndVisibility:
     def test_use_maps_referenced_and_use_ids(self):
-        svg = '''<svg viewBox="0 0 100 100">
+        svg = """<svg viewBox="0 0 100 100">
             <defs><rect id="source" x="0" y="0" width="10" height="10" fill="#4472C4"/></defs>
             <use id="copy" href="#source" x="20" y="20"/>
-        </svg>'''
+        </svg>"""
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert result.source_to_output["source"]
         assert result.source_to_output["copy"]
 
-    @pytest.mark.parametrize("attr", ["display=\"none\"", "visibility=\"hidden\""])
+    def test_symbol_use_preserves_references_and_translation(self):
+        svg = """<svg viewBox="0 0 100 100">
+            <defs><symbol id="badge"><rect id="badge-rect" width="10" height="10" fill="#4472C4"/></symbol></defs>
+            <use id="placed-badge" href="#badge" x="20" y="30"/>
+        </svg>"""
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+
+        shape = result.source_to_output["placed-badge"][0]
+        assert result.source_to_output["badge"]
+        assert result.source_to_output["badge-rect"]
+        # Default `contain` scaling centers the 6×6-inch square viewBox area
+        # inside the 8×6-inch target rectangle, adding one inch on the x axis.
+        assert shape.left.inches == pytest.approx(3.2, abs=0.01)
+        assert shape.top.inches == pytest.approx(2.8, abs=0.01)
+
+    @pytest.mark.parametrize("attr", ['display="none"', 'visibility="hidden"'])
     def test_hidden_elements_are_not_rendered(self, attr):
         svg = f'<svg viewBox="0 0 10 10"><rect {attr} width="10" height="10" fill="#4472C4"/></svg>'
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
@@ -182,6 +199,56 @@ class TestUnsupported:
         result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
         assert any("image" in w.lower() or "unsupported" in w.lower() for w in result.warnings)
         assert result.feature_levels["image"] == "RASTER_FALLBACK_CANDIDATE"
+
+    @pytest.mark.parametrize("feature", ["filter", "mask"])
+    def test_raster_only_feature_is_exposed_in_render_report(self, feature):
+        definition = (
+            '<filter id="fx"><feGaussianBlur stdDeviation="2"/></filter>'
+            if feature == "filter"
+            else '<mask id="fx"><rect width="100" height="100" fill="white"/></mask>'
+        )
+        svg = (
+            '<svg viewBox="0 0 100 100"><defs>'
+            f"{definition}"
+            f'</defs><rect width="100" height="100" fill="#123456" {feature}="url(#fx)"/></svg>'
+        )
+
+        result = SVGCompiler().compile(svg, _slide(), (1, 1, 8, 6))
+
+        assert result.shape_count == 1
+        assert result.feature_levels[feature] == "RASTER_FALLBACK_CANDIDATE"
+        assert "raster_fallback_candidate" in result.feature_levels
+
+
+class TestRoundTrip:
+    def test_complex_svg_can_be_saved_and_reopened_as_pptx(self, tmp_path):
+        svg = """<svg viewBox="0 0 400 300">
+            <style>.panel { fill: #123456; } .label { fill: #FFFFFF; font-size: 28px; }</style>
+            <defs>
+                <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#00B8D9"/><stop offset="1" stop-color="#6554C0"/>
+                </linearGradient>
+                <clipPath id="window"><rect x="40" y="40" width="320" height="220" rx="16"/></clipPath>
+            </defs>
+            <rect class="panel" width="400" height="300"/>
+            <g transform="translate(40,40)" clip-path="url(#window)">
+                <rect width="320" height="220" fill="url(#accent)"/>
+                <text class="label" x="30" y="80">SVG QA</text>
+            </g>
+        </svg>"""
+        prs = Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+        result = SVGCompiler().compile(svg, slide, (1, 1, 8, 6))
+        output = tmp_path / "svg-roundtrip.pptx"
+        prs.save(output)
+        reopened = Presentation(output)
+
+        assert result.shape_count >= 3
+        assert len(reopened.slides) == 1
+        assert len(reopened.slides[0].shapes) == result.shape_count
 
 
 class TestTextOpacity:
@@ -260,5 +327,6 @@ class TestCompatShim:
     def test_import_from_renderer_svg_compiler(self):
         from pptx_designer.renderer.svg_compiler import SVGCompiler as OldSVGCompiler
         from pptx_designer.renderer.svg_compiler import SVGResult as OldSVGResult
+
         assert OldSVGCompiler is SVGCompiler
         assert OldSVGResult is SVGResult

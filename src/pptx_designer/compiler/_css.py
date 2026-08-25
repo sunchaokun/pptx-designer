@@ -5,6 +5,7 @@ tag names, ``.class``, ``#id``, ``:root`` and comma-separated lists. It
 implements cascade order, specificity, inline styles, ``!important`` and CSS
 custom-property substitution without attempting to emulate a web browser.
 """
+
 from __future__ import annotations
 
 import re
@@ -20,25 +21,58 @@ _CSS_PROP_RE = re.compile(r"([\w-]+)\s*:\s*([^;]+?)(?:;|$)")
 _IMPORTANT_RE = re.compile(r"\s*!important\s*$", re.IGNORECASE)
 _VAR_RE = re.compile(r"var\(\s*(--[\w-]+)\s*(?:,\s*([^()]+?))?\s*\)")
 
-_SUPPORTED_PROPERTIES = frozenset({
-    "fill", "fill-opacity", "fill-rule",
-    "stroke", "stroke-opacity", "stroke-width", "stroke-dasharray",
-    "stroke-dashoffset", "stroke-linecap", "stroke-linejoin",
-    "opacity",
-    "font-size", "font-family", "font-weight", "font-style",
-    "text-anchor", "dominant-baseline", "alignment-baseline",
-    "color", "visibility", "display", "transform", "clip-path",
-})
+_SUPPORTED_PROPERTIES = frozenset(
+    {
+        "fill",
+        "fill-opacity",
+        "fill-rule",
+        "stroke",
+        "stroke-opacity",
+        "stroke-width",
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "stroke-linecap",
+        "stroke-linejoin",
+        "opacity",
+        "font-size",
+        "font-family",
+        "font-weight",
+        "font-style",
+        "text-anchor",
+        "dominant-baseline",
+        "alignment-baseline",
+        "color",
+        "visibility",
+        "display",
+        "transform",
+        "clip-path",
+    }
+)
 
 # SVG group opacity is composited, not inherited; do not propagate it here.
-_INHERITED = frozenset({
-    "fill", "fill-opacity", "fill-rule",
-    "stroke", "stroke-opacity", "stroke-width", "stroke-dasharray",
-    "stroke-dashoffset", "stroke-linecap", "stroke-linejoin",
-    "font-size", "font-family", "font-weight", "font-style",
-    "text-anchor", "dominant-baseline", "alignment-baseline",
-    "color", "visibility",
-})
+_INHERITED = frozenset(
+    {
+        "fill",
+        "fill-opacity",
+        "fill-rule",
+        "stroke",
+        "stroke-opacity",
+        "stroke-width",
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "stroke-linecap",
+        "stroke-linejoin",
+        "font-size",
+        "font-family",
+        "font-weight",
+        "font-style",
+        "text-anchor",
+        "dominant-baseline",
+        "alignment-baseline",
+        "color",
+        "visibility",
+    }
+)
 
 _Selector = str
 _CSSRule = tuple[_Selector, dict[str, str]]

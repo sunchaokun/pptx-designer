@@ -6,9 +6,8 @@ visual effects that visual_effects.py only provides at shape level.
 
 from __future__ import annotations
 
-from pptx.oxml.ns import qn
 from lxml import etree
-
+from pptx.oxml.ns import qn
 
 TEXT_GRADIENT_PRESETS: dict[str, list[tuple[str, int]]] = {
     "gold-shine": [("F5AF19", 0), ("FFA300", 50000), ("FF6B00", 100000)],
@@ -37,7 +36,7 @@ def _remove_run_fill(rPr: etree._Element) -> None:
             rPr.remove(el)
 
 
-def _ensure_effectLst(rPr: etree._Element) -> etree._Element:
+def _ensure_effect_list(rPr: etree._Element) -> etree._Element:
     effectLst = rPr.find(qn("a:effectLst"))
     if effectLst is None:
         effectLst = etree.SubElement(rPr, qn("a:effectLst"))
@@ -80,11 +79,11 @@ def apply_text_outline(run, color: str, width_pt: float) -> None:
     srgb.set("val", color.lstrip("#"))
 
 
-def apply_text_shadow(run, blur: float = 6.0, dist: float = 3.0,
-                      direction: float = 90.0, color: str = "#000000",
-                      alpha: int = 25) -> None:
+def apply_text_shadow(
+    run, blur: float = 6.0, dist: float = 3.0, direction: float = 90.0, color: str = "#000000", alpha: int = 25
+) -> None:
     rPr = run._r.get_or_add_rPr()
-    effectLst = _ensure_effectLst(rPr)
+    effectLst = _ensure_effect_list(rPr)
     existing = effectLst.find(qn("a:outerShdw"))
     if existing is not None:
         effectLst.remove(existing)
@@ -100,10 +99,9 @@ def apply_text_shadow(run, blur: float = 6.0, dist: float = 3.0,
     a.set("val", str(alpha * 1000))
 
 
-def apply_text_glow(run, radius: float = 8.0, color: str = "#2563EB",
-                    alpha: int = 40) -> None:
+def apply_text_glow(run, radius: float = 8.0, color: str = "#2563EB", alpha: int = 40) -> None:
     rPr = run._r.get_or_add_rPr()
-    effectLst = _ensure_effectLst(rPr)
+    effectLst = _ensure_effect_list(rPr)
     existing = effectLst.find(qn("a:glow"))
     if existing is not None:
         effectLst.remove(existing)
@@ -125,8 +123,7 @@ def apply_text_alpha(run, alpha_pct: int) -> None:
     a.set("val", str(alpha_pct * 1000))
 
 
-def apply_text_3d(run, depth_pt: float = 10.0, bevel: bool = True,
-                  material: str = "powder") -> None:
+def apply_text_3d(run, depth_pt: float = 10.0, bevel: bool = True, material: str = "powder") -> None:
     rPr = run._r.get_or_add_rPr()
     existing = rPr.find(qn("a:sp3d"))
     if existing is not None:

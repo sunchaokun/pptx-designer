@@ -9,7 +9,6 @@ from pptx_designer.diagrams.text_measurer import estimate_node_size
 
 
 class FlowchartDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         nodes_data = self.data.get("nodes", [])
         if not nodes_data:
@@ -36,27 +35,36 @@ class FlowchartDiagram(BaseDiagram):
         for i, nd in enumerate(nodes_data):
             label = nd.get("label", nd.get("title", nd.get("text", f"Step {i + 1}")))
             est_w, est_h = estimate_node_size(
-                label, self.style.node_font_size_pt, max_label_w,
+                label,
+                self.style.node_font_size_pt,
+                max_label_w,
             )
             actual_h = max(node_h, est_h)
 
             x = self.region.left + i * (node_w + gap)
             y = self.region.center_y - actual_h / 2
 
-            self._nodes.append({
-                "x": x, "y": y, "width": node_w, "height": actual_h,
-                "label": label,
-                "fill_role": nd.get("fill_role", self.style.node_fill),
-                "font_color_role": nd.get("font_color_role", self.style.node_font_color),
-            })
+            self._nodes.append(
+                {
+                    "x": x,
+                    "y": y,
+                    "width": node_w,
+                    "height": actual_h,
+                    "label": label,
+                    "fill_role": nd.get("fill_role", self.style.node_fill),
+                    "font_color_role": nd.get("font_color_role", self.style.node_font_color),
+                }
+            )
 
             if i < n - 1:
-                self._connectors.append({
-                    "x1": x + node_w,
-                    "y1": y + actual_h / 2,
-                    "x2": x + node_w + gap,
-                    "y2": y + actual_h / 2,
-                })
+                self._connectors.append(
+                    {
+                        "x1": x + node_w,
+                        "y1": y + actual_h / 2,
+                        "x2": x + node_w + gap,
+                        "y2": y + actual_h / 2,
+                    }
+                )
 
     def _layout_vertical(self, nodes_data: list[dict[str, Any]]) -> None:
         n = len(nodes_data)
@@ -69,24 +77,33 @@ class FlowchartDiagram(BaseDiagram):
         for i, nd in enumerate(nodes_data):
             label = nd.get("label", nd.get("title", nd.get("text", f"Step {i + 1}")))
             est_w, est_h = estimate_node_size(
-                label, self.style.node_font_size_pt, max_label_w,
+                label,
+                self.style.node_font_size_pt,
+                max_label_w,
             )
             actual_h = max(node_h, est_h)
 
             x = self.region.center_x - node_w / 2
             y = self.region.top + i * (actual_h + gap)
 
-            self._nodes.append({
-                "x": x, "y": y, "width": node_w, "height": actual_h,
-                "label": label,
-                "fill_role": nd.get("fill_role", self.style.node_fill),
-                "font_color_role": nd.get("font_color_role", self.style.node_font_color),
-            })
+            self._nodes.append(
+                {
+                    "x": x,
+                    "y": y,
+                    "width": node_w,
+                    "height": actual_h,
+                    "label": label,
+                    "fill_role": nd.get("fill_role", self.style.node_fill),
+                    "font_color_role": nd.get("font_color_role", self.style.node_font_color),
+                }
+            )
 
             if i < n - 1:
-                self._connectors.append({
-                    "x1": x + node_w / 2,
-                    "y1": y + actual_h,
-                    "x2": x + node_w / 2,
-                    "y2": y + actual_h + gap,
-                })
+                self._connectors.append(
+                    {
+                        "x1": x + node_w / 2,
+                        "y1": y + actual_h,
+                        "x2": x + node_w / 2,
+                        "y2": y + actual_h + gap,
+                    }
+                )

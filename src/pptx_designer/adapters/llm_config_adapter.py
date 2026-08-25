@@ -34,6 +34,7 @@ _PROVIDER_ALIASES = {
 def _read_toml(path: Path) -> dict[str, Any]:
     try:
         import tomllib
+
         with path.open("rb") as handle:
             value = tomllib.load(handle)
         return value if isinstance(value, dict) else {}
@@ -50,9 +51,7 @@ def detect_host_llm_config() -> dict[str, str] | None:
     """
     codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
     config = _read_toml(codex_home / "config.toml")
-    provider_id = str(
-        config.get("image_model_provider") or config.get("model_provider", "")
-    ).lower()
+    provider_id = str(config.get("image_model_provider") or config.get("model_provider", "")).lower()
     providers = config.get("model_providers", {})
     provider = providers.get(provider_id, {}) if isinstance(providers, dict) else {}
     if not isinstance(provider, dict):

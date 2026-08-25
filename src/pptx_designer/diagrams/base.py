@@ -10,7 +10,6 @@ from pptx_designer.diagrams.layout_engine import Region
 
 
 class BaseDiagram(ABC):
-
     def __init__(self, data: dict[str, Any], style: DiagramStyle, region: Region):
         self.data = data
         self.style = style
@@ -19,8 +18,7 @@ class BaseDiagram(ABC):
         self._connectors: list[dict[str, Any]] = []
 
     @abstractmethod
-    def compute_layout(self) -> None:
-        ...
+    def compute_layout(self) -> None: ...
 
     def render(self, slide) -> None:
         self.compute_layout()
@@ -32,6 +30,7 @@ class BaseDiagram(ABC):
     def _group_rendered_nodes(self, slide) -> None:
         try:
             from pptx_designer.renderer.shape_utils import group_shapes
+
             n_nodes = len(self._nodes)
             n_connectors = len(self._connectors)
             if n_nodes < 2:
@@ -44,9 +43,10 @@ class BaseDiagram(ABC):
             pass
 
     def _draw_nodes(self, slide) -> None:
+        from pptx.dml.color import RGBColor
         from pptx.enum.shapes import MSO_SHAPE
         from pptx.util import Inches, Pt
-        from pptx.dml.color import RGBColor
+
         from pptx_designer.renderer.visual_effects import apply_gradient, apply_shadow
 
         for node in self._nodes:
@@ -118,9 +118,9 @@ class BaseDiagram(ABC):
         return f"#{r:02X}{g:02X}{b:02X}"
 
     def _draw_connectors(self, slide) -> None:
+        from pptx.dml.color import RGBColor
         from pptx.enum.shapes import MSO_CONNECTOR_TYPE
         from pptx.util import Inches, Pt
-        from pptx.dml.color import RGBColor
 
         for conn in self._connectors:
             x1 = Inches(conn["x1"])
@@ -132,7 +132,11 @@ class BaseDiagram(ABC):
 
             if len(waypoints) <= 2:
                 connector = slide.shapes.add_connector(
-                    MSO_CONNECTOR_TYPE.STRAIGHT, x1, y1, x2, y2,
+                    MSO_CONNECTOR_TYPE.STRAIGHT,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
                 )
             else:
                 for i in range(len(waypoints) - 1):
@@ -140,7 +144,10 @@ class BaseDiagram(ABC):
                     wx2, wy2 = waypoints[i + 1]
                     connector = slide.shapes.add_connector(
                         MSO_CONNECTOR_TYPE.STRAIGHT,
-                        Inches(wx1), Inches(wy1), Inches(wx2), Inches(wy2),
+                        Inches(wx1),
+                        Inches(wy1),
+                        Inches(wx2),
+                        Inches(wy2),
                     )
 
                     conn_color = self.style.resolve_color(self.style.connector_color)
@@ -154,6 +161,7 @@ class BaseDiagram(ABC):
 
     def _resolve_alignment(self):
         from pptx.enum.text import PP_ALIGN
+
         if self.style.node_text_alignment == "center":
             return PP_ALIGN.CENTER
         elif self.style.node_text_alignment == "right":
@@ -162,7 +170,11 @@ class BaseDiagram(ABC):
 
     def _route_connector(self, conn: dict[str, Any]) -> list[tuple[float, float]]:
         from pptx_designer.diagrams.connector_router import route_connector
+
         return route_connector(
-            conn["x1"], conn["y1"], conn["x2"], conn["y2"],
+            conn["x1"],
+            conn["y1"],
+            conn["x2"],
+            conn["y2"],
             self._nodes,
         )

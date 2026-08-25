@@ -14,15 +14,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from pptx.oxml.ns import qn
 from lxml import etree
-
+from pptx.oxml.ns import qn
 
 EMU_PER_INCH = 914400
 
 
 class FreeformBuilder:
-
     def __init__(self):
         self._paths: list[list[dict[str, Any]]] = []
         self._current_path: list[dict[str, Any]] = []
@@ -50,9 +48,16 @@ class FreeformBuilder:
         return self
 
     def build(
-        self, slide, x: float, y: float, w: float, h: float,
-        fill_color: str | None = None, line_color: str | None = None,
-        line_width_pt: float = 1.5, no_fill: bool = True,
+        self,
+        slide,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        fill_color: str | None = None,
+        line_color: str | None = None,
+        line_width_pt: float = 1.5,
+        no_fill: bool = True,
     ) -> object:
         if self._current_path:
             self._paths.append(self._current_path)
@@ -148,16 +153,29 @@ class FreeformBuilder:
 
 
 def make_arrow_connector(
-    slide, x1: float, y1: float, x2: float, y2: float,
-    color: str = "#FF5500", width_pt: float = 2.0,
-    arrow_start: bool = False, arrow_end: bool = True,
+    slide,
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    color: str = "#FF5500",
+    width_pt: float = 2.0,
+    arrow_start: bool = False,
+    arrow_end: bool = True,
 ) -> object:
     builder = FreeformBuilder()
     builder.move_to(x1, y1)
     builder.line_to(x2, y2)
-    elem = builder.build(slide, min(x1, x2), min(y1, y2),
-                         abs(x2 - x1) or 0.01, abs(y2 - y1) or 0.01,
-                         no_fill=True, line_color=color, line_width_pt=width_pt)
+    elem = builder.build(
+        slide,
+        min(x1, x2),
+        min(y1, y2),
+        abs(x2 - x1) or 0.01,
+        abs(y2 - y1) or 0.01,
+        no_fill=True,
+        line_color=color,
+        line_width_pt=width_pt,
+    )
     if arrow_end:
         _add_arrowhead(elem, "end", color)
     if arrow_start:
@@ -166,9 +184,15 @@ def make_arrow_connector(
 
 
 def make_curved_connector(
-    slide, x1: float, y1: float, x2: float, y2: float,
-    color: str = "#FF5500", width_pt: float = 2.0,
-    curvature: float = 0.3, arrow_end: bool = True,
+    slide,
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    color: str = "#FF5500",
+    width_pt: float = 2.0,
+    curvature: float = 0.3,
+    arrow_end: bool = True,
 ) -> object:
     mx = (x1 + x2) / 2
     my = (y1 + y2) / 2
@@ -185,20 +209,29 @@ def make_curved_connector(
     builder = FreeformBuilder()
     builder.move_to(x1 - min_x, y1 - min_y)
     builder.cubic_bezier_to(
-        cx1 - min_x, cy1 - min_y,
-        cx1 - min_x, cy1 - min_y,
-        x2 - min_x, y2 - min_y,
+        cx1 - min_x,
+        cy1 - min_y,
+        cx1 - min_x,
+        cy1 - min_y,
+        x2 - min_x,
+        y2 - min_y,
     )
-    elem = builder.build(slide, min_x, min_y, max_x - min_x, max_y - min_y,
-                         no_fill=True, line_color=color, line_width_pt=width_pt)
+    elem = builder.build(
+        slide, min_x, min_y, max_x - min_x, max_y - min_y, no_fill=True, line_color=color, line_width_pt=width_pt
+    )
     if arrow_end:
         _add_arrowhead(elem, "end", color)
     return elem
 
 
 def make_chevron_shape(
-    slide, x: float, y: float, w: float, h: float,
-    fill_color: str = "#1D78FA", line_color: str | None = None,
+    slide,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    fill_color: str = "#1D78FA",
+    line_color: str | None = None,
 ) -> object:
     builder = FreeformBuilder()
     notch = w * 0.15
@@ -213,8 +246,13 @@ def make_chevron_shape(
 
 
 def make_ribbon_shape(
-    slide, x: float, y: float, w: float, h: float,
-    fill_color: str = "#FF5500", tab_height: float = 0.3,
+    slide,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    fill_color: str = "#FF5500",
+    tab_height: float = 0.3,
 ) -> object:
     builder = FreeformBuilder()
     builder.move_to(0, 0)

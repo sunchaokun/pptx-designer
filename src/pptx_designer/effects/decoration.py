@@ -9,8 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def add_brush_divider(slide: Any, x: float, y: float, w: float,
-                      color: str = "#2C2C2C", thickness: float = 0.08) -> Any:
+def add_brush_divider(slide: Any, x: float, y: float, w: float, color: str = "#2C2C2C", thickness: float = 0.08) -> Any:
     """Add brush-stroke divider line.
 
     Args:
@@ -23,24 +22,30 @@ def add_brush_divider(slide: Any, x: float, y: float, w: float,
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(x), Inches(y), Inches(w), Inches(thickness)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(thickness))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(color)
     shape.line.fill.background()
     return shape
 
 
-def add_seal_stamp(slide: Any, x: float, y: float, size: float, txt: str,
-                   fill_hex: str = "#C41E3A", font_name: str = "STZhongsong",
-                   rotation: float = -15, style: str = "zhu",
-                   border_width_pt: float = 4.0) -> Any:
+def add_seal_stamp(
+    slide: Any,
+    x: float,
+    y: float,
+    size: float,
+    txt: str,
+    fill_hex: str = "#C41E3A",
+    font_name: str = "STZhongsong",
+    rotation: float = -15,
+    style: str = "zhu",
+    border_width_pt: float = 4.0,
+) -> Any:
     """Add Chinese seal stamp.
 
     Args:
@@ -57,15 +62,13 @@ def add_seal_stamp(slide: Any, x: float, y: float, size: float, txt: str,
     Returns:
         Created shape
     """
-    from pptx.util import Inches, Pt
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.enum.text import PP_ALIGN
+    from pptx.util import Inches, Pt
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(x), Inches(y), Inches(size), Inches(size)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(size), Inches(size))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(fill_hex)
     shape.line.color.rgb = _rgb(fill_hex)
@@ -87,8 +90,7 @@ def add_seal_stamp(slide: Any, x: float, y: float, size: float, txt: str,
     return shape
 
 
-def add_scroll_frame(slide: Any, x: float, y: float, w: float, h: float,
-                     style: str = "xuan") -> Any:
+def add_scroll_frame(slide: Any, x: float, y: float, w: float, h: float, style: str = "xuan") -> Any:
     """Add scroll/paper frame.
 
     Args:
@@ -100,15 +102,13 @@ def add_scroll_frame(slide: Any, x: float, y: float, w: float, h: float,
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
     color = "#F5F0E8" if style == "xuan" else "#E8E0D0"
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(x), Inches(y), Inches(w), Inches(h)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(color)
     shape.line.color.rgb = _rgb("#D4C4A8")
@@ -116,8 +116,9 @@ def add_scroll_frame(slide: Any, x: float, y: float, w: float, h: float,
     return shape
 
 
-def add_neon_border(slide: Any, x: float, y: float, w: float, h: float,
-                    color: str = "#8B5CF6", radius: float = 0.1) -> Any:
+def add_neon_border(
+    slide: Any, x: float, y: float, w: float, h: float, color: str = "#8B5CF6", radius: float = 0.1
+) -> Any:
     """Add neon-glow border.
 
     Args:
@@ -130,22 +131,19 @@ def add_neon_border(slide: Any, x: float, y: float, w: float, h: float,
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.ROUNDED_RECTANGLE,
-        Inches(x), Inches(y), Inches(w), Inches(h)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     shape.fill.background()
     shape.line.color.rgb = _rgb(color)
     shape.line.width = Inches(0.02)
     return shape
 
 
-def add_grid_background(slide: Any, spacing: float = 1.0, color: str = "#E0E0E0",
-                        alpha: float = 15) -> Any:
+def add_grid_background(slide: Any, spacing: float = 1.0, color: str = "#E0E0E0", alpha: float = 15) -> Any:
     """Add grid background pattern.
 
     Args:
@@ -157,23 +155,21 @@ def add_grid_background(slide: Any, spacing: float = 1.0, color: str = "#E0E0E0"
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(0), Inches(0), Inches(13.333), Inches(7.5)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(7.5))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(color)
     shape.line.fill.background()
     return shape
 
 
-def add_glass_panel(slide: Any, x: float, y: float, w: float, h: float,
-                    tint: str = "#FFFFFF", alpha: float = 50,
-                    soft_edge: float = 8) -> Any:
+def add_glass_panel(
+    slide: Any, x: float, y: float, w: float, h: float, tint: str = "#FFFFFF", alpha: float = 50, soft_edge: float = 8
+) -> Any:
     """Add glass panel overlay.
 
     Args:
@@ -187,22 +183,19 @@ def add_glass_panel(slide: Any, x: float, y: float, w: float, h: float,
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.ROUNDED_RECTANGLE,
-        Inches(x), Inches(y), Inches(w), Inches(h)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(tint)
     shape.line.fill.background()
     return shape
 
 
-def add_ink_splash(slide: Any, x: float, y: float, size: float,
-                   color: str = "#2C2C2C", alpha: float = 100) -> Any:
+def add_ink_splash(slide: Any, x: float, y: float, size: float, color: str = "#2C2C2C", alpha: float = 100) -> Any:
     """Add ink splash decoration.
 
     Args:
@@ -215,14 +208,12 @@ def add_ink_splash(slide: Any, x: float, y: float, size: float,
     Returns:
         Created shape
     """
-    from pptx.util import Inches
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.util import Inches
+
     from pptx_designer.tools.shapes import _rgb
 
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.OVAL,
-        Inches(x), Inches(y), Inches(size), Inches(size)
-    )
+    shape = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(x), Inches(y), Inches(size), Inches(size))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(color)
     shape.line.fill.background()

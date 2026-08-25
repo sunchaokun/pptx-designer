@@ -1,4 +1,4 @@
-﻿"""Block renderer �?composable block layout system."""
+"""Block renderer �?composable block layout system."""
 
 from __future__ import annotations
 
@@ -39,5 +39,3 @@ class BlockRenderer:
     def _render_bullets_block(self, slide: Any, block: dict) -> None:
         """Render a bullets block."""
         pass
-
-

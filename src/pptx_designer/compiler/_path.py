@@ -3,6 +3,7 @@
 Supports all SVG 1.1 path commands: M/L/H/V/C/S/Q/T/A/Z (absolute + relative).
 Arcs are converted to cubic Bezier approximations via ``arc_to_cubics``.
 """
+
 from __future__ import annotations
 
 import math
@@ -83,9 +84,7 @@ def arc_to_cubics(
     return segs
 
 
-_TOKEN_RE = re.compile(
-    r"([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)"
-)
+_TOKEN_RE = re.compile(r"([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)")
 
 
 def parse_path(d: str) -> tuple[list[tuple[str, list[float]]], tuple[float, float] | None]:

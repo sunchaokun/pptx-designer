@@ -18,8 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from pptx.oxml.ns import qn
 from lxml import etree
+from pptx.oxml.ns import qn
 
 
 @dataclass
@@ -334,31 +334,55 @@ def apply_gradient(shape, color1: str, color2: str, gradient_type: str = "linear
     grad.apply(shape)
 
 
-def apply_shadow(shape, blur_pt: float = 6.0, distance_pt: float = 3.0,
-                 direction_deg: float = 90.0, color: str = "#000000",
-                 alpha_pct: int = 25) -> None:
-    shadow = Shadow(blur_pt=blur_pt, distance_pt=distance_pt,
-                    direction_deg=direction_deg, color=color, alpha_pct=alpha_pct)
-    shadow.apply(shape)
-
-
-def apply_scheme_shadow(shape, scheme_color: str = "accent1",
-                        blur_pt: float = 47.0, distance_pt: float = 21.0,
-                        direction_deg: float = 90.0, alpha_pct: int = 26,
-                        sx_pct: int | None = None, sy_pct: int | None = None) -> None:
+def apply_shadow(
+    shape,
+    blur_pt: float = 6.0,
+    distance_pt: float = 3.0,
+    direction_deg: float = 90.0,
+    color: str = "#000000",
+    alpha_pct: int = 25,
+) -> None:
     shadow = Shadow(
-        blur_pt=blur_pt, distance_pt=distance_pt, direction_deg=direction_deg,
-        alpha_pct=alpha_pct, scheme_color=scheme_color, sx_pct=sx_pct, sy_pct=sy_pct,
+        blur_pt=blur_pt, distance_pt=distance_pt, direction_deg=direction_deg, color=color, alpha_pct=alpha_pct
     )
     shadow.apply(shape)
 
 
-def apply_luminance_gradient(shape, scheme_color: str = "accent1",
-                              pos1: int = 18000, lum_mod1: int = 10000, lum_off1: int = 90000,
-                              pos2: int = 73000, lum_mod2: int = 20000, lum_off2: int = 80000,
-                              gradient_type: str = "path",
-                              fill_to_rect: dict[str, str] | None = None,
-                              angle: int = 5400000) -> None:
+def apply_scheme_shadow(
+    shape,
+    scheme_color: str = "accent1",
+    blur_pt: float = 47.0,
+    distance_pt: float = 21.0,
+    direction_deg: float = 90.0,
+    alpha_pct: int = 26,
+    sx_pct: int | None = None,
+    sy_pct: int | None = None,
+) -> None:
+    shadow = Shadow(
+        blur_pt=blur_pt,
+        distance_pt=distance_pt,
+        direction_deg=direction_deg,
+        alpha_pct=alpha_pct,
+        scheme_color=scheme_color,
+        sx_pct=sx_pct,
+        sy_pct=sy_pct,
+    )
+    shadow.apply(shape)
+
+
+def apply_luminance_gradient(
+    shape,
+    scheme_color: str = "accent1",
+    pos1: int = 18000,
+    lum_mod1: int = 10000,
+    lum_off1: int = 90000,
+    pos2: int = 73000,
+    lum_mod2: int = 20000,
+    lum_off2: int = 80000,
+    gradient_type: str = "path",
+    fill_to_rect: dict[str, str] | None = None,
+    angle: int = 5400000,
+) -> None:
     grad = GradientFill(
         stops=[
             GradientStop(scheme_color=scheme_color, position=pos1, lum_mod=lum_mod1, lum_off=lum_off1),
@@ -371,9 +395,17 @@ def apply_luminance_gradient(shape, scheme_color: str = "accent1",
     grad.apply(shape)
 
 
-def apply_3stop_gradient(shape, c1: str, c2: str, c3: str,
-                          pos1: int = 0, pos2: int = 50000, pos3: int = 100000,
-                          gradient_type: str = "linear", angle: int = 5400000) -> None:
+def apply_3stop_gradient(
+    shape,
+    c1: str,
+    c2: str,
+    c3: str,
+    pos1: int = 0,
+    pos2: int = 50000,
+    pos3: int = 100000,
+    gradient_type: str = "linear",
+    angle: int = 5400000,
+) -> None:
     grad = GradientFill(
         stops=[
             GradientStop(color=c1, position=pos1),
@@ -386,9 +418,13 @@ def apply_3stop_gradient(shape, c1: str, c2: str, c3: str,
     grad.apply(shape)
 
 
-def apply_cross_gradient(shape, scheme_accent1: str = "accent1", scheme_accent2: str = "accent2",
-                          gradient_type: str = "path",
-                          fill_to_rect: dict[str, str] | None = None) -> None:
+def apply_cross_gradient(
+    shape,
+    scheme_accent1: str = "accent1",
+    scheme_accent2: str = "accent2",
+    gradient_type: str = "path",
+    fill_to_rect: dict[str, str] | None = None,
+) -> None:
     grad = GradientFill(
         stops=[
             GradientStop(scheme_color=scheme_accent2, position=0, lum_mod=60000, lum_off=40000),
@@ -400,8 +436,7 @@ def apply_cross_gradient(shape, scheme_accent1: str = "accent1", scheme_accent2:
     grad.apply(shape)
 
 
-def apply_bg_gradient(shape, scheme_accent: str = "accent1",
-                       fill_to_rect: dict[str, str] | None = None) -> None:
+def apply_bg_gradient(shape, scheme_accent: str = "accent1", fill_to_rect: dict[str, str] | None = None) -> None:
     grad = GradientFill(
         stops=[
             GradientStop(scheme_color=scheme_accent, position=13000, lum_mod=20000, lum_off=80000),
@@ -523,24 +558,19 @@ class Shape3D:
         lightRig.set("dir", self.light_dir)
 
 
-def apply_3d(shape, depth_pt: float = 10.0, material: str = "powder",
-             extrusion_color: str = "#000000") -> None:
-    Shape3D(depth_pt=depth_pt, material=material,
-            extrusion_color=extrusion_color).apply(shape)
+def apply_3d(shape, depth_pt: float = 10.0, material: str = "powder", extrusion_color: str = "#000000") -> None:
+    Shape3D(depth_pt=depth_pt, material=material, extrusion_color=extrusion_color).apply(shape)
 
 
-def apply_bevel(shape, top_w: float = 4.0, top_h: float = 2.0,
-                material: str = "powder") -> None:
-    Shape3D(depth_pt=0, bevel_top_w=top_w, bevel_top_h=top_h,
-            bevel_bottom_w=top_w, bevel_bottom_h=top_h,
-            material=material).apply(shape)
+def apply_bevel(shape, top_w: float = 4.0, top_h: float = 2.0, material: str = "powder") -> None:
+    Shape3D(
+        depth_pt=0, bevel_top_w=top_w, bevel_top_h=top_h, bevel_bottom_w=top_w, bevel_bottom_h=top_h, material=material
+    ).apply(shape)
 
 
-def apply_pattern_fill(shape, pattern_type: str, fg_color: str, bg_color: str,
-                       fg_alpha: int | None = None) -> None:
+def apply_pattern_fill(shape, pattern_type: str, fg_color: str, bg_color: str, fg_alpha: int | None = None) -> None:
     if pattern_type not in PATTERN_TYPES:
-        raise KeyError(f"Unknown pattern type: {pattern_type!r}. "
-                       f"Available: {list(PATTERN_TYPES.keys())}")
+        raise KeyError(f"Unknown pattern type: {pattern_type!r}. Available: {list(PATTERN_TYPES.keys())}")
     spPr = shape._element.find(qn("p:spPr"))
     if spPr is None:
         return
@@ -558,8 +588,7 @@ def apply_pattern_fill(shape, pattern_type: str, fg_color: str, bg_color: str,
     bg_srgb.set("val", bg_color.lstrip("#"))
 
 
-def apply_frosted_glass(shape, tint_color: str = "#FFFFFF", tint_alpha: int = 50,
-                        soft_edge: float = 8) -> None:
+def apply_frosted_glass(shape, tint_color: str = "#FFFFFF", tint_alpha: int = 50, soft_edge: float = 8) -> None:
     spPr = shape._element.find(qn("p:spPr"))
     if spPr is None:
         return

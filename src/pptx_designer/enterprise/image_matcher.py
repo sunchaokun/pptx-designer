@@ -1,4 +1,4 @@
-﻿"""ImageMatcher �?auto-assign images from pool to slides."""
+"""ImageMatcher �?auto-assign images from pool to slides."""
 
 from __future__ import annotations
 
@@ -221,5 +221,3 @@ def auto_generate_image_prompts(
         design["image_prompt"] = template.format(title=title)
 
     return page_designs
-
-

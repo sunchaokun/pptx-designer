@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import math
 
-
 _CJK_RANGE = (
     (0x4E00, 0x9FFF),
     (0x3400, 0x4DBF),
@@ -35,10 +34,7 @@ _PADDING_H = 0.15
 
 def _is_cjk(ch: str) -> bool:
     cp = ord(ch)
-    for lo, hi in _CJK_RANGE:
-        if lo <= cp <= hi:
-            return True
-    return False
+    return any(lo <= cp <= hi for lo, hi in _CJK_RANGE)
 
 
 def estimate_text_size(
@@ -71,10 +67,7 @@ def estimate_text_size(
     if max_width <= 0:
         max_width = 10.0
 
-    if total_width <= max_width:
-        lines = 1
-    else:
-        lines = math.ceil(total_width / max_width)
+    lines = 1 if total_width <= max_width else math.ceil(total_width / max_width)
 
     actual_width = min(total_width + _PADDING_H * 2, max_width)
     actual_height = lines * line_height + _PADDING_V * 2

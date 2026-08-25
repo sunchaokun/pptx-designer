@@ -4,7 +4,6 @@ from pptx_designer.diagrams.base import BaseDiagram
 
 
 class PyramidDiagram(BaseDiagram):
-
     def compute_layout(self) -> None:
         levels = self.data.get("levels", self.data.get("stages", []))
         if not levels:
@@ -23,18 +22,25 @@ class PyramidDiagram(BaseDiagram):
 
             label = level.get("label", level.get("name", f"Level {i + 1}"))
 
-            self._nodes.append({
-                "x": x, "y": y, "width": level_w, "height": level_h,
-                "label": label,
-                "shape": "rectangle",
-                "fill_role": level.get("fill_role", self.style.node_fill),
-                "font_color_role": level.get("font_color_role", self.style.node_font_color),
-            })
+            self._nodes.append(
+                {
+                    "x": x,
+                    "y": y,
+                    "width": level_w,
+                    "height": level_h,
+                    "label": label,
+                    "shape": "rectangle",
+                    "fill_role": level.get("fill_role", self.style.node_fill),
+                    "font_color_role": level.get("font_color_role", self.style.node_font_color),
+                }
+            )
 
             if i < n - 1:
-                self._connectors.append({
-                    "x1": self.region.center_x,
-                    "y1": y + level_h,
-                    "x2": self.region.center_x,
-                    "y2": y + level_h + gap,
-                })
+                self._connectors.append(
+                    {
+                        "x1": self.region.center_x,
+                        "y1": y + level_h,
+                        "x2": self.region.center_x,
+                        "y2": y + level_h + gap,
+                    }
+                )

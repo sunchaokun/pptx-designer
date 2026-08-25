@@ -5,6 +5,7 @@ Usage::
     from pptx_designer.compiler import SVGCompiler, SVGCompileError, SVGResult
     result = SVGCompiler(C=context).compile(svg_text, slide, rect)
 """
+
 from ._affine import Affine, parse_transform
 from ._compiler import SVGCompiler, SVGRenderReport, SVGResult
 from ._dash import StrokeStyle, apply_stroke_style, parse_stroke_style

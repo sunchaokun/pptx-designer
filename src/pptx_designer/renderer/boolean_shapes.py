@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from pptx.oxml.ns import qn
 from lxml import etree
+from pptx.oxml.ns import qn
 
 EMU_PER_INCH = 914400
 
 try:
-    from shapely.geometry import Polygon, MultiPolygon
-    from shapely.ops import unary_union
-    from shapely.validation import make_valid
+    from shapely.geometry import MultiPolygon, Polygon
+
     HAS_SHAPELY = True
 except ImportError:
     HAS_SHAPELY = False
@@ -30,9 +29,11 @@ def poly_circle(cx: float, cy: float, r: float, segments: int = 32) -> Any:
     if not HAS_SHAPELY:
         return None
     import math
-    points = [(cx + r * math.cos(2 * math.pi * i / segments),
-               cy + r * math.sin(2 * math.pi * i / segments))
-              for i in range(segments)]
+
+    points = [
+        (cx + r * math.cos(2 * math.pi * i / segments), cy + r * math.sin(2 * math.pi * i / segments))
+        for i in range(segments)
+    ]
     return Polygon(points)
 
 
@@ -88,9 +89,17 @@ def _multipolygon_to_paths(geom, scale: float = 1.0) -> list[list[dict]]:
     return paths
 
 
-def _build_custGeom_shape(slide, paths: list[list[dict]], x_in: float, y_in: float,
-                           w_in: float, h_in: float, fill_color: str = "#4472C4",
-                           line_color: str | None = None, alpha: int | None = None) -> Any:
+def _build_custgeom_shape(
+    slide,
+    paths: list[list[dict]],
+    x_in: float,
+    y_in: float,
+    w_in: float,
+    h_in: float,
+    fill_color: str = "#4472C4",
+    line_color: str | None = None,
+    alpha: int | None = None,
+) -> Any:
     """Build a custGeom shape from path commands."""
     sp_tree = slide.shapes._spTree
     sp = etree.SubElement(sp_tree, qn("p:sp"))
@@ -163,23 +172,21 @@ def _build_custGeom_shape(slide, paths: list[list[dict]], x_in: float, y_in: flo
     return sp
 
 
-def _boolean_to_slide(slide, geom, x_in, y_in, w_in, h_in,
-                       fill_color="#4472C4", line_color=None, alpha=None):
+def _boolean_to_slide(slide, geom, x_in, y_in, w_in, h_in, fill_color="#4472C4", line_color=None, alpha=None):
     """Convert Shapely geometry to a PPTX shape on the slide."""
     paths = _multipolygon_to_paths(geom, scale=1.0)
     if not paths:
         return None
-    return _build_custGeom_shape(slide, paths, x_in, y_in, w_in, h_in,
-                                  fill_color=fill_color, line_color=line_color,
-                                  alpha=alpha)
+    return _build_custgeom_shape(
+        slide, paths, x_in, y_in, w_in, h_in, fill_color=fill_color, line_color=line_color, alpha=alpha
+    )
 
 
-def bool_shape(geometry, slide, x, y, w, h, fill=None, line=None, C=None,
-               alpha=None):
+def bool_shape(geometry, slide, x, y, w, h, fill=None, line=None, C=None, alpha=None):
     """Convert Shapely geometry to a PPTX shape with fill/line colors."""
     if geometry is None:
         return None
-    fill_hex = '#4472C4'
+    fill_hex = "#4472C4"
     if fill:
         if isinstance(fill, str):
             fill_hex = fill
@@ -191,6 +198,4 @@ def bool_shape(geometry, slide, x, y, w, h, fill=None, line=None, C=None,
             line_hex = line
         elif C and line in C:
             line_hex = C[line]
-    return _boolean_to_slide(slide, geometry, x, y, w, h,
-                              fill_color=fill_hex, line_color=line_hex,
-                              alpha=alpha)
+    return _boolean_to_slide(slide, geometry, x, y, w, h, fill_color=fill_hex, line_color=line_hex, alpha=alpha)

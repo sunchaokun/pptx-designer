@@ -13,6 +13,7 @@ class TestPackageImport:
 
     def test_version(self):
         import pptx_designer
+
         assert pptx_designer.__version__ == "1.0.0b5"
 
     def test_palletes_count(self):
@@ -140,12 +141,14 @@ class TestSearch:
 
     def test_search_color(self):
         from pptx_designer.search import adapters
+
         results = adapters.search_color("tech", top_k=3)
         assert len(results) > 0
         assert "primary" in results[0]
 
     def test_search_typography(self):
         from pptx_designer.search import adapters
+
         results = adapters.search_typography("modern", top_k=3)
         assert len(results) > 0
         assert "heading" in results[0]

@@ -1,9 +1,8 @@
-﻿"""Slide extractor — extract content from existing PPT files."""
+"""Slide extractor — extract content from existing PPT files."""
 
 from __future__ import annotations
 
 import os
-from typing import Any
 
 
 class SlideExtractor:

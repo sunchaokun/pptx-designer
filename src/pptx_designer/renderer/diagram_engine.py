@@ -15,8 +15,7 @@ class DiagramEngine:
         """Register a diagram renderer."""
         self._registry[name] = renderer
 
-    def render(self, slide: Any, diagram_type: str, data: dict,
-               region: Any, style: Any = None) -> None:
+    def render(self, slide: Any, diagram_type: str, data: dict, region: Any, style: Any = None) -> None:
         """Render a diagram."""
         renderer = self._registry.get(diagram_type)
         if renderer:

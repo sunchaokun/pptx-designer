@@ -8,7 +8,6 @@ Usage:
     C = PALETTES["saas-general"]
 """
 
-
 PALETTES: dict[str, dict[str, str]] = {
     "saas-general": {
         "primary": "#2563EB",
@@ -27,7 +26,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Trust blue + orange CTA contrast [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Trust blue + orange CTA contrast [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "micro-saas": {
         "primary": "#6366F1",
@@ -46,7 +45,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6366F1",
-        "notes": 'Indigo primary + emerald CTA [Accent adjusted from #10B981 for WCAG 3:1]',
+        "notes": "Indigo primary + emerald CTA [Accent adjusted from #10B981 for WCAG 3:1]",
     },
     "e-commerce": {
         "primary": "#059669",
@@ -65,7 +64,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Success green + urgency orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Success green + urgency orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "e-commerce-luxury": {
         "primary": "#1C1917",
@@ -84,7 +83,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1C1917",
-        "notes": 'Premium dark + gold accent [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Premium dark + gold accent [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "b2b-service": {
         "primary": "#0F172A",
@@ -103,7 +102,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Professional navy + blue CTA',
+        "notes": "Professional navy + blue CTA",
     },
     "financial-dashboard": {
         "primary": "#0F172A",
@@ -122,7 +121,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Dark bg + green positive indicators',
+        "notes": "Dark bg + green positive indicators",
     },
     "analytics-dashboard": {
         "primary": "#1E40AF",
@@ -141,7 +140,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E40AF",
-        "notes": 'Blue data + amber highlights [Accent adjusted from #F59E0B for WCAG 3:1]',
+        "notes": "Blue data + amber highlights [Accent adjusted from #F59E0B for WCAG 3:1]",
     },
     "healthcare-app": {
         "primary": "#0891B2",
@@ -160,7 +159,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0891B2",
-        "notes": 'Calm cyan + health green',
+        "notes": "Calm cyan + health green",
     },
     "educational-app": {
         "primary": "#4F46E5",
@@ -179,7 +178,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#4F46E5",
-        "notes": 'Playful indigo + energetic orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Playful indigo + energetic orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "creative-agency": {
         "primary": "#EC4899",
@@ -198,7 +197,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Bold pink + cyan accent [Accent adjusted from #06B6D4 for WCAG 3:1]',
+        "notes": "Bold pink + cyan accent [Accent adjusted from #06B6D4 for WCAG 3:1]",
     },
     "portfolio-personal": {
         "primary": "#18181B",
@@ -217,7 +216,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#18181B",
-        "notes": 'Monochrome + blue accent',
+        "notes": "Monochrome + blue accent",
     },
     "gaming": {
         "primary": "#7C3AED",
@@ -236,7 +235,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Neon purple + rose action',
+        "notes": "Neon purple + rose action",
     },
     "government-public-service": {
         "primary": "#0F172A",
@@ -255,7 +254,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'High contrast navy + blue',
+        "notes": "High contrast navy + blue",
     },
     "fintech-crypto": {
         "primary": "#F59E0B",
@@ -274,7 +273,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#F59E0B",
-        "notes": 'Gold trust + purple tech',
+        "notes": "Gold trust + purple tech",
     },
     "social-media-app": {
         "primary": "#E11D48",
@@ -293,7 +292,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#E11D48",
-        "notes": 'Vibrant rose + engagement blue',
+        "notes": "Vibrant rose + engagement blue",
     },
     "productivity-tool": {
         "primary": "#0D9488",
@@ -312,7 +311,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0D9488",
-        "notes": 'Teal focus + action orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Teal focus + action orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "design-system-component-library": {
         "primary": "#4F46E5",
@@ -331,7 +330,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#4F46E5",
-        "notes": 'Indigo brand + doc hierarchy [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Indigo brand + doc hierarchy [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "ai-chatbot-platform": {
         "primary": "#7C3AED",
@@ -350,7 +349,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'AI purple + cyan interactions [Accent adjusted from #06B6D4 for WCAG 3:1]',
+        "notes": "AI purple + cyan interactions [Accent adjusted from #06B6D4 for WCAG 3:1]",
     },
     "nft-web3-platform": {
         "primary": "#8B5CF6",
@@ -369,7 +368,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#8B5CF6",
-        "notes": 'Purple tech + gold value',
+        "notes": "Purple tech + gold value",
     },
     "creator-economy-platform": {
         "primary": "#EC4899",
@@ -388,7 +387,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Creator pink + engagement orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Creator pink + engagement orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "remote-work-collaboration-tool": {
         "primary": "#6366F1",
@@ -407,7 +406,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6366F1",
-        "notes": 'Calm indigo + success green [Accent adjusted from #10B981 for WCAG 3:1]',
+        "notes": "Calm indigo + success green [Accent adjusted from #10B981 for WCAG 3:1]",
     },
     "mental-health-app": {
         "primary": "#8B5CF6",
@@ -426,7 +425,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#8B5CF6",
-        "notes": 'Calming lavender + wellness green [Accent adjusted from #10B981 for WCAG 3:1]',
+        "notes": "Calming lavender + wellness green [Accent adjusted from #10B981 for WCAG 3:1]",
     },
     "pet-tech-app": {
         "primary": "#F97316",
@@ -445,7 +444,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#F97316",
-        "notes": 'Playful orange + trust blue',
+        "notes": "Playful orange + trust blue",
     },
     "smart-home-iot-dashboard": {
         "primary": "#1E293B",
@@ -464,7 +463,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#1E293B",
-        "notes": 'Dark tech + status green',
+        "notes": "Dark tech + status green",
     },
     "ev-charging-ecosystem": {
         "primary": "#0891B2",
@@ -483,7 +482,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0891B2",
-        "notes": 'Electric cyan + eco green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Electric cyan + eco green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "subscription-box-service": {
         "primary": "#D946EF",
@@ -502,7 +501,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D946EF",
-        "notes": 'Excitement purple + urgency orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Excitement purple + urgency orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "podcast-platform": {
         "primary": "#1E1B4B",
@@ -521,7 +520,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#1E1B4B",
-        "notes": 'Dark audio + warm accent',
+        "notes": "Dark audio + warm accent",
     },
     "dating-app": {
         "primary": "#E11D48",
@@ -540,7 +539,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#E11D48",
-        "notes": 'Romantic rose + warm orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Romantic rose + warm orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "micro-credentials-badges-platform": {
         "primary": "#0369A1",
@@ -559,7 +558,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0369A1",
-        "notes": 'Trust blue + achievement gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Trust blue + achievement gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "knowledge-base-documentation": {
         "primary": "#475569",
@@ -578,7 +577,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Neutral grey + link blue',
+        "notes": "Neutral grey + link blue",
     },
     "hyperlocal-services": {
         "primary": "#059669",
@@ -597,7 +596,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Location green + action orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Location green + action orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "beauty-spa-wellness-service": {
         "primary": "#EC4899",
@@ -616,7 +615,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Soft pink + lavender luxury',
+        "notes": "Soft pink + lavender luxury",
     },
     "luxury-premium-brand": {
         "primary": "#1C1917",
@@ -635,7 +634,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1C1917",
-        "notes": 'Premium black + gold accent [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Premium black + gold accent [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "restaurant-food-service": {
         "primary": "#DC2626",
@@ -654,7 +653,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Appetizing red + warm gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Appetizing red + warm gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "fitness-gym-app": {
         "primary": "#F97316",
@@ -673,7 +672,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#F97316",
-        "notes": 'Energy orange + success green',
+        "notes": "Energy orange + success green",
     },
     "real-estate-property": {
         "primary": "#0F766E",
@@ -692,7 +691,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F766E",
-        "notes": 'Trust teal + professional blue',
+        "notes": "Trust teal + professional blue",
     },
     "travel-tourism-agency": {
         "primary": "#0EA5E9",
@@ -711,7 +710,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0EA5E9",
-        "notes": 'Sky blue + adventure orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Sky blue + adventure orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "hotel-hospitality": {
         "primary": "#1E3A8A",
@@ -730,7 +729,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A8A",
-        "notes": 'Luxury navy + gold service [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Luxury navy + gold service [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "wedding-event-planning": {
         "primary": "#DB2777",
@@ -749,7 +748,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DB2777",
-        "notes": 'Romantic pink + elegant gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Romantic pink + elegant gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "legal-services": {
         "primary": "#1E3A8A",
@@ -768,7 +767,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A8A",
-        "notes": 'Authority navy + trust gold',
+        "notes": "Authority navy + trust gold",
     },
     "insurance-platform": {
         "primary": "#0369A1",
@@ -787,7 +786,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0369A1",
-        "notes": 'Security blue + protected green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Security blue + protected green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "banking-traditional-finance": {
         "primary": "#0F172A",
@@ -806,7 +805,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Trust navy + premium gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Trust navy + premium gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "online-course-e-learning": {
         "primary": "#0D9488",
@@ -825,7 +824,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0D9488",
-        "notes": 'Progress teal + achievement orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Progress teal + achievement orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "non-profit-charity": {
         "primary": "#0891B2",
@@ -844,7 +843,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0891B2",
-        "notes": 'Compassion blue + action orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Compassion blue + action orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "music-streaming": {
         "primary": "#1E1B4B",
@@ -863,7 +862,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#1E1B4B",
-        "notes": 'Dark audio + play green',
+        "notes": "Dark audio + play green",
     },
     "video-streaming-ott": {
         "primary": "#0F0F23",
@@ -882,7 +881,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#0F0F23",
-        "notes": 'Cinema dark + play red',
+        "notes": "Cinema dark + play red",
     },
     "job-board-recruitment": {
         "primary": "#0369A1",
@@ -901,7 +900,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0369A1",
-        "notes": 'Professional blue + success green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Professional blue + success green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "marketplace-p2p": {
         "primary": "#7C3AED",
@@ -920,7 +919,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Trust purple + transaction green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Trust purple + transaction green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "logistics-delivery": {
         "primary": "#2563EB",
@@ -939,7 +938,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Tracking blue + delivery orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Tracking blue + delivery orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "agriculture-farm-tech": {
         "primary": "#15803D",
@@ -958,7 +957,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Earth green + harvest gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Earth green + harvest gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "construction-architecture": {
         "primary": "#64748B",
@@ -977,7 +976,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#64748B",
-        "notes": 'Industrial grey + safety orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Industrial grey + safety orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "automotive-car-dealership": {
         "primary": "#1E293B",
@@ -996,7 +995,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E293B",
-        "notes": 'Premium dark + action red',
+        "notes": "Premium dark + action red",
     },
     "photography-studio": {
         "primary": "#18181B",
@@ -1015,7 +1014,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#18181B",
-        "notes": 'Pure black + white contrast',
+        "notes": "Pure black + white contrast",
     },
     "coworking-space": {
         "primary": "#F59E0B",
@@ -1034,7 +1033,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#F59E0B",
-        "notes": 'Energetic amber + booking blue',
+        "notes": "Energetic amber + booking blue",
     },
     "home-services-plumber-electrician": {
         "primary": "#1E40AF",
@@ -1053,7 +1052,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E40AF",
-        "notes": 'Professional blue + urgent orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Professional blue + urgent orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "childcare-daycare": {
         "primary": "#F472B6",
@@ -1072,7 +1071,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#F472B6",
-        "notes": 'Soft pink + safe green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Soft pink + safe green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "senior-care-elderly": {
         "primary": "#0369A1",
@@ -1091,7 +1090,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0369A1",
-        "notes": 'Calm blue + reassuring green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Calm blue + reassuring green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "medical-clinic": {
         "primary": "#0891B2",
@@ -1110,7 +1109,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0891B2",
-        "notes": 'Medical teal + health green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Medical teal + health green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "pharmacy-drug-store": {
         "primary": "#15803D",
@@ -1129,7 +1128,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Pharmacy green + trust blue',
+        "notes": "Pharmacy green + trust blue",
     },
     "dental-practice": {
         "primary": "#0EA5E9",
@@ -1148,7 +1147,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0EA5E9",
-        "notes": 'Fresh blue + smile yellow [Accent adjusted from #FBBF24 for WCAG 3:1]',
+        "notes": "Fresh blue + smile yellow [Accent adjusted from #FBBF24 for WCAG 3:1]",
     },
     "veterinary-clinic": {
         "primary": "#0D9488",
@@ -1167,7 +1166,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0D9488",
-        "notes": 'Caring teal + warm orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Caring teal + warm orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "florist-plant-shop": {
         "primary": "#15803D",
@@ -1186,7 +1185,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Natural green + floral pink',
+        "notes": "Natural green + floral pink",
     },
     "bakery-cafe": {
         "primary": "#92400E",
@@ -1205,7 +1204,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#92400E",
-        "notes": 'Warm brown + cream white [Accent adjusted from #F8FAFC for WCAG 3:1]',
+        "notes": "Warm brown + cream white [Accent adjusted from #F8FAFC for WCAG 3:1]",
     },
     "brewery-winery": {
         "primary": "#7C2D12",
@@ -1224,7 +1223,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C2D12",
-        "notes": 'Deep burgundy + craft gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Deep burgundy + craft gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "airline": {
         "primary": "#1E3A8A",
@@ -1243,7 +1242,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A8A",
-        "notes": 'Sky blue + booking orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Sky blue + booking orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "news-media-platform": {
         "primary": "#DC2626",
@@ -1262,7 +1261,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Breaking red + link blue',
+        "notes": "Breaking red + link blue",
     },
     "magazine-blog": {
         "primary": "#18181B",
@@ -1281,7 +1280,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#18181B",
-        "notes": 'Editorial black + accent pink',
+        "notes": "Editorial black + accent pink",
     },
     "freelancer-platform": {
         "primary": "#6366F1",
@@ -1300,7 +1299,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6366F1",
-        "notes": 'Creative indigo + hire green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Creative indigo + hire green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "marketing-agency": {
         "primary": "#EC4899",
@@ -1319,7 +1318,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Bold pink + creative cyan [Accent adjusted from #06B6D4 for WCAG 3:1]',
+        "notes": "Bold pink + creative cyan [Accent adjusted from #06B6D4 for WCAG 3:1]",
     },
     "event-management": {
         "primary": "#7C3AED",
@@ -1338,7 +1337,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Excitement purple + action orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Excitement purple + action orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "membership-community": {
         "primary": "#7C3AED",
@@ -1357,7 +1356,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Community purple + join green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Community purple + join green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "newsletter-platform": {
         "primary": "#0369A1",
@@ -1376,7 +1375,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0369A1",
-        "notes": 'Trust blue + subscribe orange [Accent adjusted from #F97316 for WCAG 3:1]',
+        "notes": "Trust blue + subscribe orange [Accent adjusted from #F97316 for WCAG 3:1]",
     },
     "digital-products-downloads": {
         "primary": "#6366F1",
@@ -1395,7 +1394,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6366F1",
-        "notes": 'Digital indigo + buy green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Digital indigo + buy green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "church-religious-organization": {
         "primary": "#7C3AED",
@@ -1414,7 +1413,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Spiritual purple + warm gold [Accent adjusted from #CA8A04 for WCAG 3:1]',
+        "notes": "Spiritual purple + warm gold [Accent adjusted from #CA8A04 for WCAG 3:1]",
     },
     "sports-team-club": {
         "primary": "#DC2626",
@@ -1433,7 +1432,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Team red + championship gold [Accent adjusted from #FBBF24 for WCAG 3:1]',
+        "notes": "Team red + championship gold [Accent adjusted from #FBBF24 for WCAG 3:1]",
     },
     "museum-gallery": {
         "primary": "#18181B",
@@ -1452,7 +1451,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#18181B",
-        "notes": 'Gallery black + white space [Accent adjusted from #F8FAFC for WCAG 3:1]',
+        "notes": "Gallery black + white space [Accent adjusted from #F8FAFC for WCAG 3:1]",
     },
     "theater-cinema": {
         "primary": "#1E1B4B",
@@ -1471,7 +1470,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#1E1B4B",
-        "notes": 'Dramatic dark + spotlight gold',
+        "notes": "Dramatic dark + spotlight gold",
     },
     "language-learning-app": {
         "primary": "#4F46E5",
@@ -1490,7 +1489,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#4F46E5",
-        "notes": 'Learning indigo + progress green [Accent adjusted from #22C55E for WCAG 3:1]',
+        "notes": "Learning indigo + progress green [Accent adjusted from #22C55E for WCAG 3:1]",
     },
     "coding-bootcamp": {
         "primary": "#0F172A",
@@ -1509,7 +1508,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Terminal dark + success green',
+        "notes": "Terminal dark + success green",
     },
     "cybersecurity-platform": {
         "primary": "#00FF41",
@@ -1528,7 +1527,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#00FF41",
-        "notes": 'Matrix green + alert red',
+        "notes": "Matrix green + alert red",
     },
     "developer-tool-ide": {
         "primary": "#1E293B",
@@ -1547,7 +1546,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#1E293B",
-        "notes": 'Code dark + run green',
+        "notes": "Code dark + run green",
     },
     "biotech-life-sciences": {
         "primary": "#0EA5E9",
@@ -1566,7 +1565,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0EA5E9",
-        "notes": 'DNA blue + life green [Accent adjusted from #10B981 for WCAG 3:1]',
+        "notes": "DNA blue + life green [Accent adjusted from #10B981 for WCAG 3:1]",
     },
     "space-tech-aerospace": {
         "primary": "#F8FAFC",
@@ -1585,7 +1584,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#F8FAFC",
-        "notes": 'Star white + launch blue',
+        "notes": "Star white + launch blue",
     },
     "architecture-interior": {
         "primary": "#171717",
@@ -1604,7 +1603,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#171717",
-        "notes": 'Minimal black + accent gold [Accent adjusted from #D4AF37 for WCAG 3:1]',
+        "notes": "Minimal black + accent gold [Accent adjusted from #D4AF37 for WCAG 3:1]",
     },
     "quantum-computing-interface": {
         "primary": "#00FFFF",
@@ -1623,7 +1622,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#00FFFF",
-        "notes": 'Quantum cyan + interference purple',
+        "notes": "Quantum cyan + interference purple",
     },
     "biohacking-longevity-app": {
         "primary": "#FF4D4D",
@@ -1642,7 +1641,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#FF4D4D",
-        "notes": 'Bio red/blue + vitality green [Accent adjusted from #00E676 for WCAG 3:1]',
+        "notes": "Bio red/blue + vitality green [Accent adjusted from #00E676 for WCAG 3:1]",
     },
     "autonomous-drone-fleet-manager": {
         "primary": "#00FF41",
@@ -1661,7 +1660,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#00FF41",
-        "notes": 'Terminal green + alert red',
+        "notes": "Terminal green + alert red",
     },
     "generative-art-platform": {
         "primary": "#18181B",
@@ -1680,7 +1679,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#18181B",
-        "notes": 'Canvas neutral + creative pink',
+        "notes": "Canvas neutral + creative pink",
     },
     "spatial-computing-os-app": {
         "primary": "#FFFFFF",
@@ -1699,7 +1698,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#FF3B30",
         "on-destructive": "#FFFFFF",
         "ring": "#007AFF",
-        "notes": 'Glass white + system blue [Accent adjusted from #007AFF for WCAG 3:1]',
+        "notes": "Glass white + system blue [Accent adjusted from #007AFF for WCAG 3:1]",
     },
     "sustainable-energy-climate-tech": {
         "primary": "#059669",
@@ -1718,7 +1717,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Nature green + solar gold [Accent adjusted from #FBBF24 for WCAG 3:1]',
+        "notes": "Nature green + solar gold [Accent adjusted from #FBBF24 for WCAG 3:1]",
     },
     "personal-finance-tracker": {
         "primary": "#1E40AF",
@@ -1737,7 +1736,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E40AF",
-        "notes": 'Trust blue + profit green on dark',
+        "notes": "Trust blue + profit green on dark",
     },
     "chat-messaging-app": {
         "primary": "#2563EB",
@@ -1756,7 +1755,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Messenger blue + online green',
+        "notes": "Messenger blue + online green",
     },
     "notes-writing-app": {
         "primary": "#78716C",
@@ -1775,7 +1774,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#78716C",
-        "notes": 'Warm ink + amber accent on cream',
+        "notes": "Warm ink + amber accent on cream",
     },
     "habit-tracker": {
         "primary": "#D97706",
@@ -1794,7 +1793,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D97706",
-        "notes": 'Streak amber + habit green',
+        "notes": "Streak amber + habit green",
     },
     "food-delivery-on-demand": {
         "primary": "#EA580C",
@@ -1813,7 +1812,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EA580C",
-        "notes": 'Appetizing orange + trust blue',
+        "notes": "Appetizing orange + trust blue",
     },
     "ride-hailing-transportation": {
         "primary": "#1E293B",
@@ -1832,7 +1831,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E293B",
-        "notes": 'Map dark + route blue',
+        "notes": "Map dark + route blue",
     },
     "recipe-cooking-app": {
         "primary": "#9A3412",
@@ -1851,7 +1850,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#9A3412",
-        "notes": 'Warm terracotta + fresh green',
+        "notes": "Warm terracotta + fresh green",
     },
     "meditation-mindfulness": {
         "primary": "#7C3AED",
@@ -1870,7 +1869,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Calm lavender + mindful green',
+        "notes": "Calm lavender + mindful green",
     },
     "weather-app": {
         "primary": "#0284C7",
@@ -1889,7 +1888,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0284C7",
-        "notes": 'Sky blue + sun amber',
+        "notes": "Sky blue + sun amber",
     },
     "diary-journal-app": {
         "primary": "#92400E",
@@ -1908,7 +1907,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#92400E",
-        "notes": 'Warm journal brown + ink violet',
+        "notes": "Warm journal brown + ink violet",
     },
     "crm-client-management": {
         "primary": "#2563EB",
@@ -1927,7 +1926,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Professional blue + deal green',
+        "notes": "Professional blue + deal green",
     },
     "inventory-stock-management": {
         "primary": "#334155",
@@ -1946,7 +1945,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#334155",
-        "notes": 'Industrial slate + stock green',
+        "notes": "Industrial slate + stock green",
     },
     "flashcard-study-tool": {
         "primary": "#7C3AED",
@@ -1965,7 +1964,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Study purple + correct green',
+        "notes": "Study purple + correct green",
     },
     "booking-appointment-app": {
         "primary": "#0284C7",
@@ -1984,7 +1983,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0284C7",
-        "notes": 'Calendar blue + available green',
+        "notes": "Calendar blue + available green",
     },
     "invoice-billing-tool": {
         "primary": "#1E3A5F",
@@ -2003,7 +2002,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Navy professional + paid green',
+        "notes": "Navy professional + paid green",
     },
     "grocery-shopping-list": {
         "primary": "#059669",
@@ -2022,7 +2021,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Fresh green + food amber',
+        "notes": "Fresh green + food amber",
     },
     "timer-pomodoro": {
         "primary": "#DC2626",
@@ -2041,7 +2040,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Focus red on dark + break green',
+        "notes": "Focus red on dark + break green",
     },
     "parenting-baby-tracker": {
         "primary": "#EC4899",
@@ -2060,7 +2059,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Soft pink + trust blue',
+        "notes": "Soft pink + trust blue",
     },
     "scanner-document-manager": {
         "primary": "#1E293B",
@@ -2079,7 +2078,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E293B",
-        "notes": 'Document grey + scan blue',
+        "notes": "Document grey + scan blue",
     },
     "calendar-scheduling-app": {
         "primary": "#2563EB",
@@ -2098,7 +2097,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Calendar blue + event green',
+        "notes": "Calendar blue + event green",
     },
     "password-manager": {
         "primary": "#1E3A5F",
@@ -2117,7 +2116,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Vault dark blue + secure green',
+        "notes": "Vault dark blue + secure green",
     },
     "expense-splitter-bill-split": {
         "primary": "#059669",
@@ -2136,7 +2135,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Balance green + owe red',
+        "notes": "Balance green + owe red",
     },
     "voice-recorder-memo": {
         "primary": "#DC2626",
@@ -2155,7 +2154,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Recording red + waveform blue',
+        "notes": "Recording red + waveform blue",
     },
     "bookmark-read-later": {
         "primary": "#D97706",
@@ -2174,7 +2173,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D97706",
-        "notes": 'Warm amber + link blue',
+        "notes": "Warm amber + link blue",
     },
     "translator-app": {
         "primary": "#2563EB",
@@ -2193,7 +2192,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Global blue + teal + accent orange',
+        "notes": "Global blue + teal + accent orange",
     },
     "calculator-unit-converter": {
         "primary": "#EA580C",
@@ -2212,7 +2211,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EA580C",
-        "notes": 'Operation orange on dark',
+        "notes": "Operation orange on dark",
     },
     "alarm-world-clock": {
         "primary": "#D97706",
@@ -2231,7 +2230,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D97706",
-        "notes": 'Time amber + night indigo on dark',
+        "notes": "Time amber + night indigo on dark",
     },
     "file-manager-transfer": {
         "primary": "#2563EB",
@@ -2250,7 +2249,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Folder blue + file amber',
+        "notes": "Folder blue + file amber",
     },
     "email-client": {
         "primary": "#2563EB",
@@ -2269,7 +2268,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Inbox blue + priority red',
+        "notes": "Inbox blue + priority red",
     },
     "casual-puzzle-game": {
         "primary": "#EC4899",
@@ -2288,7 +2287,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Cheerful pink + reward gold',
+        "notes": "Cheerful pink + reward gold",
     },
     "trivia-quiz-game": {
         "primary": "#2563EB",
@@ -2307,7 +2306,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Quiz blue + gold leaderboard',
+        "notes": "Quiz blue + gold leaderboard",
     },
     "card-board-game": {
         "primary": "#15803D",
@@ -2326,7 +2325,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Felt green + gold on dark',
+        "notes": "Felt green + gold on dark",
     },
     "idle-clicker-game": {
         "primary": "#D97706",
@@ -2345,7 +2344,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D97706",
-        "notes": 'Coin gold + prestige purple',
+        "notes": "Coin gold + prestige purple",
     },
     "word-crossword-game": {
         "primary": "#15803D",
@@ -2364,7 +2363,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Word green + letter amber',
+        "notes": "Word green + letter amber",
     },
     "arcade-retro-game": {
         "primary": "#DC2626",
@@ -2383,7 +2382,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Neon red+blue on dark + score green',
+        "notes": "Neon red+blue on dark + score green",
     },
     "photo-editor-filters": {
         "primary": "#7C3AED",
@@ -2402,7 +2401,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Editor violet + filter cyan on dark',
+        "notes": "Editor violet + filter cyan on dark",
     },
     "short-video-editor": {
         "primary": "#EC4899",
@@ -2421,7 +2420,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Video pink on dark + timeline blue',
+        "notes": "Video pink on dark + timeline blue",
     },
     "drawing-sketching-canvas": {
         "primary": "#7C3AED",
@@ -2440,7 +2439,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Canvas purple + tool teal on dark',
+        "notes": "Canvas purple + tool teal on dark",
     },
     "music-creation-beat-maker": {
         "primary": "#7C3AED",
@@ -2459,7 +2458,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Studio purple + waveform green on dark',
+        "notes": "Studio purple + waveform green on dark",
     },
     "meme-sticker-maker": {
         "primary": "#EC4899",
@@ -2478,7 +2477,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EC4899",
-        "notes": 'Viral pink + comedy yellow + share blue',
+        "notes": "Viral pink + comedy yellow + share blue",
     },
     "ai-photo-avatar-generator": {
         "primary": "#7C3AED",
@@ -2497,7 +2496,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'AI purple + generation pink',
+        "notes": "AI purple + generation pink",
     },
     "link-in-bio-page-builder": {
         "primary": "#2563EB",
@@ -2516,7 +2515,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Brand blue + creator purple',
+        "notes": "Brand blue + creator purple",
     },
     "wardrobe-outfit-planner": {
         "primary": "#BE185D",
@@ -2535,7 +2534,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#BE185D",
-        "notes": 'Fashion rose + gold accent',
+        "notes": "Fashion rose + gold accent",
     },
     "plant-care-tracker": {
         "primary": "#15803D",
@@ -2554,7 +2553,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Nature green + sun yellow',
+        "notes": "Nature green + sun yellow",
     },
     "book-reading-tracker": {
         "primary": "#78716C",
@@ -2573,7 +2572,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#78716C",
-        "notes": 'Book brown + page amber',
+        "notes": "Book brown + page amber",
     },
     "couple-relationship-app": {
         "primary": "#BE185D",
@@ -2592,7 +2591,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#BE185D",
-        "notes": 'Romance rose + love red',
+        "notes": "Romance rose + love red",
     },
     "family-calendar-chores": {
         "primary": "#2563EB",
@@ -2611,7 +2610,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Family blue + chore green',
+        "notes": "Family blue + chore green",
     },
     "mood-tracker": {
         "primary": "#7C3AED",
@@ -2630,7 +2629,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Mood purple + insight amber',
+        "notes": "Mood purple + insight amber",
     },
     "gift-wishlist": {
         "primary": "#DC2626",
@@ -2649,7 +2648,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Gift red + gold + surprise pink',
+        "notes": "Gift red + gold + surprise pink",
     },
     "running-cycling-gps": {
         "primary": "#EA580C",
@@ -2668,7 +2667,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EA580C",
-        "notes": 'Energetic orange + pace green on dark',
+        "notes": "Energetic orange + pace green on dark",
     },
     "yoga-stretching-guide": {
         "primary": "#6B7280",
@@ -2687,7 +2686,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6B7280",
-        "notes": 'Sage neutral + calm teal',
+        "notes": "Sage neutral + calm teal",
     },
     "sleep-tracker": {
         "primary": "#4338CA",
@@ -2706,7 +2705,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#4338CA",
-        "notes": 'Night indigo + dream violet on dark',
+        "notes": "Night indigo + dream violet on dark",
     },
     "calorie-nutrition-counter": {
         "primary": "#059669",
@@ -2725,7 +2724,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Healthy green + macro orange',
+        "notes": "Healthy green + macro orange",
     },
     "period-cycle-tracker": {
         "primary": "#BE185D",
@@ -2744,7 +2743,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#BE185D",
-        "notes": 'Blush rose + fertility lavender',
+        "notes": "Blush rose + fertility lavender",
     },
     "medication-pill-reminder": {
         "primary": "#0284C7",
@@ -2763,7 +2762,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0284C7",
-        "notes": 'Medical blue + alert red',
+        "notes": "Medical blue + alert red",
     },
     "water-hydration-reminder": {
         "primary": "#0284C7",
@@ -2782,7 +2781,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0284C7",
-        "notes": 'Refreshing blue + water cyan',
+        "notes": "Refreshing blue + water cyan",
     },
     "fasting-intermittent-timer": {
         "primary": "#6366F1",
@@ -2801,7 +2800,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#6366F1",
-        "notes": 'Fasting indigo on dark + eating green',
+        "notes": "Fasting indigo on dark + eating green",
     },
     "anonymous-community-confession": {
         "primary": "#475569",
@@ -2820,7 +2819,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Protective grey + subtle teal on dark',
+        "notes": "Protective grey + subtle teal on dark",
     },
     "local-events-discovery": {
         "primary": "#EA580C",
@@ -2839,7 +2838,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EA580C",
-        "notes": 'Event orange + map blue',
+        "notes": "Event orange + map blue",
     },
     "study-together-virtual-coworking": {
         "primary": "#2563EB",
@@ -2858,7 +2857,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Focus blue + session green',
+        "notes": "Focus blue + session green",
     },
     "coding-challenge-practice": {
         "primary": "#22C55E",
@@ -2877,7 +2876,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#22C55E",
-        "notes": 'Code green + difficulty amber on dark',
+        "notes": "Code green + difficulty amber on dark",
     },
     "kids-learning-abc-math": {
         "primary": "#2563EB",
@@ -2896,7 +2895,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Learning blue + play yellow + fun pink',
+        "notes": "Learning blue + play yellow + fun pink",
     },
     "music-instrument-learning": {
         "primary": "#DC2626",
@@ -2915,7 +2914,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Musical red + warm amber',
+        "notes": "Musical red + warm amber",
     },
     "parking-finder": {
         "primary": "#2563EB",
@@ -2934,7 +2933,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Available blue/green + occupied red',
+        "notes": "Available blue/green + occupied red",
     },
     "public-transit-guide": {
         "primary": "#2563EB",
@@ -2953,7 +2952,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Transit blue + line colors',
+        "notes": "Transit blue + line colors",
     },
     "road-trip-planner": {
         "primary": "#EA580C",
@@ -2972,7 +2971,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#EA580C",
-        "notes": 'Adventure orange + map teal',
+        "notes": "Adventure orange + map teal",
     },
     "vpn-privacy-tool": {
         "primary": "#1E3A5F",
@@ -2991,7 +2990,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Shield dark + connected green',
+        "notes": "Shield dark + connected green",
     },
     "emergency-sos-safety": {
         "primary": "#DC2626",
@@ -3010,7 +3009,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#DC2626",
-        "notes": 'Alert red + safety blue',
+        "notes": "Alert red + safety blue",
     },
     "wallpaper-theme-app": {
         "primary": "#7C3AED",
@@ -3029,7 +3028,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Aesthetic purple + trending pink',
+        "notes": "Aesthetic purple + trending pink",
     },
     "white-noise-ambient-sound": {
         "primary": "#475569",
@@ -3048,7 +3047,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Ambient grey + deep indigo on dark',
+        "notes": "Ambient grey + deep indigo on dark",
     },
     "home-decoration-interior-design": {
         "primary": "#78716C",
@@ -3067,7 +3066,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#78716C",
-        "notes": 'Interior warm grey + gold accent',
+        "notes": "Interior warm grey + gold accent",
     },
     "academic-journal-scholarly-publishing": {
         "primary": "#1E3A5F",
@@ -3086,7 +3085,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Scholarly navy + citation gold + serif accent',
+        "notes": "Scholarly navy + citation gold + serif accent",
     },
     "api-developer-portal": {
         "primary": "#0F172A",
@@ -3105,7 +3104,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Code dark + endpoint green + syntax colors',
+        "notes": "Code dark + endpoint green + syntax colors",
     },
     "forum-discussion-board": {
         "primary": "#475569",
@@ -3124,7 +3123,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Neutral grey + topic accent + unread indicator',
+        "notes": "Neutral grey + topic accent + unread indicator",
     },
     "directory-listing-site": {
         "primary": "#059669",
@@ -3143,7 +3142,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#059669",
-        "notes": 'Category green + verified badge + map accent',
+        "notes": "Category green + verified badge + map accent",
     },
     "status-page-incident-management": {
         "primary": "#16A34A",
@@ -3162,7 +3161,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#16A34A",
-        "notes": 'Operational green + incident red + maintenance amber',
+        "notes": "Operational green + incident red + maintenance amber",
     },
     "wiki-encyclopedia": {
         "primary": "#1E3A8A",
@@ -3181,7 +3180,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A8A",
-        "notes": 'Knowledge blue + link purple + clean white',
+        "notes": "Knowledge blue + link purple + clean white",
     },
     "auction-platform": {
         "primary": "#0F172A",
@@ -3200,7 +3199,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Dark luxury + bid green + outbid red + urgency',
+        "notes": "Dark luxury + bid green + outbid red + urgency",
     },
     "changelog-release-notes": {
         "primary": "#475569",
@@ -3219,7 +3218,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Feature green + fix blue + breaking red badges',
+        "notes": "Feature green + fix blue + breaking red badges",
     },
     "citizen-science-platform": {
         "primary": "#15803D",
@@ -3238,7 +3237,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#15803D",
-        "notes": 'Discovery green + volunteer badge + data neutral',
+        "notes": "Discovery green + volunteer badge + data neutral",
     },
     "classifieds-buy-sell": {
         "primary": "#2563EB",
@@ -3257,7 +3256,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Listing blue + price green + seller badge',
+        "notes": "Listing blue + price green + seller badge",
     },
     "conference-symposium-landing-page": {
         "primary": "#1E3A5F",
@@ -3276,7 +3275,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Academic navy + gold keynote + track chips',
+        "notes": "Academic navy + gold keynote + track chips",
     },
     "crowdfunding-platform": {
         "primary": "#D97706",
@@ -3295,7 +3294,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#D97706",
-        "notes": 'Funding progress amber + goal green + urgency',
+        "notes": "Funding progress amber + goal green + urgency",
     },
     "digital-signage-kiosk": {
         "primary": "#0F172A",
@@ -3314,7 +3313,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#EF4444",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'High contrast dark + brand accent + large touch targets',
+        "notes": "High contrast dark + brand accent + large touch targets",
     },
     "e-signature-document-workflow": {
         "primary": "#1E3A5F",
@@ -3333,7 +3332,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Trust navy + signature green + audit trail',
+        "notes": "Trust navy + signature green + audit trail",
     },
     "feature-flag-config-management": {
         "primary": "#0F172A",
@@ -3352,7 +3351,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Enabled green + disabled grey + experimental amber',
+        "notes": "Enabled green + disabled grey + experimental amber",
     },
     "government-portal-civic-services": {
         "primary": "#1E40AF",
@@ -3371,7 +3370,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E40AF",
-        "notes": 'Professional blue + service green + accessibility',
+        "notes": "Professional blue + service green + accessibility",
     },
     "grant-funding-portal": {
         "primary": "#1E3A5F",
@@ -3390,7 +3389,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Institution navy + funding green + deadline urgency',
+        "notes": "Institution navy + funding green + deadline urgency",
     },
     "lms-learning-management-system": {
         "primary": "#0D9488",
@@ -3409,7 +3408,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0D9488",
-        "notes": 'Education teal + course amber + grade green',
+        "notes": "Education teal + course amber + grade green",
     },
     "no-code-low-code-builder": {
         "primary": "#7C3AED",
@@ -3428,7 +3427,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Builder purple + component pink + canvas neutral',
+        "notes": "Builder purple + component pink + canvas neutral",
     },
     "open-source-project-landing": {
         "primary": "#0F172A",
@@ -3447,7 +3446,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#22C55E",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Dark code + star gold + fork silver + sponsor purple',
+        "notes": "Dark code + star gold + fork silver + sponsor purple",
     },
     "patient-portal-health-records": {
         "primary": "#0284C7",
@@ -3466,7 +3465,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0284C7",
-        "notes": 'Clinical blue + health green + alert red',
+        "notes": "Clinical blue + health green + alert red",
     },
     "patent-ip-database": {
         "primary": "#475569",
@@ -3485,7 +3484,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#475569",
-        "notes": 'Formal neutral + patent type chips + status badges',
+        "notes": "Formal neutral + patent type chips + status badges",
     },
     "q-a-community-platform": {
         "primary": "#2563EB",
@@ -3504,7 +3503,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#2563EB",
-        "notes": 'Knowledge blue + accepted green + reputation gold',
+        "notes": "Knowledge blue + accepted green + reputation gold",
     },
     "research-lab-university-department": {
         "primary": "#1E3A5F",
@@ -3523,7 +3522,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Institutional navy + research accent + serif headings',
+        "notes": "Institutional navy + research accent + serif headings",
     },
     "resume-cv-builder": {
         "primary": "#1E3A5F",
@@ -3542,7 +3541,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#1E3A5F",
-        "notes": 'Professional navy + section accent + success green',
+        "notes": "Professional navy + section accent + success green",
     },
     "review-platform": {
         "primary": "#F59E0B",
@@ -3561,7 +3560,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#F59E0B",
-        "notes": 'Star gold + positive green + negative red',
+        "notes": "Star gold + positive green + negative red",
     },
     "rpa-automation-dashboard": {
         "primary": "#0F172A",
@@ -3580,7 +3579,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Dark terminal + running green + failed red + queued amber',
+        "notes": "Dark terminal + running green + failed red + queued amber",
     },
     "survey-form-builder": {
         "primary": "#0D9488",
@@ -3599,7 +3598,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0D9488",
-        "notes": 'Question teal + progress green + submit blue',
+        "notes": "Question teal + progress green + submit blue",
     },
     "telemedicine-platform": {
         "primary": "#0891B2",
@@ -3618,7 +3617,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0891B2",
-        "notes": 'Medical teal + video green + waiting amber',
+        "notes": "Medical teal + video green + waiting amber",
     },
     "testimonial-social-proof-widget": {
         "primary": "#7C3AED",
@@ -3637,7 +3636,7 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#7C3AED",
-        "notes": 'Trust purple + quote gold + verified blue',
+        "notes": "Trust purple + quote gold + verified blue",
     },
     "ticketing-box-office": {
         "primary": "#0F172A",
@@ -3656,6 +3655,6 @@ PALETTES: dict[str, dict[str, str]] = {
         "destructive": "#DC2626",
         "on-destructive": "#FFFFFF",
         "ring": "#0F172A",
-        "notes": 'Event theme colors + available green + sold-out red',
+        "notes": "Event theme colors + available green + sold-out red",
     },
 }

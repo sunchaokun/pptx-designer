@@ -5,6 +5,7 @@ Public API::
     from pptx_designer.compiler import SVGCompiler, SVGCompileError, SVGResult
     result = SVGCompiler(C=context).compile(svg_text, slide, rect)
 """
+
 from __future__ import annotations
 
 import math
@@ -58,58 +59,153 @@ _PathCmd = _LineCmd | _CubicCmd
 # ─────────────────────────── color helpers ───────────────────────────
 
 _NAMED_COLORS: dict[str, str] = {
-    "aliceblue": "F0F8FF", "antiquewhite": "FAEBD7", "aqua": "00FFFF",
-    "aquamarine": "7FFFD4", "azure": "F0FFFF", "beige": "F5F5DC",
-    "bisque": "FFE4C4", "black": "000000", "blanchedalmond": "FFEBCD",
-    "blue": "0000FF", "blueviolet": "8A2BE2", "brown": "A52A2A",
-    "burlywood": "DEB887", "cadetblue": "5F9EA0", "chartreuse": "7FFF00",
-    "chocolate": "D2691E", "coral": "FF7F50", "cornflowerblue": "6495ED",
-    "cornsilk": "FFF8DC", "crimson": "DC143C", "cyan": "00FFFF",
-    "darkblue": "00008B", "darkcyan": "008B8B", "darkgoldenrod": "B8860B",
-    "darkgray": "A9A9A9", "darkgreen": "006400", "darkgrey": "A9A9A9",
-    "darkkhaki": "BDB76B", "darkmagenta": "8B008B", "darkolivegreen": "556B2F",
-    "darkorange": "FF8C00", "darkorchid": "9932CC", "darkred": "8B0000",
-    "darksalmon": "E9967A", "darkseagreen": "8FBC8F", "darkslateblue": "483D8B",
-    "darkslategray": "2F4F4F", "darkslategrey": "2F4F4F",
-    "darkturquoise": "00CED1", "darkviolet": "9400D3", "deeppink": "FF1493",
-    "deepskyblue": "00BFFF", "dimgray": "696969", "dimgrey": "696969",
-    "dodgerblue": "1E90FF", "firebrick": "B22222", "floralwhite": "FFFAF0",
-    "forestgreen": "228B22", "fuchsia": "FF00FF", "gainsboro": "DCDCDC",
-    "ghostwhite": "F8F8FF", "gold": "FFD700", "goldenrod": "DAA520",
-    "gray": "808080", "green": "008000", "greenyellow": "ADFF2F",
-    "grey": "808080", "honeydew": "F0FFF0", "hotpink": "FF69B4",
-    "indianred": "CD5C5C", "indigo": "4B0082", "ivory": "FFFFF0",
-    "khaki": "F0E68C", "lavender": "E6E6FA", "lavenderblush": "FFF0F5",
-    "lawngreen": "7CFC00", "lemonchiffon": "FFFACD", "lightblue": "ADD8E6",
-    "lightcoral": "F08080", "lightcyan": "E0FFFF", "lightgoldenrodyellow": "FAFAD2",
-    "lightgray": "D3D3D3", "lightgreen": "90EE90", "lightgrey": "D3D3D3",
-    "lightpink": "FFB6C1", "lightsalmon": "FFA07A", "lightseagreen": "20B2AA",
-    "lightskyblue": "87CEFA", "lightslategray": "778899",
-    "lightslategrey": "778899", "lightsteelblue": "B0C4DE",
-    "lightyellow": "FFFFE0", "lime": "00FF00", "limegreen": "32CD32",
-    "linen": "FAF0E6", "magenta": "FF00FF", "maroon": "800000",
-    "mediumaquamarine": "66CDAA", "mediumblue": "0000CD",
-    "mediumorchid": "BA55D3", "mediumpurple": "9370DB",
-    "mediumseagreen": "3CB371", "mediumslateblue": "7B68EE",
-    "mediumspringgreen": "00FA9A", "mediumturquoise": "48D1CC",
-    "mediumvioletred": "C71585", "midnightblue": "191970",
-    "mintcream": "F5FFFA", "mistyrose": "FFE4E1", "moccasin": "FFE4B5",
-    "navajowhite": "FFDEAD", "navy": "000080", "oldlace": "FDF5E6",
-    "olive": "808000", "olivedrab": "6B8E23", "orange": "FFA500",
-    "orangered": "FF4500", "orchid": "DA70D6", "palegoldenrod": "EEE8AA",
-    "palegreen": "98FB98", "paleturquoise": "AFEEEE",
-    "palevioletred": "DB7093", "papayawhip": "FFEFD5", "peachpuff": "FFDAB9",
-    "peru": "CD853F", "pink": "FFC0CB", "plum": "DDA0DD",
-    "powderblue": "B0E0E6", "purple": "800080", "rebeccapurple": "663399",
-    "red": "FF0000", "rosybrown": "BC8F8F", "royalblue": "4169E1",
-    "saddlebrown": "8B4513", "salmon": "FA8072", "sandybrown": "F4A460",
-    "seagreen": "2E8B57", "seashell": "FFF5EE", "sienna": "A0522D",
-    "silver": "C0C0C0", "skyblue": "87CEEB", "slateblue": "6A5ACD",
-    "slategray": "708090", "slategrey": "708090", "snow": "FFFAFA",
-    "springgreen": "00FF7F", "steelblue": "4682B4", "tan": "D2B48C",
-    "teal": "008080", "thistle": "D8BFD8", "tomato": "FF6347",
-    "turquoise": "40E0D0", "violet": "EE82EE", "wheat": "F5DEB3",
-    "white": "FFFFFF", "whitesmoke": "F5F5F5", "yellow": "FFFF00",
+    "aliceblue": "F0F8FF",
+    "antiquewhite": "FAEBD7",
+    "aqua": "00FFFF",
+    "aquamarine": "7FFFD4",
+    "azure": "F0FFFF",
+    "beige": "F5F5DC",
+    "bisque": "FFE4C4",
+    "black": "000000",
+    "blanchedalmond": "FFEBCD",
+    "blue": "0000FF",
+    "blueviolet": "8A2BE2",
+    "brown": "A52A2A",
+    "burlywood": "DEB887",
+    "cadetblue": "5F9EA0",
+    "chartreuse": "7FFF00",
+    "chocolate": "D2691E",
+    "coral": "FF7F50",
+    "cornflowerblue": "6495ED",
+    "cornsilk": "FFF8DC",
+    "crimson": "DC143C",
+    "cyan": "00FFFF",
+    "darkblue": "00008B",
+    "darkcyan": "008B8B",
+    "darkgoldenrod": "B8860B",
+    "darkgray": "A9A9A9",
+    "darkgreen": "006400",
+    "darkgrey": "A9A9A9",
+    "darkkhaki": "BDB76B",
+    "darkmagenta": "8B008B",
+    "darkolivegreen": "556B2F",
+    "darkorange": "FF8C00",
+    "darkorchid": "9932CC",
+    "darkred": "8B0000",
+    "darksalmon": "E9967A",
+    "darkseagreen": "8FBC8F",
+    "darkslateblue": "483D8B",
+    "darkslategray": "2F4F4F",
+    "darkslategrey": "2F4F4F",
+    "darkturquoise": "00CED1",
+    "darkviolet": "9400D3",
+    "deeppink": "FF1493",
+    "deepskyblue": "00BFFF",
+    "dimgray": "696969",
+    "dimgrey": "696969",
+    "dodgerblue": "1E90FF",
+    "firebrick": "B22222",
+    "floralwhite": "FFFAF0",
+    "forestgreen": "228B22",
+    "fuchsia": "FF00FF",
+    "gainsboro": "DCDCDC",
+    "ghostwhite": "F8F8FF",
+    "gold": "FFD700",
+    "goldenrod": "DAA520",
+    "gray": "808080",
+    "green": "008000",
+    "greenyellow": "ADFF2F",
+    "grey": "808080",
+    "honeydew": "F0FFF0",
+    "hotpink": "FF69B4",
+    "indianred": "CD5C5C",
+    "indigo": "4B0082",
+    "ivory": "FFFFF0",
+    "khaki": "F0E68C",
+    "lavender": "E6E6FA",
+    "lavenderblush": "FFF0F5",
+    "lawngreen": "7CFC00",
+    "lemonchiffon": "FFFACD",
+    "lightblue": "ADD8E6",
+    "lightcoral": "F08080",
+    "lightcyan": "E0FFFF",
+    "lightgoldenrodyellow": "FAFAD2",
+    "lightgray": "D3D3D3",
+    "lightgreen": "90EE90",
+    "lightgrey": "D3D3D3",
+    "lightpink": "FFB6C1",
+    "lightsalmon": "FFA07A",
+    "lightseagreen": "20B2AA",
+    "lightskyblue": "87CEFA",
+    "lightslategray": "778899",
+    "lightslategrey": "778899",
+    "lightsteelblue": "B0C4DE",
+    "lightyellow": "FFFFE0",
+    "lime": "00FF00",
+    "limegreen": "32CD32",
+    "linen": "FAF0E6",
+    "magenta": "FF00FF",
+    "maroon": "800000",
+    "mediumaquamarine": "66CDAA",
+    "mediumblue": "0000CD",
+    "mediumorchid": "BA55D3",
+    "mediumpurple": "9370DB",
+    "mediumseagreen": "3CB371",
+    "mediumslateblue": "7B68EE",
+    "mediumspringgreen": "00FA9A",
+    "mediumturquoise": "48D1CC",
+    "mediumvioletred": "C71585",
+    "midnightblue": "191970",
+    "mintcream": "F5FFFA",
+    "mistyrose": "FFE4E1",
+    "moccasin": "FFE4B5",
+    "navajowhite": "FFDEAD",
+    "navy": "000080",
+    "oldlace": "FDF5E6",
+    "olive": "808000",
+    "olivedrab": "6B8E23",
+    "orange": "FFA500",
+    "orangered": "FF4500",
+    "orchid": "DA70D6",
+    "palegoldenrod": "EEE8AA",
+    "palegreen": "98FB98",
+    "paleturquoise": "AFEEEE",
+    "palevioletred": "DB7093",
+    "papayawhip": "FFEFD5",
+    "peachpuff": "FFDAB9",
+    "peru": "CD853F",
+    "pink": "FFC0CB",
+    "plum": "DDA0DD",
+    "powderblue": "B0E0E6",
+    "purple": "800080",
+    "rebeccapurple": "663399",
+    "red": "FF0000",
+    "rosybrown": "BC8F8F",
+    "royalblue": "4169E1",
+    "saddlebrown": "8B4513",
+    "salmon": "FA8072",
+    "sandybrown": "F4A460",
+    "seagreen": "2E8B57",
+    "seashell": "FFF5EE",
+    "sienna": "A0522D",
+    "silver": "C0C0C0",
+    "skyblue": "87CEEB",
+    "slateblue": "6A5ACD",
+    "slategray": "708090",
+    "slategrey": "708090",
+    "snow": "FFFAFA",
+    "springgreen": "00FF7F",
+    "steelblue": "4682B4",
+    "tan": "D2B48C",
+    "teal": "008080",
+    "thistle": "D8BFD8",
+    "tomato": "FF6347",
+    "turquoise": "40E0D0",
+    "violet": "EE82EE",
+    "wheat": "F5DEB3",
+    "white": "FFFFFF",
+    "whitesmoke": "F5F5F5",
+    "yellow": "FFFF00",
     "yellowgreen": "9ACD32",
 }
 
@@ -164,32 +260,32 @@ def _resolve_svg_color(raw: str | None, C: dict | None, fallback: str) -> str | 
     if m:
         r, g, b, a = int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4)
         if a is not None:
-            return f"#{r:02X}{g:02X}{b:02X}{int(a*255):02X}"
+            return f"#{r:02X}{g:02X}{b:02X}{int(a * 255):02X}"
         return f"#{r:02X}{g:02X}{b:02X}"
 
     # hsl(…) / hsla(…)
     m = _HSL_RE.match(v)
     if m:
         import colorsys
+
         h_val, s_val, l_val = float(m.group(1)) / 360.0, float(m.group(2)) / 100.0, float(m.group(3)) / 100.0
         r, g, b = colorsys.hls_to_rgb(h_val, l_val, s_val)
         a = float(m.group(4)) if m.group(4) else 1.0
         if a < 1.0:
-            return f"#{int(r*255):02X}{int(g*255):02X}{int(b*255):02X}{int(a*255):02X}"
-        return f"#{int(r*255):02X}{int(g*255):02X}{int(b*255):02X}"
+            return f"#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}{int(a * 255):02X}"
+        return f"#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
 
     raise SVGCompileError(f"unsupported color value: {v!r}")
 
 
-_RGB_RE = re.compile(
-    r"rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+)\s*)?\)"
-)
+_RGB_RE = re.compile(r"rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+)\s*)?\)")
 _HSL_RE = re.compile(
     r"hsla?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*(?:,\s*([\d.]+)\s*)?\)"
 )
 
 
 # ─────────────────────────── data classes ───────────────────────────
+
 
 @dataclass
 class SVGResult:
@@ -198,6 +294,7 @@ class SVGResult:
     ``SVGResult`` remains the public return type for compatibility, while its
     report fields make a compilation diagnosable without inspecting the slide.
     """
+
     shapes: list = field(default_factory=list)
     native_shapes: list = field(default_factory=list)
     fallback_shapes: list = field(default_factory=list)
@@ -225,6 +322,7 @@ _DEFAULT_LIMITS: dict[str, int] = {
 
 
 # ─────────────────────────── compiler ───────────────────────────
+
 
 class SVGCompiler:
     """Compile a subset of SVG to native editable PPTX shapes."""
@@ -367,7 +465,12 @@ class SVGCompiler:
             elif feature in {"clipPath", "evenodd"}:
                 levels[feature] = "NATIVE_APPROX"
             elif feature in {
-                "image", "filter", "mask", "pattern", "marker", "group_opacity",
+                "image",
+                "filter",
+                "mask",
+                "pattern",
+                "marker",
+                "group_opacity",
                 "raster_fallback_candidate",
             }:
                 levels[feature] = "RASTER_FALLBACK_CANDIDATE"
@@ -447,9 +550,7 @@ class SVGCompiler:
             cx = _parse_pct(g.get("cx", "50%"))
             cy = _parse_pct(g.get("cy", "50%"))
             r_ = _parse_pct(g.get("r", "50%"))
-            self._grads[g.get("id")] = GradientDef(
-                stops=stops, cx=cx, cy=cy, r=r_, gradient_type="radial"
-            )
+            self._grads[g.get("id")] = GradientDef(stops=stops, cx=cx, cy=cy, r=r_, gradient_type="radial")
 
         for c in root.iter(f"{SVG}clipPath"):
             polys = []
@@ -473,17 +574,27 @@ class SVGCompiler:
             if not isinstance(el.tag, str):
                 continue
             el_id = el.get("id")
-            if el_id and el.tag.split("}")[-1] in (
-                "symbol", "g", "rect", "circle", "ellipse", "path",
-                "polygon", "polyline", "line",
-            ) and el_id not in self._defs:
+            if (
+                el_id
+                and el.tag.split("}")[-1]
+                in (
+                    "symbol",
+                    "g",
+                    "rect",
+                    "circle",
+                    "ellipse",
+                    "path",
+                    "polygon",
+                    "polyline",
+                    "line",
+                )
+                and el_id not in self._defs
+            ):
                 self._defs[el_id] = el
 
     # ── SVG element → polygon points (SVG-space) ─────────────
 
-    def _svg_polygon(
-        self, el: etree._Element, tf: Affine
-    ) -> list[list[_PathCmd]]:
+    def _svg_polygon(self, el: etree._Element, tf: Affine) -> list[list[_PathCmd]]:
         if not isinstance(el.tag, str):
             return []
         tag = el.tag.split("}")[-1]
@@ -528,9 +639,7 @@ class SVGCompiler:
             path.append(_LineCmd(tx, ty))
         return [path]
 
-    def _cubics_to_path(
-        self, tf: Affine, pts: list[tuple[float, float]]
-    ) -> list[_PathCmd]:
+    def _cubics_to_path(self, tf: Affine, pts: list[tuple[float, float]]) -> list[_PathCmd]:
         """Convert (start, c1, c2, end)×N flat list to _PathCmd list."""
         path: list[_PathCmd] = []
         i = 0
@@ -550,9 +659,7 @@ class SVGCompiler:
                 i += 1
         return path
 
-    def _path_to_cmds(
-        self, el: etree._Element, tf: Affine
-    ) -> list[list[_PathCmd]]:
+    def _path_to_cmds(self, el: etree._Element, tf: Affine) -> list[list[_PathCmd]]:
         cmds, _ = parse_path(el.get("d", ""))
         subs = to_beziers(cmds)
         out: list[list[_PathCmd]] = []
@@ -573,8 +680,12 @@ class SVGCompiler:
 
     @staticmethod
     def _rounded_rect_cubics(
-        x: float, y: float, w: float, h: float,
-        rx: float, ry: float,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        rx: float,
+        ry: float,
     ) -> list[tuple[float, float]]:
         """Return cubic Bezier points for a rounded rectangle.
 
@@ -586,32 +697,40 @@ class SVGCompiler:
 
         # Top-left corner → top-right corner
         pts.append((x + rx, y))
-        pts.extend([
-            (x + rx - k * rx, y),
-            (x, y + ry - k * ry),
-            (x, y + ry),
-        ])
+        pts.extend(
+            [
+                (x + rx - k * rx, y),
+                (x, y + ry - k * ry),
+                (x, y + ry),
+            ]
+        )
         # Top-right corner → bottom-right corner
         pts.append((x, y + h - ry))
-        pts.extend([
-            (x, y + h - ry + k * ry),
-            (x + rx - k * rx, y + h),
-            (x + rx, y + h),
-        ])
+        pts.extend(
+            [
+                (x, y + h - ry + k * ry),
+                (x + rx - k * rx, y + h),
+                (x + rx, y + h),
+            ]
+        )
         # Bottom-right corner → bottom-left corner
         pts.append((x + w - rx, y + h))
-        pts.extend([
-            (x + w - rx + k * rx, y + h),
-            (x + w, y + h - ry + k * ry),
-            (x + w, y + h - ry),
-        ])
+        pts.extend(
+            [
+                (x + w - rx + k * rx, y + h),
+                (x + w, y + h - ry + k * ry),
+                (x + w, y + h - ry),
+            ]
+        )
         # Bottom-left corner → top-left corner
         pts.append((x + w, y + ry))
-        pts.extend([
-            (x + w, y + ry - k * ry),
-            (x + w - rx + k * rx, y),
-            (x + w - rx, y),
-        ])
+        pts.extend(
+            [
+                (x + w, y + ry - k * ry),
+                (x + w - rx + k * rx, y),
+                (x + w - rx, y),
+            ]
+        )
         return pts
 
     @staticmethod
@@ -685,26 +804,14 @@ class SVGCompiler:
         for i in range(n + 1):
             t = i / n
             mt = 1.0 - t
-            px = (
-                mt ** 3 * x0
-                + 3 * mt * mt * t * x1
-                + 3 * mt * t * t * x2
-                + t ** 3 * x3
-            )
-            py = (
-                mt ** 3 * y0
-                + 3 * mt * mt * t * y1
-                + 3 * mt * t * t * y2
-                + t ** 3 * y3
-            )
+            px = mt**3 * x0 + 3 * mt * mt * t * x1 + 3 * mt * t * t * x2 + t**3 * x3
+            py = mt**3 * y0 + 3 * mt * mt * t * y1 + 3 * mt * t * t * y2 + t**3 * y3
             out.append((px, py))
         return out
 
     # ── paint resolution ─────────────────────────────────────
 
-    def _paint(
-        self, el: etree._Element, which: str
-    ) -> tuple[str, object | None, int]:
+    def _paint(self, el: etree._Element, which: str) -> tuple[str, object | None, int]:
         return _resolve_paint(el, which, self._grads, self.C, _resolve_svg_color, self._features)
 
     # ── rendering ────────────────────────────────────────────
@@ -738,7 +845,13 @@ class SVGCompiler:
         elif tag == "text":
             self._render_text(el, tf)
         elif tag in (
-            "rect", "circle", "ellipse", "polygon", "polyline", "line", "path",
+            "rect",
+            "circle",
+            "ellipse",
+            "polygon",
+            "polyline",
+            "line",
+            "path",
         ):
             self._render_shape(el, tag, tf, clip_stack)
 
@@ -749,24 +862,14 @@ class SVGCompiler:
     def _record_source_output(self, source_id: str | None, start_index: int) -> None:
         if not source_id:
             return
-        new_shapes = [
-            self._slide.shapes[i]
-            for i in range(start_index, len(self._slide.shapes))
-        ]
+        new_shapes = [self._slide.shapes[i] for i in range(start_index, len(self._slide.shapes))]
         if new_shapes:
             self._source_to_output.setdefault(source_id, []).extend(new_shapes)
 
-    def _render_use(
-        self, el: etree._Element, tf: Affine, clip_stack: list
-    ) -> None:
+    def _render_use(self, el: etree._Element, tf: Affine, clip_stack: list) -> None:
         pre_use_shape_count = len(self._slide.shapes)
         self._features.add("use")
-        href = (
-            el.get("href")
-            or el.get(f"{SVG}href")
-            or el.get("{http://www.w3.org/1999/xlink}href")
-            or ""
-        )
+        href = el.get("href") or el.get(f"{SVG}href") or el.get("{http://www.w3.org/1999/xlink}href") or ""
         href = href.removeprefix("#")
         ref = self._defs.get(href)
         if ref is None:
@@ -784,16 +887,20 @@ class SVGCompiler:
         elif ref_tag == "text":
             self._render_text(ref, use_tf)
         elif ref_tag in (
-            "rect", "circle", "ellipse", "polygon", "polyline", "line", "path",
+            "rect",
+            "circle",
+            "ellipse",
+            "polygon",
+            "polyline",
+            "line",
+            "path",
         ):
             self._render_shape(ref, ref_tag, use_tf, clip_stack)
         else:
             self._warnings.append(f"<use> references unsupported element <{ref_tag}> (skipped)")
         self._record_source_output(ref.get("id"), pre_use_shape_count)
 
-    def _render_shape(
-        self, el: etree._Element, tag: str, tf: Affine, clip_stack: list
-    ) -> None:
+    def _render_shape(self, el: etree._Element, tag: str, tf: Affine, clip_stack: list) -> None:
         self._features.add(tag)
 
         fkind, fval, fa = self._paint(el, "fill")
@@ -860,13 +967,22 @@ class SVGCompiler:
                     if isinstance(cmd, _LineCmd):
                         flat.append((cmd.x, cmd.y))
                     else:
-                        flat.extend(self._flatten_cubic(
-                            ((0, 0), (cmd.x1, cmd.y1), (cmd.x2, cmd.y2), (cmd.x3, cmd.y3)), n=6
-                        )[1:])
+                        flat.extend(
+                            self._flatten_cubic(((0, 0), (cmd.x1, cmd.y1), (cmd.x2, cmd.y2), (cmd.x3, cmd.y3)), n=6)[1:]
+                        )
                 flat_local.append(flat)
             self._render_bool(
-                flat_local, clip_local, ix0, iy0, iw, ih,
-                fkind, fval, fa, skind, sval,
+                flat_local,
+                clip_local,
+                ix0,
+                iy0,
+                iw,
+                ih,
+                fkind,
+                fval,
+                fa,
+                skind,
+                sval,
                 stroke_style,
             )
             return
@@ -891,9 +1007,7 @@ class SVGCompiler:
         # Freeform path
         fill_hex = _resolve_svg_color(fval, self.C, "") if fkind == "solid" else None
         stroke_hex = _resolve_svg_color(sval, self.C, "") if skind == "solid" else None
-        elem = self._add_freeform(
-            local, ix0, iy0, iw, ih, fill_hex or "#FFFFFF", fa, stroke_hex, sw
-        )
+        elem = self._add_freeform(local, ix0, iy0, iw, ih, fill_hex or "#FFFFFF", fa, stroke_hex, sw)
         if stroke_style and elem is not None:
             apply_stroke_style(elem, stroke_style)
         if fkind == "grad":
@@ -903,8 +1017,15 @@ class SVGCompiler:
         self,
         local_subpaths: list[list[tuple[float, float]]],
         clip_local: list[list[tuple[float, float]]],
-        ix0: float, iy0: float, iw: float, ih: float,
-        fkind: str, fval, fa: int, skind: str, sval,
+        ix0: float,
+        iy0: float,
+        iw: float,
+        ih: float,
+        fkind: str,
+        fval,
+        fa: int,
+        skind: str,
+        sval,
         stroke_style=None,
     ) -> None:
         """Boolean-compute shapes and render, intersecting with clip regions."""
@@ -950,24 +1071,18 @@ class SVGCompiler:
         stroke_hex = _resolve_svg_color(sval, self.C, "") if skind == "solid" else None
 
         if fkind == "grad":
-            elem = bool_shape(
-                poly, self._slide, ix0, iy0, iw, ih, fill="#FFFFFF", line=stroke_hex, alpha=fa
-            )
+            elem = bool_shape(poly, self._slide, ix0, iy0, iw, ih, fill="#FFFFFF", line=stroke_hex, alpha=fa)
             if elem is not None:
                 self._apply_gradient_to_elem(elem, fval)
         else:
             fill_hex = _resolve_svg_color(fval, self.C, "") if fkind == "solid" else "#FFFFFF"
-            elem = bool_shape(
-                poly, self._slide, ix0, iy0, iw, ih, fill=fill_hex, line=stroke_hex, alpha=fa
-            )
+            elem = bool_shape(poly, self._slide, ix0, iy0, iw, ih, fill=fill_hex, line=stroke_hex, alpha=fa)
         if elem is not None:
             if stroke_style:
                 apply_stroke_style(elem, stroke_style)
             self._shape_count += 1
 
-    def _add_native(
-        self, x: float, y: float, w: float, h: float, fill: str | None, alpha: int
-    ) -> object:
+    def _add_native(self, x: float, y: float, w: float, h: float, fill: str | None, alpha: int) -> object:
         sh = self._slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
         if fill:
             sh.fill.solid()
@@ -983,7 +1098,10 @@ class SVGCompiler:
     def _add_freeform(
         self,
         local_subs: list[list[_PathCmd]],
-        ix0: float, iy0: float, iw: float, ih: float,
+        ix0: float,
+        iy0: float,
+        iw: float,
+        ih: float,
         fill: str | None,
         alpha: int,
         stroke: str | None,
@@ -1005,8 +1123,13 @@ class SVGCompiler:
                     fb.cubic_bezier_to(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x3, cmd.y3)
             fb.close()
         elem = fb.build(
-            self._slide, ix0, iy0, iw, ih,
-            fill_color=fill, line_color=stroke,
+            self._slide,
+            ix0,
+            iy0,
+            iw,
+            ih,
+            fill_color=fill,
+            line_color=stroke,
             line_width_pt=max(sw, 0.5),
             no_fill=(fill is None),
         )
@@ -1015,9 +1138,7 @@ class SVGCompiler:
         self._shape_count += 1
         return elem
 
-    def _apply_gradient_to_elem(
-        self, elem: object, grad: GradientDef
-    ) -> None:
+    def _apply_gradient_to_elem(self, elem: object, grad: GradientDef) -> None:
         _apply_gradient(elem, grad, self._wrap_elem)
 
     def _apply_alpha_to_elem(self, elem: object, fill: str, alpha: int) -> None:
@@ -1031,9 +1152,11 @@ class SVGCompiler:
         """Wrap a raw lxml element so visual_effects can access shape._element."""
         if hasattr(elem, "_element"):
             return elem
+
         class _ShapeProxy:
             def __init__(self, el):
                 self._element = el
+
         return _ShapeProxy(elem)
 
     # ── text ─────────────────────────────────────────────────

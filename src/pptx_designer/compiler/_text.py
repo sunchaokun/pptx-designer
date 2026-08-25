@@ -7,6 +7,7 @@ Extracts text rendering from _compiler.py and adds:
   tspans without x/y are inline runs within the same paragraph
 - font-family → PPT font mapping
 """
+
 from __future__ import annotations
 
 import re
@@ -147,9 +148,7 @@ def _resolve_baseline_mode(el) -> str:
     return _BASELINE_OFFSET.get(db.lower(), "middle")
 
 
-def _compute_text_top(
-    iy: float, metrics: TextMetrics, v_anchor, baseline_mode: str = "middle"
-) -> float:
+def _compute_text_top(iy: float, metrics: TextMetrics, v_anchor, baseline_mode: str = "middle") -> float:
     """Compute textbox top position from SVG y coordinate and baseline.
 
     SVG y coordinate semantics by dominant-baseline:
@@ -176,15 +175,12 @@ def _compute_text_top(
 def _has_cjk(text: str) -> bool:
     for ch in text:
         cp = ord(ch)
-        if (0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF
-                or 0x3000 <= cp <= 0x303F or 0xFF00 <= cp <= 0xFFEF):
+        if 0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF or 0x3000 <= cp <= 0x303F or 0xFF00 <= cp <= 0xFFEF:
             return True
     return False
 
 
-def _measure_text(
-    content: str, font_size_pt: float, font_family: str, max_width_inches: float
-) -> TextMetrics:
+def _measure_text(content: str, font_size_pt: float, font_family: str, max_width_inches: float) -> TextMetrics:
     font = None
     try:
         from PIL import ImageFont
@@ -217,9 +213,7 @@ def _measure_text(
             descent_ratio=descent / total_h if total_h > 0 else 0.2,
         )
 
-    w_est, h_est = estimate_text_size(
-        content, max(8, int(font_size_pt)), max_width_inches, font_family
-    )
+    w_est, h_est = estimate_text_size(content, max(8, int(font_size_pt)), max_width_inches, font_family)
     return TextMetrics(
         # ``estimate_text_size`` is intentionally compact for card labels.
         # SVG text has no implicit wrapping, and Office can use wider glyph
@@ -254,10 +248,18 @@ def _parse_font_weight(raw: str | None) -> bool:
     return raw not in ("normal", "100", "200", "300")
 
 
-def _collect_spans(el, parent_fs: float, parent_ff: str, parent_fill: str,
-                    C: dict, resolve_color_fn,  # noqa: N803
-                    parent_bold: bool = False, parent_italic: bool = False,
-                    parent_stroke: str | None = None, parent_stroke_width: float = 0.0) -> list[_SpanSpec]:
+def _collect_spans(
+    el,
+    parent_fs: float,
+    parent_ff: str,
+    parent_fill: str,
+    C: dict,
+    resolve_color_fn,  # noqa: N803
+    parent_bold: bool = False,
+    parent_italic: bool = False,
+    parent_stroke: str | None = None,
+    parent_stroke_width: float = 0.0,
+) -> list[_SpanSpec]:
     spans: list[_SpanSpec] = []
 
     # Check parent element's own font-weight/font-style for direct text content
@@ -270,32 +272,36 @@ def _collect_spans(el, parent_fs: float, parent_ff: str, parent_fill: str,
 
     direct_text = el.text
     if direct_text and direct_text.strip():
-        spans.append(_SpanSpec(
-            text=direct_text.strip(),
-            font_size=parent_fs,
-            font_family=parent_ff,
-            fill=parent_fill,
-            stroke=parent_stroke,
-            stroke_width=parent_stroke_width,
-            bold=parent_bold,
-            italic=parent_italic,
-        ))
+        spans.append(
+            _SpanSpec(
+                text=direct_text.strip(),
+                font_size=parent_fs,
+                font_family=parent_ff,
+                fill=parent_fill,
+                stroke=parent_stroke,
+                stroke_width=parent_stroke_width,
+                bold=parent_bold,
+                italic=parent_italic,
+            )
+        )
 
     for child in el:
         tag = child.tag.split("}")[-1] if isinstance(child.tag, str) else ""
         if tag != "tspan":
             tail = child.tail
             if tail and tail.strip():
-                spans.append(_SpanSpec(
-                    text=tail.strip(),
-                    font_size=parent_fs,
-                    font_family=parent_ff,
-                    fill=parent_fill,
-                    stroke=parent_stroke,
-                    stroke_width=parent_stroke_width,
-                    bold=parent_bold,
-                    italic=parent_italic,
-                ))
+                spans.append(
+                    _SpanSpec(
+                        text=tail.strip(),
+                        font_size=parent_fs,
+                        font_family=parent_ff,
+                        fill=parent_fill,
+                        stroke=parent_stroke,
+                        stroke_width=parent_stroke_width,
+                        bold=parent_bold,
+                        italic=parent_italic,
+                    )
+                )
             continue
 
         fs = _parse_font_size(child.get("font-size"), parent_fs)
@@ -333,16 +339,18 @@ def _collect_spans(el, parent_fs: float, parent_ff: str, parent_fill: str,
 
         tail = child.tail
         if tail and tail.strip():
-            spans.append(_SpanSpec(
-                text=tail.strip(),
-                font_size=parent_fs,
-                font_family=parent_ff,
-                fill=parent_fill,
-                stroke=parent_stroke,
-                stroke_width=parent_stroke_width,
-                bold=parent_bold,
-                italic=parent_italic,
-            ))
+            spans.append(
+                _SpanSpec(
+                    text=tail.strip(),
+                    font_size=parent_fs,
+                    font_family=parent_ff,
+                    fill=parent_fill,
+                    stroke=parent_stroke,
+                    stroke_width=parent_stroke_width,
+                    bold=parent_bold,
+                    italic=parent_italic,
+                )
+            )
 
     return spans
 
@@ -393,22 +401,41 @@ def render_svg_text(
     scale = slide_w / svg_w if svg_w > 0 and slide_w > 0 else 1.0
     scaled_fs = max(parent_fs * scale * 72.0, 6.0)
 
-    spans = _collect_spans(el, parent_fs, parent_ff, parent_fill, C, resolve_color_fn,
-                           parent_stroke=parent_stroke, parent_stroke_width=parent_stroke_width)
-
-    has_tspan_children = any(
-        isinstance(c.tag, str) and c.tag.split("}")[-1] == "tspan" for c in el
+    spans = _collect_spans(
+        el,
+        parent_fs,
+        parent_ff,
+        parent_fill,
+        C,
+        resolve_color_fn,
+        parent_stroke=parent_stroke,
+        parent_stroke_width=parent_stroke_width,
     )
+
+    has_tspan_children = any(isinstance(c.tag, str) and c.tag.split("}")[-1] == "tspan" for c in el)
 
     if not has_tspan_children:
         content = "".join(el.itertext()).strip()
         if not content:
             return
         _render_simple_text(
-            content, ix, iy, scaled_fs, parent_ff, parent_fill,
-            anchor, v_anchor, baseline_mode, el, slide, C, resolve_color_fn,
-            stroke=parent_stroke, stroke_width=parent_stroke_width,
-            fill_alpha=fill_alpha, stroke_alpha=stroke_alpha,
+            content,
+            ix,
+            iy,
+            scaled_fs,
+            parent_ff,
+            parent_fill,
+            anchor,
+            v_anchor,
+            baseline_mode,
+            el,
+            slide,
+            C,
+            resolve_color_fn,
+            stroke=parent_stroke,
+            stroke_width=parent_stroke_width,
+            fill_alpha=fill_alpha,
+            stroke_alpha=stroke_alpha,
         )
         return
 
@@ -416,21 +443,45 @@ def render_svg_text(
         return
 
     _render_tspan_text(
-        spans, ix, iy, scaled_fs, parent_ff, parent_fill,
-        anchor, v_anchor, baseline_mode, el, slide, to_inches_fn, tf,
-        C, resolve_color_fn,
-        fill_alpha=fill_alpha, stroke_alpha=stroke_alpha,
+        spans,
+        ix,
+        iy,
+        scaled_fs,
+        parent_ff,
+        parent_fill,
+        anchor,
+        v_anchor,
+        baseline_mode,
+        el,
+        slide,
+        to_inches_fn,
+        tf,
+        C,
+        resolve_color_fn,
+        fill_alpha=fill_alpha,
+        stroke_alpha=stroke_alpha,
         svg_to_pt=scale * 72.0,
     )
 
 
 def _render_simple_text(
-    content: str, ix: float, iy: float,
-    fs: float, ff: str, fill: str,
-    anchor: str, v_anchor, baseline_mode: str, el, slide,
-    C: dict, resolve_color_fn,  # noqa: N803
-    stroke: str | None = None, stroke_width: float = 0.0,
-    fill_alpha: int = 100, stroke_alpha: int = 100,
+    content: str,
+    ix: float,
+    iy: float,
+    fs: float,
+    ff: str,
+    fill: str,
+    anchor: str,
+    v_anchor,
+    baseline_mode: str,
+    el,
+    slide,
+    C: dict,
+    resolve_color_fn,  # noqa: N803
+    stroke: str | None = None,
+    stroke_width: float = 0.0,
+    fill_alpha: int = 100,
+    stroke_alpha: int = 100,
 ) -> None:
     metrics = _measure_text(content, fs, ff, 8.0)
 
@@ -454,8 +505,7 @@ def _render_simple_text(
         outline_fs = fs + stroke_width * 2  # Larger font size for visible outline
         outline_bold = True  # Bold for thicker outline effect
         tb_outline = slide.shapes.add_textbox(
-            Inches(left - 0.05), Inches(top - 0.05),
-            Inches(width + 0.1), Inches(height + 0.1)
+            Inches(left - 0.05), Inches(top - 0.05), Inches(width + 0.1), Inches(height + 0.1)
         )
         tf_outline = tb_outline.text_frame
         tf_outline.word_wrap = False
@@ -477,9 +527,7 @@ def _render_simple_text(
             run_outline.font.italic = True
 
     # Render fill layer on top (will cover most of outline, but edges peek out)
-    tb = slide.shapes.add_textbox(
-        Inches(left), Inches(top), Inches(width), Inches(height)
-    )
+    tb = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf_el = tb.text_frame
     tf_el.word_wrap = False
     tf_el.vertical_anchor = v_anchor
@@ -502,12 +550,23 @@ def _render_simple_text(
 
 
 def _render_tspan_text(
-    spans: list[_SpanSpec], ix: float, iy: float,
-    parent_fs: float, parent_ff: str, parent_fill: str,
-    anchor: str, v_anchor, baseline_mode: str, el, slide,
-    to_inches_fn, tf: Affine,
-    C: dict, resolve_color_fn,  # noqa: N803
-    fill_alpha: int = 100, stroke_alpha: int = 100,
+    spans: list[_SpanSpec],
+    ix: float,
+    iy: float,
+    parent_fs: float,
+    parent_ff: str,
+    parent_fill: str,
+    anchor: str,
+    v_anchor,
+    baseline_mode: str,
+    el,
+    slide,
+    to_inches_fn,
+    tf: Affine,
+    C: dict,
+    resolve_color_fn,  # noqa: N803
+    fill_alpha: int = 100,
+    stroke_alpha: int = 100,
     svg_to_pt: float = 1.0,
 ) -> None:
     lines = _group_spans_into_lines(spans)
@@ -541,8 +600,7 @@ def _render_tspan_text(
         if max_stroke and max_sw > 0:
             offset = max_sw * 0.015
             tb_outline = slide.shapes.add_textbox(
-                Inches(left - offset), Inches(top - offset),
-                Inches(width + offset * 2), Inches(height + offset * 2)
+                Inches(left - offset), Inches(top - offset), Inches(width + offset * 2), Inches(height + offset * 2)
             )
             tf_outline = tb_outline.text_frame
             tf_outline.word_wrap = True
@@ -573,9 +631,7 @@ def _render_tspan_text(
                     if sp.italic:
                         run_o.font.italic = True
 
-    tb = slide.shapes.add_textbox(
-        Inches(left), Inches(top), Inches(width), Inches(height)
-    )
+    tb = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf_el = tb.text_frame
     tf_el.word_wrap = True
     tf_el.vertical_anchor = v_anchor

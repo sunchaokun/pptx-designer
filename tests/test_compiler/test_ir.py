@@ -39,9 +39,7 @@ def test_ir_identifies_features_without_mutable_xml_state():
 
 
 def test_ir_source_index_keeps_preorder_for_repeated_ids():
-    root = sanitize(
-        '<svg viewBox="0 0 10 10"><g id="same"><rect id="same"/></g></svg>'
-    )
+    root = sanitize('<svg viewBox="0 0 10 10"><g id="same"><rect id="same"/></g></svg>')
 
     document = build_svg_ir(root)
 
@@ -49,9 +47,7 @@ def test_ir_source_index_keeps_preorder_for_repeated_ids():
 
 
 def test_ir_marks_group_opacity_for_raster_fallback():
-    root = sanitize(
-        '<svg viewBox="0 0 10 10"><g id="faded" opacity="0.5"><rect/></g></svg>'
-    )
+    root = sanitize('<svg viewBox="0 0 10 10"><g id="faded" opacity="0.5"><rect/></g></svg>')
 
     document = build_svg_ir(root)
 

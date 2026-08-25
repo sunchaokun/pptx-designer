@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
-from pptx_designer.renderer.precision import PrecisionRenderer
 from pptx_designer.enterprise.brand import BrandSpec
+from pptx_designer.renderer.precision import PrecisionRenderer
 
 
 def _make_renderer(brand: BrandSpec | None = None) -> PrecisionRenderer:
@@ -35,7 +34,9 @@ class TestPrecisionRendererSVG:
     def test_svg_dict_input(self):
         renderer = _make_renderer()
         slide = _make_slide()
-        svg_data = {"svg": '<svg viewBox="0 0 400 300"><rect x="50" y="50" width="200" height="150" fill="#E74C3C"/></svg>'}
+        svg_data = {
+            "svg": '<svg viewBox="0 0 400 300"><rect x="50" y="50" width="200" height="150" fill="#E74C3C"/></svg>'
+        }
         renderer._render_svg_diagram_on_slide(slide, svg_data)
         assert len(slide.shapes) >= 1
 
@@ -74,22 +75,22 @@ class TestPrecisionRendererSVG:
     def test_svg_with_clip_path(self):
         renderer = _make_renderer()
         slide = _make_slide()
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><clipPath id="cp"><rect x="50" y="50" width="200" height="200"/></clipPath></defs>
             <rect x="0" y="0" width="400" height="300" fill="#4472C4" clip-path="url(#cp)"/>
-        </svg>'''
+        </svg>"""
         renderer._render_svg_diagram_on_slide(slide, svg)
         assert len(slide.shapes) >= 1
 
     def test_svg_with_gradient(self):
         renderer = _make_renderer()
         slide = _make_slide()
-        svg = '''<svg viewBox="0 0 400 300">
+        svg = """<svg viewBox="0 0 400 300">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stop-color="#4472C4"/><stop offset="1" stop-color="#2E75B6"/>
             </linearGradient></defs>
             <rect x="50" y="50" width="300" height="200" fill="url(#g1)"/>
-        </svg>'''
+        </svg>"""
         renderer._render_svg_diagram_on_slide(slide, svg)
         assert len(slide.shapes) >= 1
 
@@ -119,5 +120,4 @@ class TestPrecisionRendererSVG:
         slide = _make_slide()
         svg = '<svg viewBox="0 0 400 300"><image href="photo.jpg" width="400" height="300"/></svg>'
         renderer._render_svg_diagram_on_slide(slide, svg)
-        assert any("unsupported" in r.message.lower() or "image" in r.message.lower()
-                    for r in caplog.records)
+        assert any("unsupported" in r.message.lower() or "image" in r.message.lower() for r in caplog.records)

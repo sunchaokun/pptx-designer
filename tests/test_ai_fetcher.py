@@ -7,9 +7,17 @@ from pptx_designer.ai.fetcher import ImageFetcher
 from pptx_designer.utils.env import load_project_dotenv
 
 _IMAGE_ENV = (
-    "PPT_IMAGE_LLM_PROVIDER", "PPT_IMAGE_LLM_API_KEY", "PPT_IMAGE_LLM_BASE_URL",
-    "PPT_IMAGE_LLM_MODEL", "OPENAI_API_KEY", "ARK_API_KEY", "GEMINI_API_KEY",
-    "DASHSCOPE_API_KEY", "MOONSHOT_API_KEY", "UNSPLASH_ACCESS_KEY", "PEXELS_API_KEY",
+    "PPT_IMAGE_LLM_PROVIDER",
+    "PPT_IMAGE_LLM_API_KEY",
+    "PPT_IMAGE_LLM_BASE_URL",
+    "PPT_IMAGE_LLM_MODEL",
+    "OPENAI_API_KEY",
+    "ARK_API_KEY",
+    "GEMINI_API_KEY",
+    "DASHSCOPE_API_KEY",
+    "MOONSHOT_API_KEY",
+    "UNSPLASH_ACCESS_KEY",
+    "PEXELS_API_KEY",
 )
 
 

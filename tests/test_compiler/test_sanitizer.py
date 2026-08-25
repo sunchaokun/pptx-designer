@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from lxml import etree
 
+from pptx_designer.compiler._errors import SVGCompileError
 from pptx_designer.compiler._sanitizer import (
     SVG_NS,
     _expand_style,
@@ -14,8 +15,6 @@ from pptx_designer.compiler._sanitizer import (
     _walk_expand,
     sanitize,
 )
-from pptx_designer.compiler._errors import SVGCompileError
-
 
 SVG = f"{{{SVG_NS}}}"
 
@@ -62,9 +61,7 @@ class TestExpandStyle:
         assert el.get("stroke-width") == "2"
 
     def test_does_not_override_existing_attr(self):
-        el = etree.fromstring(
-            b'<rect xmlns="http://www.w3.org/2000/svg" fill="green" style="fill: red"/>'
-        )
+        el = etree.fromstring(b'<rect xmlns="http://www.w3.org/2000/svg" fill="green" style="fill: red"/>')
         _expand_style(el)
         assert el.get("fill") == "green"
 
@@ -105,9 +102,7 @@ class TestFixSelfClosing:
         assert rect.text is None
 
     def test_preserves_child_elements(self):
-        root = etree.fromstring(
-            b'<svg xmlns="http://www.w3.org/2000/svg"><rect><title>box</title></rect></svg>'
-        )
+        root = etree.fromstring(b'<svg xmlns="http://www.w3.org/2000/svg"><rect><title>box</title></rect></svg>')
         _fix_self_closing_lxml(root)
         rect = _find(root, "rect")
         assert rect is not None
@@ -145,7 +140,7 @@ class TestInferViewbox:
 
 class TestStripUnwanted:
     def test_removes_style_element(self):
-        svg = f'{_SVG_OPEN}><style>.cls{{fill:red}}</style><rect/></svg>'
+        svg = f"{_SVG_OPEN}><style>.cls{{fill:red}}</style><rect/></svg>"
         root = etree.fromstring(svg.encode())
         _strip_unwanted(root)
         assert len(_findall(root, "style")) == 0
@@ -158,7 +153,7 @@ class TestStripUnwanted:
         assert len(_findall(root, "script")) == 0
 
     def test_removes_nested_style(self):
-        svg = f'{_SVG_OPEN}><g><style>.x{{fill:blue}}</style></g></svg>'
+        svg = f"{_SVG_OPEN}><g><style>.x{{fill:blue}}</style></g></svg>"
         root = etree.fromstring(svg.encode())
         _strip_unwanted(root)
         assert len(_findall(root, "style")) == 0
@@ -230,9 +225,10 @@ class TestSanitize:
 
     def test_full_compilation(self):
         """End-to-end: sanitized SVG compiles successfully."""
-        from pptx_designer.compiler import SVGCompiler
         from pptx import Presentation
         from pptx.util import Inches
+
+        from pptx_designer.compiler import SVGCompiler
 
         prs = Presentation()
         prs.slide_width = Inches(13.333)
