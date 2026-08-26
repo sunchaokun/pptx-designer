@@ -201,7 +201,7 @@ TimelineDiagram(
 ### SVG → PPTX
 
 ```python
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 
 svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
   <rect x="20" y="20" width="360" height="160" rx="16" fill="#2563EB"/>
@@ -212,6 +212,8 @@ svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
 result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
 print(result.shape_count, result.warnings)
 ```
+
+`from pptx_designer import svg_chart` is the recommended public import. `from pptx_designer.tools import svg_chart` and the legacy `from pptx_designer.tools.svg import svg_chart` remain valid. The function returns `SVGResult`; inspect `shape_count`, `warnings`, and `errors` before delivery.
 
 The compiler creates native PowerPoint shapes and text for its supported SVG subset. It supports common geometry, paths, text/tspan, transforms, gradients, `defs`/`use`, and a constrained clipping path workflow. Filters, masks, patterns, animations, external resources, and some SVG paint semantics are not full-fidelity features. Always inspect `result.warnings` for a production SVG. See the [SVG guide](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md) for supported input, error handling, and limits.
 

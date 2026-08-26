@@ -1,6 +1,6 @@
 # API 参考
 
-> 适用版本：`1.0.0-beta.2`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
+> 适用版本：`1.0.0b6`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 
@@ -58,6 +58,21 @@ from pptx_designer import extract_design_dna
 
 dna = extract_design_dna(pptx_path: str) -> dict
 ```
+
+### `svg_chart`
+
+Compile a supported SVG subset into editable native PowerPoint objects.
+
+```python
+from pptx_designer import svg_chart
+
+result = svg_chart(slide, svg_text, x=1.0, y=1.0, w=8.0, h=4.0, C=None)
+```
+
+`x`, `y`, `w`, and `h` are inches. The function returns `SVGResult`; inspect
+`shape_count`, `warnings`, and `errors`. `from pptx_designer.tools import
+svg_chart` and `from pptx_designer.tools.svg import svg_chart` remain compatible
+imports.
 
 ---
 
@@ -167,10 +182,11 @@ print(result.warnings)
 print(result.features)
 ```
 
-For the convenient Build-mode wrapper:
+For direct compiler control, use `SVGCompiler`. For normal Build-mode use,
+prefer the public wrapper above:
 
 ```python
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 
 result = svg_chart(slide, svg_text, x=1.0, y=1.0, w=8.0, h=4.0)
 ```

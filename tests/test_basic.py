@@ -14,7 +14,7 @@ class TestPackageImport:
     def test_version(self):
         import pptx_designer
 
-        assert pptx_designer.__version__ == "1.0.0b5"
+        assert pptx_designer.__version__ == "1.0.0b6"
 
     def test_palletes_count(self):
         assert len(PALETTES) == 192

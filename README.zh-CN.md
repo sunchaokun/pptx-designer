@@ -194,7 +194,7 @@ TimelineDiagram(
 ### SVG → PPTX
 
 ```python
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 
 svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
   <rect x="20" y="20" width="360" height="160" rx="16" fill="#2563EB"/>
@@ -205,6 +205,8 @@ svg = """<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
 result = svg_chart(slide, svg, x=1, y=1, w=8, h=4)
 print(result.shape_count, result.warnings)
 ```
+
+推荐使用 `from pptx_designer import svg_chart` 这一公共入口；`from pptx_designer.tools import svg_chart` 与原有的 `from pptx_designer.tools.svg import svg_chart` 仍兼容。函数返回 `SVGResult`，交付前应检查 `shape_count`、`warnings` 和 `errors`。
 
 编译器会将已支持的 SVG 子集转换成 PowerPoint 原生形状和文本。它支持常用几何图形、路径、文本/tspan、变换、渐变、`defs`/`use` 以及受限的裁剪路径流程；不承诺 filter、mask、pattern、动画、外部资源和部分 SVG paint 语义的像素级还原。生产使用时请检查 `result.warnings`。输入要求、报错处理与限制见 [SVG 指南](https://github.com/sunchaokun/pptx-designer/blob/main/docs/svg-guide.md)。
 

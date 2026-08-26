@@ -1,6 +1,6 @@
 # LLM 编写手册：使用 pptx-designer 生成可编辑 PPTX
 
-> 适用版本：`1.0.0-beta.2`。
+> 适用版本：`1.0.0b6`。
 > 目标读者：生成、审查或修改 `pptx-designer` Python 代码的 LLM 与开发者。
 > 本文是用户文档与训练/上下文材料；只描述当前公开且已验证的 API。
 
@@ -60,6 +60,7 @@ prs.save("output/quarterly-review.pptx")
 |---|---|---|
 | `from pptx_designer import Presentation` | 创建或读取文稿 | `Presentation(template_path=None)` 默认使用 16:9。 |
 | `from pptx_designer import generate_ppt` | 快速生成完整 deck | 可传 `query` 或结构化 `content`；它仍是本地 Python 构建流程。 |
+| `from pptx_designer import svg_chart` | 将静态 SVG 编译为原生对象 | 推荐 SVG 公共入口；必须检查返回的 `warnings` 和 `errors`。 |
 | `from pptx_designer.renderer.theme import ThemeComposer` | 需要主题数据 | 正式交付应显式指定 palette/fonts 等，避免依赖未固定的默认选择。 |
 
 结构化生成的最小数据格式：
@@ -190,7 +191,7 @@ diagram.render(slide)
 
 ```python
 from pptx_designer.compiler import SVGCompileError
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 
 svg = '''<svg viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
   <rect x="10" y="10" width="220" height="100" rx="12" fill="#2563EB"/>

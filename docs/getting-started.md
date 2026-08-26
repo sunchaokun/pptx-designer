@@ -1,6 +1,6 @@
 # 快速开始
 
-> 适用版本：`1.0.0-beta.2`；要求 Python 3.10+。
+> 适用版本：`1.0.0b6`；要求 Python 3.10+。
 
 ## 安装
 
@@ -40,7 +40,7 @@ prs.save("output/hello.pptx")
 ## 在页面中加入可编辑 SVG
 
 ```python
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 
 svg = '''<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="36" fill="#2563EB"/>
@@ -52,7 +52,7 @@ if result.warnings:
     print("SVG warnings:", result.warnings)
 ```
 
-不要把 SVG 编译器视为浏览器：它优先保留 PowerPoint 可编辑对象，而不承诺所有 SVG 特效的像素级等价。请在交付前检查 warning，并阅读 [SVG 编译器指南](svg-guide.md)。
+这是推荐公共入口；`from pptx_designer.tools import svg_chart` 和旧路径 `from pptx_designer.tools.svg import svg_chart` 仍兼容。不要把 SVG 编译器视为浏览器：它优先保留 PowerPoint 可编辑对象，而不承诺所有 SVG 特效的像素级等价。请在交付前检查 warning，并阅读 [SVG 编译器指南](svg-guide.md)。
 
 ## 下一步
 

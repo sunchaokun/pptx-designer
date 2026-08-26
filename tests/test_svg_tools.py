@@ -6,7 +6,9 @@ import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
+from pptx_designer import svg_chart as root_svg_chart
 from pptx_designer.compiler import SVGCompileError
+from pptx_designer.tools import svg_chart as tools_svg_chart
 from pptx_designer.tools.svg import svg_chart
 
 
@@ -19,6 +21,10 @@ def _slide():
 
 
 class TestSvgChart:
+    def test_public_import_paths_export_same_function(self):
+        assert root_svg_chart is svg_chart
+        assert tools_svg_chart is svg_chart
+
     def test_basic_circle(self):
         svg = '<svg viewBox="0 0 400 300"><circle cx="200" cy="150" r="100" fill="#4472C4"/></svg>'
         result = svg_chart(_slide(), svg, x=1, y=1, w=8, h=6)

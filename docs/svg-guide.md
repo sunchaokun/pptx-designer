@@ -1,12 +1,12 @@
 # SVG 编译器指南
 
-> 适用版本：`1.0.0-beta.2`。
+> 适用版本：`1.0.0b6`。
 > 定位：把常见静态 SVG 转换为 PowerPoint 原生、尽可能可编辑的形状和文本。
 
 ## 快速使用
 
 ```python
-from pptx_designer.tools.svg import svg_chart
+from pptx_designer import svg_chart
 from pptx_designer.compiler import SVGCompileError
 
 svg = '''<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
@@ -26,7 +26,7 @@ for warning in report.warnings:
     print("SVG warning:", warning)
 ```
 
-`x`、`y`、`w`、`h` 的单位是英寸；SVG 内部坐标由 `viewBox` 映射到该目标矩形。优先提供 `viewBox`。没有 `viewBox` 时，编译器使用默认坐标空间，结果可能不符合预期。
+`from pptx_designer import svg_chart` 是推荐公共入口；`from pptx_designer.tools import svg_chart` 和 `from pptx_designer.tools.svg import svg_chart` 均保持兼容。`x`、`y`、`w`、`h` 的单位是英寸；SVG 内部坐标由 `viewBox` 映射到该目标矩形。优先提供 `viewBox`。没有 `viewBox` 时，编译器使用默认坐标空间，结果可能不符合预期。
 
 ## 返回值与诊断
 
