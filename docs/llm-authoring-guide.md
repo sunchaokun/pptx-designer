@@ -103,6 +103,21 @@ text(slide, 0.7, 1.5, 8.5, 0.5, "The presentation inherits its visual language."
 不要把 Theme Lock 当作页面模板。主题负责颜色角色、字体、装饰和空间倾向；LLM
 仍须根据每页目标选择构图、焦点和公共 API 组合。
 
+### 3.1.1 VI Build：模板规则由 Build 消费
+
+模板分析必须使用统一的 `ResolvedDesignContext`，不能把 `extract_design_dna()`
+的原始结果另存为下游不会读取的 VI 字典。推荐顺序为：
+
+1. `extract_design_context(template.pptx)` 获取确定性证据；
+2. 人工确认可写文本槽位及其 bounds，低置信度槽位不得自动替换；
+3. 选择一个提取出的 archetype，并给出其允许的组件；
+4. 用 `VIBuildSession` 先预检资产、锁定项和槽位容量；
+5. 仅当状态为 `READY` 时创建新页，随后执行 PPTX → PDF → PNG 审查。
+
+需要照片的 archetype 在缺少合规本地图片时会返回 `NEEDS_ASSET`，而不是生成
+没有视觉锚点的纯文字或色块页。系统固定使用 16:9（13.333 × 7.5 英寸）画布。
+`generate_ppt(content=...)` 仍属于 FreeStyle，不会自动启用 VI Build。
+
 ### 3.2 基础形状：`pptx_designer.tools.shapes`
 
 所有形状函数接收 `slide` 和英寸坐标。最常用函数如下：

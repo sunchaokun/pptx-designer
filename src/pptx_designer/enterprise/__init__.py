@@ -9,6 +9,7 @@ from pptx_designer.enterprise.design_dna_extractor import (
     PagePlan,
     SlideDNA,
     TextZone,
+    extract_design_context,
     extract_design_dna,
 )
 from pptx_designer.enterprise.image_matcher import (
@@ -22,6 +23,11 @@ from pptx_designer.enterprise.scanner import ProjectAsset, ProjectScanner
 from pptx_designer.enterprise.slide_extractor import SlideExtractor
 from pptx_designer.enterprise.template_analyzer import TemplateAnalyzer
 from pptx_designer.enterprise.version_manager import next_version, read_meta, write_meta
+from pptx_designer.enterprise.vi_context import (
+    VIBuildSession,
+    design_context_from_brand_spec,
+    normalize_design_context,
+)
 
 __all__ = [
     "BrandSpec",
@@ -48,5 +54,9 @@ __all__ = [
     "SlideDNA",
     "TextZone",
     "PagePlan",
+    "extract_design_context",
     "extract_design_dna",
+    "VIBuildSession",
+    "design_context_from_brand_spec",
+    "normalize_design_context",
 ]

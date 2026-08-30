@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from copy import deepcopy
 from typing import Any
 
 _PRESENTATION_THEME_ATTR = "_pptx_designer_theme_context"
@@ -54,12 +53,16 @@ def _theme_colors(theme: Mapping[str, Any]) -> dict[str, Any]:
 
 def set_presentation_theme(prs: Any, theme: Mapping[str, Any]) -> None:
     """Attach a resolved theme to one presentation without global state."""
-    setattr(prs.part.package, _PRESENTATION_THEME_ATTR, deepcopy(dict(theme)))
+    from pptx_designer.enterprise.vi_context import normalize_design_context
+
+    setattr(prs.part.package, _PRESENTATION_THEME_ATTR, normalize_design_context(theme))
 
 
 def set_slide_theme(slide: Any, theme: Mapping[str, Any]) -> None:
     """Attach a resolved theme that overrides presentation defaults on one slide."""
-    setattr(slide.part, _SLIDE_THEME_ATTR, deepcopy(dict(theme)))
+    from pptx_designer.enterprise.vi_context import normalize_design_context
+
+    setattr(slide.part, _SLIDE_THEME_ATTR, normalize_design_context(theme))
 
 
 def get_theme(slide: Any) -> Mapping[str, Any] | None:

@@ -83,6 +83,46 @@ from pptx_designer import extract_design_dna
 dna = extract_design_dna(pptx_path: str) -> dict
 ```
 
+### `extract_design_context` and `VIBuildSession`
+
+VI Build uses the same versioned design-context dictionary as Build Mode theme
+inheritance. `extract_design_context()` provides deterministic evidence from a
+16:9 template: direct colors, fonts, image references, photo/color-panel
+components, slide archetypes, and a template fingerprint. It does not guess
+unknown text boxes as writable slots.
+
+```python
+from pptx_designer import Presentation, VIBuildSession, extract_design_context
+
+context = extract_design_context("template.pptx")
+# Add only user-confirmed slots/components before rendering a new page.
+context["content_slots"] = [{
+    "id": "page_title",
+    "max_chars": 24,
+    "bounds": {"left": 0.7, "top": 1.2, "width": 5.5, "height": 1.0},
+    "font_size": 32,
+    "bold": True,
+}]
+
+prs = Presentation("template.pptx", theme=context)
+session = VIBuildSession(context, assets={"supporting_photo": "botanical.png"})
+result = session.render_page(
+    prs,
+    "slide-1-photo",
+    components=["photo-panel-1-1"],
+    slot_values={"page_title": "Spring collection"},
+)
+if result["status"] != "READY":
+    raise RuntimeError(result["asset_plan"])
+prs.save("output.pptx")
+```
+
+Required photo assets are never silently replaced with color blocks:
+`result["status"]` is `NEEDS_ASSET` and no new slide is created. Each result
+contains `design_application`, `asset_plan`, slot bindings, accepted overrides,
+and MUST acceptance evidence. `design_context_from_brand_spec(BrandSpec(...))`
+adapts the legacy enterprise brand object into this same context.
+
 ### `svg_chart`
 
 Compile a supported SVG subset into editable native PowerPoint objects.
