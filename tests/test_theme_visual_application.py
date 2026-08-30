@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from pptx import Presentation as PptxPresentation
+from pptx.enum.text import PP_ALIGN
 
 from pptx_designer import Presentation, set_slide_theme
 from pptx_designer.core.pipeline import generate_ppt
@@ -116,6 +117,32 @@ def test_theme_composition_is_reproducible_with_explicit_atoms():
     assert composer.compose(**kwargs) == composer.compose(**kwargs)
 
 
+def test_theme_composer_records_actual_fallback_atoms():
+    theme = ThemeComposer().compose(
+        palette="missing-palette",
+        fonts="missing-fonts",
+        decoration="missing-decoration",
+        layout="missing-layout",
+        seed=17,
+    )
+
+    assert theme["atoms"] == {
+        "palette": "ocean-blue",
+        "fonts": "modern-sans",
+        "decoration": "accent-bar",
+        "layout": "standard",
+        "moods": ["professional"],
+    }
+    assert {item["field"] for item in theme["source"]["fallbacks"]} == {
+        "palette",
+        "fonts",
+        "decoration",
+        "layout",
+    }
+    assert theme["source"]["resolver"] == "local"
+    assert "package_version" in theme["source"]
+
+
 def test_explicit_theme_atoms_override_preset_atoms():
     theme = ThemeComposer().compose(
         style="dark-tech",
@@ -173,7 +200,20 @@ def test_theme_application_reports_not_yet_consumed_theme_fields(tmp_path):
     result, _ = _render_theme(tmp_path, "dark-tech")
     not_applied = {item["field"] for item in result["theme_application"]["not_applied"]}
 
-    assert {"decoration", "layout_variant", "text_effect_preset", "image_effect"} <= not_applied
+    assert {"text_effect_preset", "image_effect"} <= not_applied
+    assert {"decoration", "layout_variant"} <= set(result["theme_application"]["applied_to"])
+
+
+def test_freestyle_theme_applies_layout_alignment_and_decoration(tmp_path):
+    _, prs = _render_theme(tmp_path, "warm-elegant")
+    title_shape = next(
+        shape
+        for shape in prs.slides[0].shapes
+        if getattr(shape, "has_text_frame", False) and shape.text == "Theme application test"
+    )
+
+    assert title_shape.text_frame.paragraphs[0].alignment == PP_ALIGN.CENTER
+    assert any(_shape_fill_hex(shape) == "D4A853" for shape in prs.slides[0].shapes)
 
 
 def test_build_mode_helpers_inherit_presentation_theme(tmp_path):

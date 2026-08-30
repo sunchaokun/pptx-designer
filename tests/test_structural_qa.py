@@ -38,6 +38,18 @@ def test_structural_qa_reports_slide_count_and_bounds(tmp_path):
     assert any(issue.kind == "out_of_bounds" for issue in report.fatal)
 
 
+def test_named_background_decoration_may_be_intentionally_clipped(tmp_path):
+    path = tmp_path / "clipped-decoration.pptx"
+    _pptx(path, out_of_bounds=True)
+    presentation = Presentation(path)
+    presentation.slides[0].shapes[0].name = "Background Decoration 1"
+    presentation.save(path)
+
+    report = run_structural_qa(path, expected_slides=1)
+
+    assert report.status == "pass"
+
+
 def test_visual_baseline_create_and_compare(tmp_path):
     rendered = tmp_path / "rendered"
     baseline = tmp_path / "baseline"

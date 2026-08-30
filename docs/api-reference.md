@@ -14,21 +14,45 @@ from pptx_designer import generate_ppt
 result = generate_ppt(
     query: str,                    # Natural language description
     *,
+    content: dict | None = None,   # Structured FreeStyle page plan
     style: str | None = None,      # Design style (e.g., "dark cyberpunk")
     palette: str | None = None,    # Exact color palette name
     fonts: str | None = None,      # Exact font pair name
     decoration: str | None = None, # Decoration style
     layout: str | None = None,     # Layout variant
     mood: str | None = None,       # Mood category
-    slides: int = 6,               # Number of slides
-    output: str | None = None,     # Output file path
-    fetch_images: bool = False,    # Enable AI image generation
-    image_mode: str = "auto",      # Image mode
-    llm_provider: str | None = None,
-    llm_api_key: str | None = None,
+    style_seed: int | None = None, # Local theme-selection seed
+    theme: dict | None = None,     # Previously resolved locked theme
+    slides: int | None = None,     # Number of slides for query mode
+    output: str = "output.pptx",  # Output file path
 ) -> dict:
-    """Returns dict with keys: output_path, slide_count, shapes_count."""
+    """Returns output information plus theme_context and theme_application."""
 ```
+
+`query` and `content` are FreeStyle inputs; `content` is a structured page
+plan, not Build Mode.  Passing a previously resolved `theme` prevents a second
+theme-discovery step and supports reproducible delivery generation.
+
+### `Presentation`, `set_presentation_theme`, and `set_slide_theme`
+
+Build Mode can attach a resolved theme once, then use existing helpers without
+repeating `C` and `typo` on every call.
+
+```python
+from pptx_designer import Presentation, set_presentation_theme, set_slide_theme
+from pptx_designer.renderer.theme import ThemeComposer
+
+theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+prs = Presentation(theme=theme)
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Optional slide-only override. Explicit helper and element values still win.
+set_slide_theme(slide, ThemeComposer().compose(style="dark-tech", seed=17))
+```
+
+Presentation-level inheritance is scoped to that presentation. Existing calls
+with explicit `C`, `typo`, `font_name`, and colors remain compatible and have
+higher priority than inherited defaults.
 
 ### `fetch_image`
 

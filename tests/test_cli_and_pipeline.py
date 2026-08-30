@@ -128,10 +128,13 @@ def test_pipeline_forwards_explicit_theme_atoms(tmp_path):
     assert result["theme_atoms"] == {
         "palette": "cyber-neon",
         "fonts": "tech-mono",
-        "decoration": "corner-accent",
+        "decoration": "accent-bar",
         "layout": "centered",
         "moods": ["elegant"],
     }
+    assert result["theme_context"]["source"]["fallbacks"] == [
+        {"field": "decoration", "requested": "corner-accent", "used": "accent-bar"}
+    ]
 
 
 def test_style_recommendations_are_distinct_and_composable():

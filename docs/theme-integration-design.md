@@ -477,7 +477,7 @@ readability or domain appropriateness.
 
 ### Git workflow
 
-- `master` holds the Phase 0 baseline commit (`1f65110`).
+- `master` holds the Phase 0 baseline commit (`eb94292`).
 - Development continues on `codex/theme-integration-upgrade`.
 - Each phase is one or more separately testable commits.
 - A failed phase is discarded by deleting or reverting only the development
@@ -507,3 +507,34 @@ The upgrade is complete only when:
 5. public API and examples document both FreeStyle and Build Mode use;
 6. the final Theme Lock/PNG QA record explains why the visual result is better,
    not merely different.
+
+## 13. Implementation and acceptance record
+
+Implemented on `codex/theme-integration-upgrade`:
+
+- resolved themes now expose semantic roles plus requested/resolved atoms,
+  resolver, package version, seed, and fallback diagnostics;
+- Structured FreeStyle `generate_ppt(content=...)` consumes the complete theme
+  context (color roles, typography, decoration, and layout direction) and
+  returns application diagnostics;
+- Build Mode has presentation- and slide-scoped theme inheritance for the
+  high-frequency text, shape, layout, card, chart, image, and diagram paths;
+- explicit element and helper values retain precedence over inherited values;
+- off-canvas background ornaments are explicitly named so structural QA permits
+  intentional cropping without exempting ordinary content from bounds checks.
+
+Acceptance run (local, 2026-08-30):
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Static checks | PASS | targeted `ruff check` |
+| Automated regression | PASS | full `pytest -q` suite |
+| Editable delivery | PASS | 5 slides, 100% native editable shapes, no structural QA fatal/warning issues |
+| Dark-vs-warm A/B | PASS | identical five-page brief rendered as `dark-tech` and `warm-elegant`; typography, palette, decoration, and alignment differ materially while content remains readable |
+| Visual review | PASS | hero, solution, metrics, code, and summary PNGs inspected; no overlap, clipping, or long-title/divider collision |
+
+The final rendering chain was PPTX -> PDF -> PNG through LibreOffice and
+Poppler because PowerPoint COM export was unavailable on the test machine.
+`text_effect_preset` and image effects that have no safe automatic placement
+remain visible in `theme_application.not_applied`; they are never silently
+discarded.

@@ -58,8 +58,8 @@ prs.save("output/quarterly-review.pptx")
 
 | 导入 | 何时使用 | 关键事实 |
 |---|---|---|
-| `from pptx_designer import Presentation` | 创建或读取文稿 | `Presentation(template_path=None)` 默认使用 16:9。 |
-| `from pptx_designer import generate_ppt` | 快速生成完整 deck | 可传 `query` 或结构化 `content`；它仍是本地 Python 构建流程。 |
+| `from pptx_designer import Presentation, set_presentation_theme, set_slide_theme` | 创建或读取文稿，并应用 Build Mode 主题继承 | `Presentation(template_path=None, theme=None)` 默认使用 16:9；主题只在当前 presentation/slide 生效。 |
+| `from pptx_designer import generate_ppt` | 快速生成完整 deck | 可传 `query` 或结构化 `content`；二者都是 FreeStyle 输入，不是 Build Mode。可传已解析 `theme` 锁定视觉结果。 |
 | `from pptx_designer import svg_chart` | 将静态 SVG 编译为原生对象 | 推荐 SVG 公共入口；必须检查返回的 `warnings` 和 `errors`。 |
 | `from pptx_designer.renderer.theme import ThemeComposer` | 需要主题数据 | 正式交付应显式指定 palette/fonts 等，避免依赖未固定的默认选择。 |
 
@@ -80,6 +80,28 @@ result = generate_ppt(
     output="output/business-review.pptx",
 )
 ```
+
+主题锁定后的 Build Mode 推荐写法：
+
+```python
+from pptx_designer import Presentation
+from pptx_designer.renderer.theme import ThemeComposer
+from pptx_designer.tools.layout import page_header
+from pptx_designer.tools.shapes import rect
+from pptx_designer.tools.text import text
+
+theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+prs = Presentation(theme=theme)
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# 现有 helpers 自动继承 background / font_body 等；显式参数仍可局部覆盖。
+rect(slide, 0, 0, 13.333, 7.5, "background")
+page_header(slide, "Quarterly review", "Theme-aware and editable")
+text(slide, 0.7, 1.5, 8.5, 0.5, "The presentation inherits its visual language.", font_size=20)
+```
+
+不要把 Theme Lock 当作页面模板。主题负责颜色角色、字体、装饰和空间倾向；LLM
+仍须根据每页目标选择构图、焦点和公共 API 组合。
 
 ### 3.2 基础形状：`pptx_designer.tools.shapes`
 

@@ -21,6 +21,7 @@ Usage:
 from __future__ import annotations
 
 import random
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 from pptx_designer.search.adapters import (
@@ -35,6 +36,13 @@ from pptx_designer.search.adapters import (
 from pptx_designer.search.adapters import (
     search_typography as _ux_search_typography,
 )
+
+
+def _package_version() -> str:
+    try:
+        return version("pptx-designer")
+    except PackageNotFoundError:
+        return "unknown"
 
 # ============================================================
 # COLOR PALETTES — 25 curated palettes
@@ -1057,23 +1065,38 @@ class ThemeComposer:
                 ux_style_effects = ux_style_info.get("effects", "")
                 ux_anti_patterns = ux_style_info.get("anti_patterns", "")
 
+        fallbacks: list[dict[str, str]] = []
         if ux_colors:
             colors = ux_colors
+            resolved_palette = "external"
         else:
             p = palette or self._pick_from_mood(detected_moods, _MOOD_PALETTE_MAP, rng)
-            colors = dict(COLOR_PALETTES.get(p, COLOR_PALETTES["ocean-blue"]))
+            resolved_palette = p if p in COLOR_PALETTES else "ocean-blue"
+            if resolved_palette != p:
+                fallbacks.append({"field": "palette", "requested": str(p), "used": resolved_palette})
+            colors = dict(COLOR_PALETTES[resolved_palette])
 
         if ux_typo:
             typo = ux_typo
+            resolved_fonts = "external"
         else:
             f = fonts or self._pick_from_mood(detected_moods, _MOOD_FONT_MAP, rng)
-            typo = dict(FONT_PAIRS.get(f, FONT_PAIRS["modern-sans"]))
+            resolved_fonts = f if f in FONT_PAIRS else "modern-sans"
+            if resolved_fonts != f:
+                fallbacks.append({"field": "fonts", "requested": str(f), "used": resolved_fonts})
+            typo = dict(FONT_PAIRS[resolved_fonts])
 
         d = decoration or self._pick_from_mood(detected_moods, _MOOD_DECORATION_MAP, rng)
         lay_atom = layout or self._pick_from_mood(detected_moods, _MOOD_LAYOUT_MAP, rng)
 
-        deco = dict(DECORATION_STYLES.get(d, DECORATION_STYLES["accent-bar"]))
-        lay = dict(LAYOUT_VARIANTS.get(lay_atom, LAYOUT_VARIANTS["standard"]))
+        resolved_decoration = d if d in DECORATION_STYLES else "accent-bar"
+        if resolved_decoration != d:
+            fallbacks.append({"field": "decoration", "requested": str(d), "used": resolved_decoration})
+        resolved_layout = lay_atom if lay_atom in LAYOUT_VARIANTS else "standard"
+        if resolved_layout != lay_atom:
+            fallbacks.append({"field": "layout", "requested": str(lay_atom), "used": resolved_layout})
+        deco = dict(DECORATION_STYLES[resolved_decoration])
+        lay = dict(LAYOUT_VARIANTS[resolved_layout])
 
         te = text_effect_preset or self._pick_effect_from_mood(detected_moods, _MOOD_TEXT_EFFECT_MAP, rng)
         ie = image_effect or self._pick_effect_from_mood(detected_moods, _MOOD_IMAGE_EFFECT_MAP, rng)
@@ -1101,7 +1124,7 @@ class ThemeComposer:
         }
 
         result = {
-            "name": f"{ux_style_name or 'custom'}+{d}+{lay_atom}",
+            "name": f"{ux_style_name or style or 'custom'}+{resolved_decoration}+{resolved_layout}",
             "colors": colors,
             "typography": typo,
             "dark_mode": dark_mode,
@@ -1114,21 +1137,23 @@ class ThemeComposer:
                 "requested": requested,
                 "resolved": {
                     "style": style,
-                    "palette": palette,
-                    "fonts": fonts,
-                    "decoration": d,
-                    "layout": lay_atom,
+                    "palette": resolved_palette,
+                    "fonts": resolved_fonts,
+                    "decoration": resolved_decoration,
+                    "layout": resolved_layout,
                     "mood": detected_moods,
                 },
                 "seed": seed,
-                "fallbacks": [],
+                "resolver": "external" if ux_colors or ux_typo else "local",
+                "package_version": _package_version(),
+                "fallbacks": fallbacks,
                 "warnings": [],
             },
             "atoms": {
-                "palette": palette or "ux-dynamic",
-                "fonts": fonts or "ux-dynamic",
-                "decoration": d,
-                "layout": lay_atom,
+                "palette": resolved_palette,
+                "fonts": resolved_fonts,
+                "decoration": resolved_decoration,
+                "layout": resolved_layout,
                 "moods": detected_moods,
             },
         }

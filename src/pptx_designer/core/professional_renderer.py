@@ -38,6 +38,8 @@ class _ThemeTokens:
     body_font: str | None
     mono_font: str | None
     cjk_fallback: str | None
+    decoration: Mapping[str, Any]
+    layout: Mapping[str, Any]
 
     @classmethod
     def from_theme(cls, theme: Mapping[str, Any]) -> _ThemeTokens:
@@ -68,12 +70,30 @@ class _ThemeTokens:
             body_font=typography.get("body"),
             mono_font=typography.get("mono") or typography.get("body"),
             cjk_fallback=typography.get("cjk_fallback") or colors.get("font_cjk"),
+            decoration=theme.get("decoration", {}),
+            layout=theme.get("layout_variant", {}),
         )
 
     @property
     def color_context(self) -> dict[str, str]:
         """Compatibility context used by text helpers for CJK fallback."""
         return {"font_body": self.body_font or "", "font_cjk": self.cjk_fallback or ""}
+
+    @property
+    def content_left(self) -> float:
+        return float(self.layout.get("content_margin_left", 1.0))
+
+    @property
+    def content_right(self) -> float:
+        return float(self.layout.get("content_margin_right", 1.0))
+
+    @property
+    def content_width(self) -> float:
+        return 13.333 - self.content_left - self.content_right
+
+    @property
+    def title_alignment(self) -> str:
+        return self.layout.get("title_alignment", "left")
 
 
 def _text(slide: Any, *args: Any, kind: str = "body", tokens: _ThemeTokens, **kwargs: Any) -> Any:
@@ -98,6 +118,7 @@ def render_professional_page(
 
     tokens = _ThemeTokens.from_theme(theme)
     rect(slide, 0, 0, 13.333, 7.5, tokens.background)
+    _render_page_decoration(slide, tokens)
 
     if goal == "hook":
         _render_hero(slide, title, subtitle, tokens)
@@ -132,21 +153,91 @@ def render_professional_page(
 def _section_header(slide: Any, label: str, title: str, color: str, tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import rect
 
-    _text(slide, 1.0, 0.5, 3.0, 0.3, label, font_size=12, bold=True, color=color, kind="heading", tokens=tokens)
-    _text(slide, 1.0, 0.9, 11.0, 0.8, title, font_size=36, bold=True, color=tokens.ink, kind="heading", tokens=tokens)
-    rect(slide, 1.0, 1.8, 2.0, 0.04, color)
+    title_height = 1.15 if tokens.title_alignment == "center" or len(title) > 44 else 0.8
+    _text(
+        slide,
+        tokens.content_left,
+        0.5,
+        tokens.content_width,
+        0.3,
+        label,
+        font_size=12,
+        bold=True,
+        color=color,
+        kind="heading",
+        align=tokens.title_alignment,
+        tokens=tokens,
+    )
+    _text(
+        slide,
+        tokens.content_left,
+        0.9,
+        tokens.content_width,
+        title_height,
+        title,
+        font_size=36,
+        bold=True,
+        color=tokens.ink,
+        kind="heading",
+        align=tokens.title_alignment,
+        tokens=tokens,
+    )
+    if tokens.decoration.get("title_underline", True):
+        line_width = 2.0 if tokens.title_alignment == "left" else min(3.0, tokens.content_width * 0.3)
+        line_left = tokens.content_left if tokens.title_alignment == "left" else (13.333 - line_width) / 2
+        rect(slide, line_left, 0.9 + title_height + 0.1, line_width, 0.04, color)
+
+
+def _render_page_decoration(slide: Any, tokens: _ThemeTokens) -> None:
+    """Apply only low-risk decoration rules; page composition remains free."""
+    from pptx_designer.tools.shapes import rect
+
+    if tokens.decoration.get("top_line"):
+        rect(slide, 0, 0, 13.333, 0.035, tokens.accent)
+    if tokens.decoration.get("bottom_line"):
+        rect(slide, 0, 7.465, 13.333, 0.035, tokens.accent)
+    if tokens.decoration.get("left_accent"):
+        rect(slide, 0.45, 0.5, 0.045, 0.65, tokens.accent)
 
 
 def _render_hero(slide: Any, title: str, subtitle: str, tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import oval, rect
 
-    oval(slide, 9.5, -1.0, 5.0, 5.0, _darken(tokens.data_1, 30))
-    oval(slide, 10.5, 0.5, 3.5, 3.5, tokens.data_1)
-    oval(slide, -1.5, 5.0, 4.0, 4.0, _darken(tokens.accent, 40))
+    for name, args in (
+        ("Background Decoration 1", (9.5, -1.0, 5.0, 5.0, _darken(tokens.data_1, 30))),
+        ("Background Decoration 2", (10.5, 0.5, 3.5, 3.5, tokens.data_1)),
+        ("Background Decoration 3", (-1.5, 5.0, 4.0, 4.0, _darken(tokens.accent, 40))),
+    ):
+        ornament = oval(slide, *args)
+        ornament.name = name
     rect(slide, 1.0, 2.8, 1.5, 0.06, tokens.accent)
-    _text(slide, 1.0, 3.0, 8.0, 1.2, title, font_size=48, bold=True, color=tokens.ink, kind="heading", tokens=tokens)
+    _text(
+        slide,
+        tokens.content_left,
+        2.8,
+        min(8.0, tokens.content_width),
+        1.5,
+        title,
+        font_size=48,
+        bold=True,
+        color=tokens.ink,
+        kind="heading",
+        align=tokens.title_alignment,
+        tokens=tokens,
+    )
     if subtitle:
-        _text(slide, 1.0, 4.3, 8.0, 0.6, subtitle, font_size=20, color=tokens.muted, tokens=tokens)
+        _text(
+            slide,
+            tokens.content_left,
+            4.45,
+            min(8.0, tokens.content_width),
+            0.6,
+            subtitle,
+            font_size=20,
+            color=tokens.muted,
+            align=tokens.title_alignment,
+            tokens=tokens,
+        )
 
 
 def _render_problem(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:

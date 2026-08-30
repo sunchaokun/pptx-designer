@@ -81,6 +81,10 @@ class StructuralQA:
         return report
 
     def _check_bounds(self, report, slide_no, shape_no, shape, slide_w, slide_h) -> None:
+        # Intentional off-canvas ornaments are named explicitly by renderers.
+        # Keep this narrow so normal content is never exempted accidentally.
+        if shape.name.startswith("Background Decoration"):
+            return
         x = shape.left / 914400.0
         y = shape.top / 914400.0
         w = shape.width / 914400.0

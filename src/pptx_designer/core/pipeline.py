@@ -166,13 +166,20 @@ def generate_ppt(
         "theme_application": {
             "requested": theme.get("source", {}).get("requested", {}),
             "resolved": theme.get("source", {}).get("resolved", theme.get("atoms", {})),
-            "applied_to": ["professional_renderer", "text", "semantic_roles", "typography"],
+            "applied_to": [
+                "professional_renderer",
+                "text",
+                "semantic_roles",
+                "typography",
+                "decoration",
+                "layout_variant",
+            ],
             "not_applied": [
                 {
                     "field": field,
                     "reason": "FreeStyle renderer does not consume this theme field yet.",
                 }
-                for field in ("decoration", "layout_variant", "text_effect_preset", "image_effect")
+                for field in ("text_effect_preset", "image_effect")
                 if theme.get(field)
             ],
             "fallbacks": theme.get("source", {}).get("fallbacks", []),
