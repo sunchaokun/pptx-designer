@@ -74,6 +74,28 @@ def normalize_design_context(context: Mapping[str, Any] | None = None) -> dict[s
     return normalized
 
 
+def _merge_context_values(base: Any, override: Any) -> Any:
+    if isinstance(base, Mapping) and isinstance(override, Mapping):
+        merged = deepcopy(dict(base))
+        for key, value in override.items():
+            merged[key] = _merge_context_values(merged[key], value) if key in merged else deepcopy(value)
+        return merged
+    return deepcopy(override)
+
+
+def merge_design_context(*contexts: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Merge producer output and a reviewed contract into one context.
+
+    Later mappings win per field. Lists are intentionally replaced rather than
+    appended so an approved slot/lock contract is unambiguous and repeatable.
+    """
+    merged: dict[str, Any] = {}
+    for context in contexts:
+        if context is not None:
+            merged = _merge_context_values(merged, context)
+    return normalize_design_context(merged)
+
+
 def design_context_from_brand_spec(brand_spec: Any) -> dict[str, Any]:
     """Adapt the legacy ``BrandSpec`` object into the canonical context."""
     colors = dict(getattr(brand_spec, "colors", None) or {})
@@ -353,5 +375,6 @@ __all__ = [
     "DESIGN_CONTEXT_SCHEMA_VERSION",
     "VIBuildSession",
     "design_context_from_brand_spec",
+    "merge_design_context",
     "normalize_design_context",
 ]

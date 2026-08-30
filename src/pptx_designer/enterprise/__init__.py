@@ -26,6 +26,7 @@ from pptx_designer.enterprise.version_manager import next_version, read_meta, wr
 from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
+    merge_design_context,
     normalize_design_context,
 )
 
@@ -58,5 +59,6 @@ __all__ = [
     "extract_design_dna",
     "VIBuildSession",
     "design_context_from_brand_spec",
+    "merge_design_context",
     "normalize_design_context",
 ]

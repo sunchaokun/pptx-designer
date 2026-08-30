@@ -2,7 +2,8 @@
 
 from pathlib import Path
 
-from pptx_designer import Presentation, VIBuildSession, extract_design_context
+from pptx_designer import Presentation, VIBuildSession
+from pptx_designer.enterprise import TemplateAnalyzer
 from pptx_designer.qa import run_structural_qa
 
 TASK_DIR = Path(__file__).parent
@@ -20,7 +21,7 @@ def component_ids_for_cover(context: dict) -> list[str]:
     ]
 
 
-context = extract_design_context(str(TEMPLATE))
+context = TemplateAnalyzer().analyze_context(str(TEMPLATE))
 # Text boxes are deliberately supplied as an explicit, reviewed contract.  The
 # extractor does not guess that arbitrary source-page text may be overwritten.
 context["content_slots"] = [

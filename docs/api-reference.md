@@ -121,7 +121,11 @@ Required photo assets are never silently replaced with color blocks:
 `result["status"]` is `NEEDS_ASSET` and no new slide is created. Each result
 contains `design_application`, `asset_plan`, slot bindings, accepted overrides,
 and MUST acceptance evidence. `design_context_from_brand_spec(BrandSpec(...))`
-adapts the legacy enterprise brand object into this same context.
+adapts the legacy enterprise brand object into this same context. Use
+`merge_design_context(extracted_context, reviewed_contract)` to apply a
+confirmed slot/lock contract; later fields override earlier fields. The legacy
+`TemplateAnalyzer().analyze_context(path)` combines BrandSpec and direct
+template evidence into the same representation.
 
 ### `svg_chart`
 

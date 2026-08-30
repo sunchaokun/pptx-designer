@@ -19,9 +19,11 @@ from pptx.util import Inches, Pt
 from pptx_designer import Presentation
 from pptx_designer.enterprise.brand import BrandSpec
 from pptx_designer.enterprise.design_dna_extractor import extract_design_context, extract_design_dna
+from pptx_designer.enterprise.template_analyzer import TemplateAnalyzer
 from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
+    merge_design_context,
     normalize_design_context,
 )
 
@@ -92,6 +94,31 @@ def test_brand_spec_adapts_to_the_same_design_context():
     assert context["semantic_roles"]["primary"] == "#115E32"
     assert context["semantic_roles"]["ink"] == "#0B0C11"
     assert context["typography"]["heading"] == "Proxima Nova"
+
+
+def test_confirmed_contract_merges_into_extracted_context_without_losing_evidence(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    extracted = extract_design_context(str(template_path))
+    contract = {
+        "content_slots": [{"id": "page_title", "max_chars": 24, "bounds": {}}],
+        "locks": [{"field": "footer.text", "mode": "template-locked"}],
+    }
+    merged = merge_design_context(extracted, contract)
+
+    assert merged["source"]["template_fingerprint"] == extracted["source"]["template_fingerprint"]
+    assert merged["content_slots"][0]["id"] == "page_title"
+    assert merged["locks"][0]["mode"] == "template-locked"
+    assert merged["assets"]["references"] == extracted["assets"]["references"]
+
+
+def test_template_analyzer_can_return_the_unified_context(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+
+    context = TemplateAnalyzer().analyze_context(str(template_path))
+
+    assert context["source"]["kind"] == "merged"
+    assert context["source"]["template_fingerprint"]
+    assert context["archetypes"][0]["required_assets"] == ["supporting_photo"]
 
 
 def test_build_requires_asset_when_archetype_demands_photo():

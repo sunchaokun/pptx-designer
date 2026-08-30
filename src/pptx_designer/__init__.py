@@ -48,7 +48,12 @@ from pptx_designer.ai import fetch_image
 from pptx_designer.core.pipeline import Presentation, generate_ppt
 from pptx_designer.data import PALETTES, STYLES, TYPOGRAPHY
 from pptx_designer.enterprise.design_dna_extractor import extract_design_context, extract_design_dna
-from pptx_designer.enterprise.vi_context import VIBuildSession, design_context_from_brand_spec, normalize_design_context
+from pptx_designer.enterprise.vi_context import (
+    VIBuildSession,
+    design_context_from_brand_spec,
+    merge_design_context,
+    normalize_design_context,
+)
 from pptx_designer.renderer.theme import recommend_styles
 from pptx_designer.renderer.theme_context import set_presentation_theme, set_slide_theme
 from pptx_designer.tools.svg import svg_chart
@@ -65,6 +70,7 @@ __all__ = [
     "extract_design_context",
     "VIBuildSession",
     "design_context_from_brand_spec",
+    "merge_design_context",
     "normalize_design_context",
     "recommend_styles",
     "set_presentation_theme",

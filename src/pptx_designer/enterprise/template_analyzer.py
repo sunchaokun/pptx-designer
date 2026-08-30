@@ -43,6 +43,22 @@ class TemplateAnalyzer:
             dark_mode=dark_mode,
         )
 
+    def analyze_context(self, template_path: str) -> dict[str, Any]:
+        """Return the canonical context used by VI Build consumers.
+
+        The legacy BrandSpec remains available through :meth:`analyze`; this
+        form combines it with direct per-slide evidence from the template.
+        """
+        from pptx_designer.enterprise.design_dna_extractor import extract_design_context
+        from pptx_designer.enterprise.vi_context import design_context_from_brand_spec, merge_design_context
+
+        brand_spec = self.analyze(template_path)
+        extracted = extract_design_context(template_path)
+        context = merge_design_context(design_context_from_brand_spec(brand_spec), extracted)
+        context["source"]["kind"] = "merged"
+        context["source"]["brand_source"] = brand_spec.source
+        return context
+
     def _extract_colors(self, prs, slide_master) -> dict[str, str]:
         colors = {}
         try:
