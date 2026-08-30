@@ -13,6 +13,7 @@ from pptx import Presentation as PptxPresentation
 
 from pptx_designer import Presentation, set_slide_theme
 from pptx_designer.core.pipeline import generate_ppt
+from pptx_designer.diagrams.diagram_style import DiagramStyle
 from pptx_designer.renderer.theme import ThemeComposer
 from pptx_designer.tools.charts import bar_chart
 from pptx_designer.tools.layout import page_header
@@ -210,3 +211,12 @@ def test_slide_theme_and_explicit_values_override_presentation_defaults():
     assert str(inherited_run.font.color.rgb) == dark["semantic_roles"]["ink"].lstrip("#")
     assert explicit_run.font.name == "Arial"
     assert str(explicit_run.font.color.rgb) == "123456"
+
+
+def test_diagram_style_uses_resolved_semantic_roles():
+    theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+    style = DiagramStyle.from_theme(theme)
+
+    assert style.resolve_color("primary") == theme["semantic_roles"]["data-series-1"]
+    assert style.resolve_color("foreground") == theme["semantic_roles"]["ink"]
+    assert style.resolve_color("muted") == theme["semantic_roles"]["surface"]

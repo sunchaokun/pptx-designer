@@ -37,6 +37,7 @@ from pptx_designer.effects.shape_effects import (
     GradientStop,
     apply_soft_edge,
 )
+from pptx_designer.renderer.theme_context import resolve_color_context
 from pptx_designer.tools.shapes import _add_shape
 
 
@@ -83,7 +84,7 @@ def cover_image(slide, left, top, width, height, image_path):
 
 
 def gradient_mask_image(
-    slide, left, top, width, height, bg_color="#FFFFFF", direction="bottom", alpha_start=100, alpha_end=0
+    slide, left, top, width, height, bg_color=None, direction="bottom", alpha_start=100, alpha_end=0, color_context=None
 ):
     """Add a gradient mask overlay for seamless image-background fusion.
 
@@ -93,15 +94,19 @@ def gradient_mask_image(
     Args:
         slide: Slide object
         left, top, width, height: Position and size in inches
-        bg_color: Background color for the gradient (should match slide background)
+        bg_color: Background color for the gradient (should match slide background).
+            Defaults to the inherited theme background.
         direction: 'bottom' (fade from bottom), 'top' (fade from top),
                    'left' (fade from left), 'right' (fade from right)
         alpha_start: Starting opacity (0-100, where 100 = fully opaque)
         alpha_end: Ending opacity (0-100, where 0 = fully transparent)
+        color_context: Optional explicit partial color override.
 
     Returns:
         Shape object (the gradient mask rectangle)
     """
+    C = resolve_color_context(slide, color_context)
+    bg_color = bg_color or C.get("background", "#FFFFFF")
     shape = _add_shape(slide.shapes, MSO_SHAPE.RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
 
     angle_map = {
@@ -146,6 +151,7 @@ def ai_image(
     image_cache_dir=None,
     auto_detect=True,
     fallback_placeholder=True,
+    color_context=None,
 ):
     """Generate (or fetch) an image and place it cover-fit in ONE call.
 
@@ -172,6 +178,7 @@ def ai_image(
     """
     from pptx_designer.tools.images import _fetch_image
 
+    C = resolve_color_context(slide, color_context)
     result = _fetch_image(
         keywords,
         mode=mode,
@@ -195,8 +202,19 @@ def ai_image(
         from pptx_designer.tools.shapes import rect
         from pptx_designer.tools.text import text
 
-        rect(slide, left, top, width, height, "#E8ECF1", C=None)
-        text(slide, left, top, width, height * 0.3, keywords, font_size=10, color="#9AA5B1", align="center", C=None)
+        rect(slide, left, top, width, height, C.get("card", "#E8ECF1"), line=C.get("border"), C=C)
+        text(
+            slide,
+            left,
+            top,
+            width,
+            height * 0.3,
+            keywords,
+            font_size=10,
+            color=C.get("text_muted", "#9AA5B1"),
+            align="center",
+            C=C,
+        )
         return None
     return None
 

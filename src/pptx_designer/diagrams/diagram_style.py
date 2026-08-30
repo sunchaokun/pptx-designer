@@ -57,9 +57,23 @@ class DiagramStyle:
     @classmethod
     def from_theme(cls, theme: dict[str, Any], business_mode: str = "pitch") -> DiagramStyle:
         style = cls()
-        colors = theme.get("colors", {})
+        colors = dict(theme.get("colors", {}))
+        roles = theme.get("semantic_roles", {})
+        colors.update(
+            {
+                "background": roles.get("background", colors.get("background", "#FFFFFF")),
+                "primary": roles.get("data-series-1", colors.get("primary", "#2563EB")),
+                "accent": roles.get("accent", colors.get("accent", "#F97316")),
+                "secondary": roles.get("accent-secondary", colors.get("secondary", "#64748B")),
+                "muted": roles.get("surface", colors.get("muted", "#F1F5F9")),
+                "foreground": roles.get("ink", colors.get("foreground", "#1A1A1A")),
+                "muted-foreground": roles.get("muted", colors.get("muted-foreground", "#94A3B8")),
+                "border": roles.get("border", colors.get("border", "#E2E8F0")),
+                "on-primary": colors.get("on-primary", "#FFFFFF"),
+            }
+        )
         if colors:
-            style._color_map = dict(colors)
+            style._color_map = colors
 
         bg = colors.get("background", "#FFFFFF")
         if _is_dark(bg):
