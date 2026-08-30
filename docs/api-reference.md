@@ -127,6 +127,9 @@ confirmed slot/lock contract; later fields override earlier fields. The legacy
 `TemplateAnalyzer().analyze_context(path)` combines BrandSpec and direct
 template evidence into the same representation.
 
+If a photo archetype specifies `image_grammar.min_area_ratio`, insufficient
+media coverage returns `NEEDS_REVISION`; Build does not create the page.
+
 ### `svg_chart`
 
 Compile a supported SVG subset into editable native PowerPoint objects.

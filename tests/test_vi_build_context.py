@@ -152,6 +152,27 @@ def test_build_applies_asset_component_slot_and_acceptance_rules(tmp_path: Path)
     assert result["acceptance"]["passed"] == ["image_present", "component_applied"]
 
 
+def test_build_blocks_photo_archetype_when_media_area_is_below_template_minimum(tmp_path: Path):
+    photo = tmp_path / "botanical.png"
+    Image.new("RGB", (800, 500), "#115E32").save(photo)
+    context = _photo_archetype_context()
+    context["components"]["forest_photo_panel"]["bounds"] = {
+        "left": 8,
+        "top": 0,
+        "width": 3,
+        "height": 3,
+    }
+    context["acceptance"]["must_coverage"].append("media_area")
+
+    result = VIBuildSession(context, assets={"supporting_photo": str(photo)}).plan_page(
+        "text-photo-right", components=["forest_photo_panel"]
+    )
+
+    assert result["status"] == "NEEDS_REVISION"
+    assert result["asset_plan"]["violations"] == ["media_area_ratio"]
+    assert "media_area" in result["acceptance"]["blocked"]
+
+
 def test_build_rejects_unknown_or_overflowing_content_slot():
     session = VIBuildSession(_photo_archetype_context(), assets={"supporting_photo": "photo.png"})
 

@@ -173,9 +173,14 @@ class VIBuildSession:
         )
         component_report = self._validate_components(archetype, components or [])
         slot_bindings = self._bind_slots(slot_values or {})
-        asset_plan = self._plan_assets(archetype)
+        asset_plan = self._plan_assets(archetype, components or [])
         acceptance = self._evaluate_acceptance(asset_plan, component_report)
-        status = "NEEDS_ASSET" if asset_plan["missing"] else "READY"
+        if asset_plan["missing"]:
+            status = "NEEDS_ASSET"
+        elif asset_plan["violations"]:
+            status = "NEEDS_REVISION"
+        else:
+            status = "READY"
 
         return {
             "status": status,
@@ -215,7 +220,7 @@ class VIBuildSession:
             result["design_application"] = {
                 "applied_to": [],
                 "not_applied": ["page_not_created"],
-                "blocked": result["asset_plan"]["missing"],
+                "blocked": result["asset_plan"]["missing"] + result["asset_plan"]["violations"],
             }
             return result
 
@@ -331,7 +336,7 @@ class VIBuildSession:
                 return layout
         return prs.slide_layouts[0]
 
-    def _plan_assets(self, archetype: Mapping[str, Any]) -> dict[str, Any]:
+    def _plan_assets(self, archetype: Mapping[str, Any], component_ids: Sequence[str]) -> dict[str, Any]:
         image_grammar = self.context["assets"]["image_grammar"]
         required = list(archetype.get("required_assets", []))
         if image_grammar.get("required") and not required:
@@ -345,7 +350,35 @@ class VIBuildSession:
                 resolved[asset_id] = asset
             else:
                 missing.append(asset_id)
-        return {"required": required, "resolved": resolved, "missing": missing}
+        violations: list[str] = []
+        minimum_area = image_grammar.get("min_area_ratio")
+        if minimum_area is not None and required:
+            media_area = self._photo_area_ratio(component_ids)
+            if media_area < float(minimum_area):
+                violations.append("media_area_ratio")
+        else:
+            media_area = None
+        return {
+            "required": required,
+            "resolved": resolved,
+            "missing": missing,
+            "media_area_ratio": media_area,
+            "violations": violations,
+        }
+
+    def _photo_area_ratio(self, component_ids: Sequence[str]) -> float:
+        canvas_area = 13.333 * 7.5
+        media_area = 0.0
+        for component_id in component_ids:
+            component = self.context["components"].get(component_id, {})
+            if component.get("kind") != "photo_panel":
+                continue
+            bounds = component.get("bounds", {})
+            try:
+                media_area += float(bounds["width"]) * float(bounds["height"])
+            except (KeyError, TypeError, ValueError):
+                continue
+        return round(media_area / canvas_area, 4) if canvas_area else 0.0
 
     @staticmethod
     def _asset_is_available(asset: Any) -> bool:
@@ -365,6 +398,8 @@ class VIBuildSession:
                 target = passed if not asset_plan["missing"] else blocked
             elif requirement == "component_applied":
                 target = passed if components else blocked
+            elif requirement == "media_area":
+                target = passed if "media_area_ratio" not in asset_plan["violations"] else blocked
             else:
                 target = blocked
             target.append(str(requirement))
