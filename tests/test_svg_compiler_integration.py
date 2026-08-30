@@ -192,6 +192,21 @@ class TestGroupOpacity:
             SVGCompiler().compile(svg, slide, (0, 0, 1, 1))
         assert len(slide.shapes) == 0
 
+    def test_group_opacity_can_be_distributed_to_editable_children(self):
+        svg = '<svg viewBox="0 0 10 10"><g opacity="0.5"><rect width="10" height="10" fill="#112233"/></g></svg>'
+        slide = _slide()
+        result = SVGCompiler(group_opacity="distribute").compile(svg, slide, (0, 0, 1, 1))
+        assert result.shape_count == 1
+        assert len(slide.shapes) == 1
+        assert 'a:alpha val="50000"' in slide.shapes[0]._element.xml
+        assert any("overlapping descendants" in warning for warning in result.warnings)
+
+    def test_group_opacity_accepts_svg_percentage_values(self):
+        svg = '<svg viewBox="0 0 10 10"><g opacity="50%"><rect width="10" height="10" fill="#112233"/></g></svg>'
+        result = SVGCompiler(group_opacity="distribute").compile(svg, _slide(), (0, 0, 1, 1))
+        assert result.shape_count == 1
+        assert 'a:alpha val="50000"' in result.shapes[0]._element.xml
+
 
 class TestUnsupported:
     def test_image_warning(self):

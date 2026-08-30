@@ -21,8 +21,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 from pptx_designer.effects.text_effects import (
-    apply_text_gradient,
-    apply_text_gradient_preset,
+    TEXT_GRADIENT_PRESETS,
     set_vertical_text,
 )
 from pptx_designer.tools.shapes import (
@@ -245,18 +244,34 @@ def gradient_text(
     tf.word_wrap = True
     p = tf.paragraphs[0]
     p.alignment = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}[align]
-    run = p.add_run()
-    run.text = txt
-    run.font.size = Pt(font_size)
-    run.font.bold = bold
-    if font_name:
-        run.font.name = font_name
-    if cjk_font:
-        _set_cjk_font(run, cjk_font)
-    if stops:
-        apply_text_gradient(run, stops)
-    else:
-        apply_text_gradient_preset(run, preset)
+    gradient_stops = stops or TEXT_GRADIENT_PRESETS.get(preset)
+    if not gradient_stops:
+        raise KeyError(f"Unknown text gradient preset: {preset!r}")
+
+    # Per-run solid colors are deliberately used instead of OOXML gradFill.
+    # PowerPoint and LibreOffice disagree on text gradients, while solid runs
+    # remain editable and preserve contrast through the export pipeline.
+    normalized = [(color.lstrip("#"), pos / (100000 if pos > 100 else 100)) for color, pos in gradient_stops]
+    for char_index, char in enumerate(txt):
+        run = p.add_run()
+        run.text = char
+        run.font.size = Pt(font_size)
+        run.font.bold = bold
+        if font_name:
+            run.font.name = font_name
+        if cjk_font:
+            _set_cjk_font(run, cjk_font)
+        pos = char_index / max(1, len(txt) - 1)
+        for stop_index in range(1, len(normalized)):
+            if pos <= normalized[stop_index][1]:
+                c1, p1 = normalized[stop_index - 1]
+                c2, p2 = normalized[stop_index]
+                ratio = (pos - p1) / max(0.0001, p2 - p1)
+                rgb = tuple(round(int(c1[i : i + 2], 16) * (1 - ratio) + int(c2[i : i + 2], 16) * ratio) for i in (0, 2, 4))
+                run.font.color.rgb = RGBColor(*rgb)
+                break
+        else:
+            run.font.color.rgb = RGBColor.from_string(normalized[-1][0])
     return txBox
 
 
@@ -352,6 +367,7 @@ def text_shadow(
     run.text = txt
     run.font.size = Pt(font_size)
     run.font.bold = bold
+    run.font.color.rgb = _rgb(_resolve_color(color, C))
     if font_name:
         run.font.name = font_name
     cjk_font = (C or {}).get("font_cjk") or (C or {}).get("font_body")
@@ -393,6 +409,7 @@ def text_glow(
     run.text = txt
     run.font.size = Pt(font_size)
     run.font.bold = bold
+    run.font.color.rgb = _rgb(_resolve_color(color, C))
     if font_name:
         run.font.name = font_name
     cjk_font = (C or {}).get("font_cjk") or (C or {}).get("font_body")

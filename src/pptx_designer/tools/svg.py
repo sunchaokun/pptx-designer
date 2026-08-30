@@ -27,6 +27,9 @@ def svg_chart(
     w: float = 9.0,
     h: float = 5.5,
     C: dict | None = None,
+    text_style: dict[str, dict] | None = None,
+    group_opacity: str = "strict",
+    layout: dict | None = None,
 ) -> SVGResult:
     """Compile SVG markup to native editable PPTX shapes on *slide*.
 
@@ -43,6 +46,18 @@ def svg_chart(
         Optional colour/font context dictionary.  Keys like ``primary``,
         ``secondary``, ``text_dark`` are passed through to the SVG
         compiler for gradient/colour resolution.
+    text_style:
+        Optional explicit styles keyed by SVG ``class``.  Each style may set
+        ``font_size`` in PowerPoint points, ``color``, ``font_name``, and
+        ``bold``.  Matching styles bypass automatic canvas-based font scaling.
+    group_opacity:
+        ``"strict"`` (default) rejects SVG group opacity because native OOXML
+        cannot reproduce compositing exactly. ``"distribute"`` pushes group
+        opacity to child elements for editable, renderer-safe diagrams.
+    layout:
+        Optional layout contract. Use ``safe_margin`` in SVG units, ``zones``
+        keyed by text class as ``(x, y, width, height)``, and
+        ``text_collision`` as ``"warning"`` or ``"error"``.
 
     Returns
     -------
@@ -58,7 +73,7 @@ def svg_chart(
     if not svg_text or not svg_text.strip():
         return SVGResult(shape_count=0, warnings=["empty svg_text"])
 
-    compiler = SVGCompiler(C=C or {})
+    compiler = SVGCompiler(C=C or {}, text_style=text_style, group_opacity=group_opacity, layout=layout)
     try:
         result = compiler.compile(svg_text, slide, (x, y, w, h))
     except SVGCompileError:

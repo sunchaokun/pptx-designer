@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0b7 - 2026-08-30
+
+- 修复 SVG 文字角色字号、颜色、嵌套 transform 布局校验和透明度处理。
+- 修复原生图表 builder 的 radar、scatter 类型及 PrecisionRenderer 图表调用链。
+- 增加 StructuralQA、PNG 视觉基线比较和复杂 SVG 回归测试。
+
 All notable user-facing changes are recorded here. This project follows a pre-release versioning scheme before the first stable `1.0.0` release.
 
 ## 1.0.0b5 — 2026-08-25

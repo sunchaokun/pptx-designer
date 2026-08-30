@@ -391,20 +391,18 @@ def math_multiply(slide, cx, cy, size, fill, line=None, C=None):
 
 
 def spotlight(slide, cx, cy, radius, alpha=70, color="#000000"):
-    if not _bool_import():
-        rrect(slide, 0, 0, 13.333, 7.5, color)
-        return None
-    from pptx_designer.renderer.boolean_shapes import (
-        bool_shape,
-        bool_subtract,
-        poly_circle,
-        poly_rect,
-    )
+    # Boolean cutouts become full-page fills in PowerPoint/LibreOffice export.
+    # A layered translucent halo is renderer-safe and keeps the effect local.
+    group = slide.shapes.add_group_shape()
+    gs = group.shapes
+    from pptx_designer.effects.shape_effects import set_solid_fill_with_alpha
 
-    overlay = poly_rect(0, 0, 13.333, 7.5)
-    cutout = poly_circle(cx, cy, radius)
-    geom = bool_subtract(overlay, cutout)
-    return bool_shape(geom, slide, 0, 0, 13.333, 7.5, fill=color, alpha=alpha)
+    for scale, strength in ((1.0, 0.12), (0.78, 0.18), (0.56, 0.26), (0.34, 0.38)):
+        r = radius * scale
+        ring = _add_shape(gs, MSO_SHAPE.OVAL, Inches(cx - r), Inches(cy - r), Inches(r * 2), Inches(r * 2))
+        set_solid_fill_with_alpha(ring, color, max(1, min(100, round(alpha * strength))))
+        ring.line.fill.background()
+    return group
 
 
 def bool_donut(slide, cx, cy, outer_r, inner_r, fill="#1D78FA", line=None, C=None):

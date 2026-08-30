@@ -42,6 +42,30 @@ _FONT_MAP: dict[str, str] = {
     "comic sans ms": "Comic Sans MS",
 }
 
+
+def _relative_luminance(color: str) -> float:
+    raw = color.lstrip("#")
+    if len(raw) != 6:
+        return 0.0
+    channels = [int(raw[i : i + 2], 16) / 255 for i in (0, 2, 4)]
+    linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _safe_svg_text_fill(fill: str, C: dict) -> str:  # noqa: N803
+    """Keep dark SVG text readable on a dark presentation palette."""
+    preferred = C.get("text_dark") or C.get("foreground")
+    background = C.get("bg") or C.get("background")
+    if (
+        preferred
+        and background
+        and _relative_luminance(fill) < 0.18
+        and _relative_luminance(background) < 0.35
+        and _relative_luminance(preferred) > 0.55
+    ):
+        return preferred
+    return fill
+
 _ANCHOR_MAP: dict[str, PP_ALIGN] = {
     "middle": PP_ALIGN.CENTER,
     "end": PP_ALIGN.RIGHT,
@@ -380,6 +404,7 @@ def render_svg_text(
     svg_h: float = 0.0,
     slide_w: float = 0.0,
     slide_h: float = 0.0,
+    text_style: dict[str, dict] | None = None,
 ) -> None:
     features.add("text")
 
@@ -387,9 +412,15 @@ def render_svg_text(
     y = float(el.get("y", 0))
     ix, iy = to_inches_fn(*tf.apply(x, y))
 
-    parent_fs = _parse_font_size(el.get("font-size"), 14.0)
-    parent_ff = _resolve_font_family(el.get("font-family"))
-    parent_fill = _resolve_fill(el.get("fill"), C, resolve_color_fn)
+    style = (text_style or {}).get(el.get("class", ""), {})
+    explicit_pt = style.get("font_size")
+    parent_fs = float(explicit_pt) if explicit_pt is not None else _parse_font_size(el.get("font-size"), 14.0)
+    parent_ff = _resolve_font_family(style.get("font_name") or el.get("font-family"))
+    explicit_fill = style.get("color")
+    raw_fill = explicit_fill or _resolve_fill(el.get("fill"), C, resolve_color_fn)
+    # A caller-provided role color is authoritative; automatic contrast is
+    # only a fallback for unstyled SVG text.
+    parent_fill = raw_fill if explicit_fill else _safe_svg_text_fill(raw_fill, C)
     parent_stroke = _resolve_fill(el.get("stroke"), C, resolve_color_fn) if el.get("stroke") else None
     parent_stroke_width = float(el.get("stroke-width", "0"))
     fill_alpha = _opacity_pct(el, "fill")
@@ -399,7 +430,7 @@ def render_svg_text(
     baseline_mode = _resolve_baseline_mode(el)
 
     scale = slide_w / svg_w if svg_w > 0 and slide_w > 0 else 1.0
-    scaled_fs = max(parent_fs * scale * 72.0, 6.0)
+    scaled_fs = max(parent_fs, 6.0) if explicit_pt is not None else max(parent_fs * scale * 72.0, 6.0)
 
     spans = _collect_spans(
         el,
@@ -436,6 +467,7 @@ def render_svg_text(
             stroke_width=parent_stroke_width,
             fill_alpha=fill_alpha,
             stroke_alpha=stroke_alpha,
+            style=style,
         )
         return
 
@@ -482,8 +514,9 @@ def _render_simple_text(
     stroke_width: float = 0.0,
     fill_alpha: int = 100,
     stroke_alpha: int = 100,
+    style: dict | None = None,
 ) -> None:
-    metrics = _measure_text(content, fs, ff, 8.0)
+    metrics = _measure_text(content, fs, (style or {}).get("font_name") or ff, 8.0)
 
     # SVG text is allowed to overflow viewBox; textbox width uses natural measurement.
     width = metrics.width_inches + 0.2
@@ -538,9 +571,9 @@ def _render_simple_text(
     run.font.size = Pt(fs)
     run.font.color.rgb = RGBColor.from_string(fill.lstrip("#"))
     _apply_run_alpha(run, fill_alpha)
-    run.font.name = ff
+    run.font.name = (style or {}).get("font_name") or ff
 
-    bold = el.get("font-weight")
+    bold = (style or {}).get("bold", el.get("font-weight"))
     if bold and bold not in ("normal", "100", "200", "300"):
         run.font.bold = True
 

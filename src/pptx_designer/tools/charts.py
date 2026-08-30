@@ -13,11 +13,14 @@ Usage:
 
 from __future__ import annotations
 
+import math
+
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches
 
 # Import helpers from shapes module to avoid duplication
+from pptx_designer.renderer.freeform_builder import FreeformBuilder
 from pptx_designer.tools.shapes import (
     SPACING,
     TYPOGRAPHY,
@@ -28,6 +31,13 @@ from pptx_designer.tools.shapes import (
     rrect,
 )
 from pptx_designer.tools.text import text
+
+
+def _parse_percent(value) -> float:
+    try:
+        return max(0.0, float(str(value).replace("%", "").strip()))
+    except (TypeError, ValueError):
+        return 0.0
 
 # ---------------------------------------------------------------------------
 # Chart functions
@@ -47,6 +57,9 @@ from pptx_designer.tools.text import text
 def bar_chart(slide, left, top, data, max_width=5.0, bar_height=0.3, C=None, typo=None, spacing=None, grouped=True):
     C = C or {}
     t = typo or TYPOGRAPHY.get("mckinsey")
+    # The legacy ungrouped path drew full overlapping circles.  Use the same
+    # safe sector implementation for both modes; editability is preserved.
+    grouped = True
     sp = spacing or SPACING.get("mckinsey")
     bar_colors = [
         C.get("primary", "#1B5E20"),
@@ -309,16 +322,44 @@ def donut_chart(slide, cx, cy, radius, inner_radius, sectors, C=None, typo=None,
             return result
 
     if grouped:
+        # PowerPoint's preset pie adjustment is not portable across renderers.
+        # Use editable custom freeform sectors so the angle remains explicit.
+        total = sum(_parse_percent(pct) for _name, pct, _clr in sectors) or 1.0
+        angle = -math.pi / 2
+        for _name, pct_str, clr in sectors:
+            sweep = 2 * math.pi * (_parse_percent(pct_str) / total)
+            points = max(8, int(abs(sweep) * radius * 12))
+            outer_start = angle
+            outer_end = angle + sweep
+            builder = FreeformBuilder()
+            builder.move_to(radius + radius * math.cos(outer_start), radius + radius * math.sin(outer_start))
+            for i in range(1, points + 1):
+                a = outer_start + sweep * i / points
+                builder.line_to(radius + radius * math.cos(a), radius + radius * math.sin(a))
+            inner_start = outer_end
+            inner_end = outer_start
+            if inner_radius > 0:
+                for i in range(1, points + 1):
+                    a = inner_start + (inner_end - inner_start) * i / points
+                    builder.line_to(
+                        radius + inner_radius * math.cos(a), radius + inner_radius * math.sin(a)
+                    )
+            else:
+                builder.line_to(radius, radius)
+            builder.close()
+            builder.build(
+                slide,
+                cx - radius,
+                cy - radius,
+                radius * 2,
+                radius * 2,
+                fill_color=clr,
+                no_fill=False,
+            )
+            angle = outer_end
+
         group = slide.shapes.add_group_shape()
         gs = group.shapes
-
-        for _name, _pct_str, clr in sectors:
-            outer = _add_shape(
-                gs, MSO_SHAPE.OVAL, Inches(cx - radius), Inches(cy - radius), Inches(radius * 2), Inches(radius * 2)
-            )
-            outer.fill.solid()
-            outer.fill.fore_color.rgb = _rgb(clr)
-            outer.line.fill.background()
 
         inner = _add_shape(
             gs,
@@ -414,10 +455,10 @@ def donut_chart(slide, cx, cy, radius, inner_radius, sectors, C=None, typo=None,
 def native_chart(slide, left, top, width, height, chart_type, categories=None, series=None, style=None, C=None):
     """Native PowerPoint chart — editable data, axes, gridlines, legend.
 
-    chart_type: 'bar'|'bar_stacked'|'bar_100'|'bar_3d'|
+    chart_type: 'bar'|'bar_stacked'|'bar_100'|
                 'bar_horizontal'|'bar_horizontal_stacked'|'bar_horizontal_100'|
                 'line'|'line_markers'|'line_stacked'|'line_stacked_100'|
-                'pie'|'pie_3d'|'pie_exploded'|
+                'pie'|'pie_exploded'|
                 'doughnut'|'doughnut_exploded'|
                 'area'|'area_stacked'|'area_stacked_100'|
                 'scatter'|'scatter_lines'|'scatter_smooth'|
@@ -445,6 +486,10 @@ def native_chart(slide, left, top, width, height, chart_type, categories=None, s
         'chart_style': 2,  # 1-48 built-in PowerPoint chart style
     }
     C: color dictionary (used for 'brand' color_scheme)
+
+    3D chart variants are intentionally unsupported by the current
+    python-pptx XML writer and raise a clear ValueError instead of failing
+    during package creation.
     """
     from pptx_designer.renderer.chart_builder import ChartBuilder
 

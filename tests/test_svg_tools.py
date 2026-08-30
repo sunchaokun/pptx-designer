@@ -50,6 +50,65 @@ class TestSvgChart:
         result = svg_chart(_slide(), svg)
         assert result.shape_count >= 1
 
+    def test_text_style_applies_explicit_role_sizes(self):
+        slide = _slide()
+        svg = (
+            '<svg viewBox="0 0 400 300">'
+            '<rect x="0" y="0" width="400" height="300" fill="#132238"/>'
+            '<text class="title" x="200" y="100" text-anchor="middle">Title</text>'
+            '<text class="body" x="200" y="150" text-anchor="middle">Body</text>'
+            '</svg>'
+        )
+        result = svg_chart(
+            slide,
+            svg,
+            x=1,
+            y=1,
+            w=8,
+            h=6,
+            text_style={
+                "title": {"font_size": 20, "color": "#FFFFFF"},
+                "body": {"font_size": 12, "color": "#D7E2EF"},
+            },
+        )
+        text_shapes = [
+            shape
+            for shape in slide.shapes
+            if getattr(shape, "has_text_frame", False) and shape.text_frame.paragraphs[0].runs
+        ]
+        sizes = [shape.text_frame.paragraphs[0].runs[0].font.size.pt for shape in text_shapes]
+        assert 20 in sizes
+        assert 12 in sizes
+        assert result.warnings == []
+
+    def test_layout_contract_warns_and_can_fail_on_text_zone_violations(self):
+        svg = '<svg viewBox="0 0 400 300"><text class="title" x="390" y="20">Title</text></svg>'
+        layout = {"safe_margin": 20, "zones": {"title": (20, 20, 250, 80)}}
+        result = svg_chart(_slide(), svg, layout=layout)
+        assert any("unsafe SVG margin" in warning for warning in result.warnings)
+        assert any("outside zone" in warning for warning in result.warnings)
+
+        with pytest.raises(SVGCompileError, match="layout contract failed"):
+            svg_chart(_slide(), svg, layout={**layout, "text_collision": "error"})
+
+    def test_layout_contract_applies_nested_transforms(self):
+        svg = (
+            '<svg viewBox="0 0 400 300">'
+            '<g transform="translate(100 50)"><g transform="scale(2)">'
+            '<text class="title" x="50" y="50">Title</text>'
+            "</g></g></svg>"
+        )
+        result = svg_chart(
+            _slide(),
+            svg,
+            layout={"safe_margin": 20, "zones": {"title": (190, 140, 120, 80)}},
+        )
+        assert result.warnings == []
+
+    def test_invalid_layout_mode_is_rejected(self):
+        with pytest.raises(ValueError, match="layout.text_collision"):
+            svg_chart(_slide(), '<svg viewBox="0 0 10 10"/>', layout={"text_collision": "fail"})
+
     def test_svg_with_gradient(self):
         svg = """<svg viewBox="0 0 400 300">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">

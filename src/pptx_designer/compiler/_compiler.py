@@ -327,9 +327,23 @@ _DEFAULT_LIMITS: dict[str, int] = {
 class SVGCompiler:
     """Compile a subset of SVG to native editable PPTX shapes."""
 
-    def __init__(self, C: dict | None = None, limits: dict[str, int] | None = None) -> None:  # noqa: N803
+    def __init__(
+        self,
+        C: dict | None = None,  # noqa: N803
+        limits: dict[str, int] | None = None,
+        text_style: dict[str, dict] | None = None,
+        group_opacity: str = "strict",
+        layout: dict | None = None,
+    ) -> None:
         self.C = C or {}
         self.limits = {**_DEFAULT_LIMITS, **(limits or {})}
+        self.text_style = text_style or {}
+        if group_opacity not in {"strict", "distribute"}:
+            raise ValueError("group_opacity must be 'strict' or 'distribute'")
+        self.group_opacity = group_opacity
+        self.layout = layout or {}
+        if self.layout.get("text_collision", "warning") not in {"warning", "error"}:
+            raise ValueError("layout.text_collision must be 'warning' or 'error'")
 
     def compile(
         self,
@@ -347,6 +361,8 @@ class SVGCompiler:
 
         sanitize_t0 = time.perf_counter()
         root = sanitize(svg_text)
+        if self.group_opacity == "distribute":
+            self._distribute_group_opacity(root)
         sanitize_ms = (time.perf_counter() - sanitize_t0) * 1000
         node_count = sum(1 for _ in root.iter() if isinstance(_.tag, str))
         self._check_limit("max_nodes", node_count, "SVG node count")
@@ -380,6 +396,11 @@ class SVGCompiler:
         self._warnings: list[str] = []
         self._text_rects: list[tuple[float, float, float, float]] = []
         self._source_to_output: dict[str, list] = {}
+        if self.group_opacity == "distribute":
+            self._warnings.append(
+                "group opacity distributed to child elements; overlapping descendants may differ from SVG compositing"
+            )
+        self._validate_layout(root)
 
         pre_shape_count = len(slide.shapes)
 
@@ -456,6 +477,77 @@ class SVGCompiler:
                     f"group opacity on <{node.tag}{label}> requires raster fallback; "
                     "native rendering would be visually incorrect"
                 )
+
+    @staticmethod
+    def _distribute_group_opacity(root: etree._Element) -> None:
+        """Push group opacity to descendants for native editable rendering."""
+        def parse_opacity(raw: str | None) -> float:
+            value = (raw or "1").strip()
+            if value.endswith("%"):
+                return float(value[:-1]) / 100.0
+            return float(value)
+
+        def walk(el: etree._Element, inherited: float = 1.0) -> None:
+            own = parse_opacity(el.get("opacity"))
+            effective = max(0.0, min(1.0, inherited * own))
+            tag = el.tag.split("}")[-1] if isinstance(el.tag, str) else ""
+            if tag in {"g", "svg"}:
+                if own != 1.0:
+                    el.set("data-group-opacity-distributed", str(own))
+                el.set("opacity", "1")
+                for child in el:
+                    walk(child, effective)
+            else:
+                if effective != 1.0:
+                    el.set("opacity", f"{effective:.6g}")
+                for child in el:
+                    walk(child, effective)
+
+        walk(root)
+
+    def _validate_layout(self, root: etree._Element) -> None:
+        """Validate declared text zones in root viewBox coordinates."""
+        zones = self.layout.get("zones", {})
+        margin = float(self.layout.get("safe_margin", 0))
+        if not zones and margin <= 0:
+            return
+        x0, y0, vb_w, vb_h = self._vb
+        violations: list[str] = []
+        def walk(el: etree._Element, tf: Affine) -> None:
+            if not isinstance(el.tag, str):
+                return
+            tf = tf.compose(parse_transform(el.get("transform")))
+            if el.tag.split("}")[-1] == "text":
+                try:
+                    local_x = float((el.get("x") or "0").split(",")[0])
+                    local_y = float((el.get("y") or "0").split(",")[0])
+                except ValueError:
+                    local_x = local_y = None
+                if local_x is not None and local_y is not None:
+                    x, y = tf.apply(local_x, local_y)
+                    role = el.get("class")
+                    label = f"class {role!r}" if role else "unclassified text"
+                    if margin and (
+                        x < x0 + margin
+                        or y < y0 + margin
+                        or x > x0 + vb_w - margin
+                        or y > y0 + vb_h - margin
+                    ):
+                        violations.append(f"{label} is inside the {margin:g}px unsafe SVG margin")
+                    if role in zones:
+                        zx, zy, zw, zh = zones[role]
+                        if not (zx <= x <= zx + zw and zy <= y <= zy + zh):
+                            violations.append(f"{label} anchor ({x:g},{y:g}) is outside zone {role!r}")
+            for child in el:
+                walk(child, tf)
+
+        walk(root, Affine())
+        if not violations:
+            return
+        mode = self.layout.get("text_collision", "warning")
+        if mode == "error":
+            raise SVGCompileError("SVG layout contract failed: " + "; ".join(violations))
+        self._warnings.extend(f"layout: {item}" for item in violations)
 
     def _feature_levels(self, features: set[str]) -> dict[str, str]:
         levels: dict[str, str] = {}
@@ -1164,6 +1256,10 @@ class SVGCompiler:
     def _render_text(self, el: etree._Element, tf: Affine) -> None:
         # scale for font-size: svg region size / viewBox size
         _lx, _ly, rw, rh = self._rect
+        if self.text_style and not el.get("class"):
+            self._warnings.append("SVG text has no class; add text_style['role'] with an explicit font_size")
+        elif self.text_style and el.get("class") not in self.text_style:
+            self._warnings.append(f"SVG text class {el.get('class')!r} has no matching text_style entry")
         svg_w, svg_h = self._vb[2], self._vb[3]
         _render_svg_text(
             el=el,
@@ -1177,6 +1273,7 @@ class SVGCompiler:
             svg_h=svg_h,
             slide_w=rw,
             slide_h=rh,
+            text_style=self.text_style,
         )
         self._shape_count += 1
 

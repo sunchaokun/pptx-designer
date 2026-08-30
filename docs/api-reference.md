@@ -1,6 +1,6 @@
 # API 参考
 
-> 适用版本：`1.0.0b6`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
+> 适用版本：`1.0.0b7`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 

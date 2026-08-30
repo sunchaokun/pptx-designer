@@ -1668,8 +1668,10 @@ class PrecisionRenderer:
                 brand_fonts = self._brand.fonts
         position = {"x": cx, "y": cy, "width": cw, "height": ch}
         builder = ChartBuilder()
-        with suppress(Exception):
+        try:
             builder.build(slide, chart_config, position=position, brand_colors=brand_colors, brand_fonts=brand_fonts)
+        except Exception as exc:
+            logger.error("Native chart rendering failed: %s", exc)
 
     def _render_notes_on_slide(self, slide, notes_text: str) -> None:
         notes_slide = slide.notes_slide
