@@ -51,6 +51,7 @@ def generate_ppt(
     layout_variant: str | None = None,
     mood: str | None = None,
     style_seed: int | None = None,
+    theme: dict[str, Any] | None = None,
     template: str | None = None,
     output: str = "output.pptx",
     slides: int | None = None,
@@ -63,7 +64,7 @@ def generate_ppt(
 
     Args:
         query: Natural language description (FreeStyle mode).
-        content: Structured content dict with title, pages, etc. (Build mode).
+        content: Structured FreeStyle content dict with title, pages, etc.
         style: Design style (e.g., "dark cyberpunk", "warm elegant").
         palette: Exact color palette name.
         fonts: Exact font pair name.
@@ -72,33 +73,22 @@ def generate_ppt(
         layout_variant: Backward-compatible alias for ``layout``.
         mood: Optional mood hint used when composing a theme.
         style_seed: Optional seed for reproducible theme selection.
+        theme: Previously resolved theme. When supplied, it is used as-is and
+            wins over theme discovery arguments.
         template: Path to a .pptx template.
         output: Output file path.
         slides: Number of slides (FreeStyle mode).
 
     Returns:
-        Dictionary with keys: output_path, slide_count, shapes_count.
+        Dictionary with keys: output_path, slide_count, shapes_count, and
+        traceable resolved-theme information.
     """
     from pptx_designer.renderer.theme import ThemeComposer
 
-    # ── Step 1: Get theme ──────────────────────────────────────────
-    composer = ThemeComposer()
+    # ── Step 1: Get pages ──────────────────────────────────────────
     layout = layout or layout_variant
-    theme = composer.compose(
-        style=style,
-        palette=palette,
-        fonts=fonts,
-        decoration=decoration,
-        layout=layout,
-        mood=mood,
-        seed=style_seed,
-        query=query,
-    )
-    C = theme.get("colors", {})
-
-    # ── Step 2: Get pages ──────────────────────────────────────────
     if content:
-        # Build mode: user provided structure
+        # Structured FreeStyle: user supplied page plan.
         pages = content.get("pages", [])
     else:
         # FreeStyle mode: use planner
@@ -115,20 +105,24 @@ def generate_ppt(
             }
             for p in story.pages
         ]
-        # Auto-select style if not specified
+        # The planner supplies only a style hint.  Theme resolution happens
+        # once below so FreeStyle does not silently re-randomize a theme.
         if not style:
             style = story.style_hint
-            theme = composer.compose(
-                style=style,
-                palette=palette,
-                fonts=fonts,
-                decoration=decoration,
-                layout=layout,
-                mood=mood,
-                seed=style_seed,
-                query=query,
-            )
-            C = theme.get("colors", {})
+
+    # ── Step 2: Resolve one complete theme ─────────────────────────
+    if theme is None:
+        composer = ThemeComposer()
+        theme = composer.compose(
+            style=style,
+            palette=palette,
+            fonts=fonts,
+            decoration=decoration,
+            layout=layout,
+            mood=mood,
+            seed=style_seed,
+            query=query,
+        )
 
     # ── Step 3: Create presentation ────────────────────────────────
     prs = Presentation(template)
@@ -143,7 +137,7 @@ def generate_ppt(
         subtitle = page.get("subtitle", "")
         bullets = page.get("bullets", [])
 
-        render_professional_page(slide, goal, page_title, subtitle, bullets, C, i, len(pages))
+        render_professional_page(slide, goal, page_title, subtitle, bullets, theme, i, len(pages))
 
     # ── Step 5: Save ───────────────────────────────────────────────
     output_dir = os.path.dirname(output)
@@ -160,6 +154,22 @@ def generate_ppt(
         "shapes_count": shape_count,
         "theme": theme["name"],
         "theme_atoms": theme["atoms"],
+        "theme_context": theme,
+        "theme_application": {
+            "requested": theme.get("source", {}).get("requested", {}),
+            "resolved": theme.get("source", {}).get("resolved", theme.get("atoms", {})),
+            "applied_to": ["professional_renderer", "text", "semantic_roles", "typography"],
+            "not_applied": [
+                {
+                    "field": field,
+                    "reason": "FreeStyle renderer does not consume this theme field yet.",
+                }
+                for field in ("decoration", "layout_variant", "text_effect_preset", "image_effect")
+                if theme.get(field)
+            ],
+            "fallbacks": theme.get("source", {}).get("fallbacks", []),
+            "warnings": theme.get("source", {}).get("warnings", []),
+        },
     }
 
 

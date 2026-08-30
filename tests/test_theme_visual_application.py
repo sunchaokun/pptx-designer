@@ -148,3 +148,24 @@ def test_semantic_solution_color_does_not_revert_to_fixed_green(tmp_path):
     fills = {_shape_fill_hex(shape) for shape in prs.slides[0].shapes}
 
     assert "22C55E" not in fills
+
+
+def test_generate_ppt_uses_a_locked_resolved_theme_without_discovery(tmp_path, monkeypatch):
+    locked_theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("Theme discovery must not run for a locked theme")
+
+    monkeypatch.setattr(ThemeComposer, "compose", fail_if_called)
+    output = tmp_path / "locked-theme.pptx"
+    result = generate_ppt(content={"pages": PAGES}, theme=locked_theme, output=str(output))
+
+    assert output.exists()
+    assert result["theme_context"] == locked_theme
+
+
+def test_theme_application_reports_not_yet_consumed_theme_fields(tmp_path):
+    result, _ = _render_theme(tmp_path, "dark-tech")
+    not_applied = {item["field"] for item in result["theme_application"]["not_applied"]}
+
+    assert {"decoration", "layout_variant", "text_effect_preset", "image_effect"} <= not_applied

@@ -1089,8 +1089,11 @@ class ThemeComposer:
             "muted": colors.get("muted-foreground", colors.get("text_muted", "#6B7280")),
             "accent": colors.get("accent", colors.get("primary", "#1D78FA")),
             "accent-secondary": colors.get("secondary", colors.get("primary", "#1D78FA")),
-            "success": colors.get("success", "#22C55E"),
-            "warning": colors.get("warning", "#F59E0B"),
+            # A palette may deliberately avoid conventional green/orange.
+            # Preserve that visual language when it has no dedicated semantic
+            # status colors instead of injecting fixed renderer colors.
+            "success": colors.get("success", colors.get("accent", colors.get("primary", "#1D78FA"))),
+            "warning": colors.get("warning", colors.get("secondary", colors.get("accent", "#8B5CF6"))),
             "danger": colors.get("destructive", "#EF4444"),
             "border": colors.get("border", "#E5E7EB"),
             "data-series-1": colors.get("primary", "#1D78FA"),
