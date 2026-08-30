@@ -25,6 +25,9 @@ def _theme_colors(theme: Mapping[str, Any]) -> dict[str, Any]:
     colors.update(
         {
             "background": roles.get("background") or colors.get("background", "#FFFFFF"),
+            "surface": surface,
+            "ink": ink,
+            "muted": muted,
             "card": surface,
             "card_bg": surface,
             "bg_tint": surface,

@@ -235,6 +235,16 @@ def test_build_mode_helpers_inherit_presentation_theme(tmp_path):
     assert theme["typography"]["body"] in _text_font_names(generated)
 
 
+def test_build_mode_accepts_semantic_surface_alias():
+    theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+    prs = Presentation(theme=theme)
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    shape = rect(slide, 1, 1, 2, 1, "surface")
+
+    assert _shape_fill_hex(shape) == theme["semantic_roles"]["surface"].lstrip("#")
+
+
 def test_slide_theme_and_explicit_values_override_presentation_defaults():
     warm = ThemeComposer().compose(style="warm-elegant", seed=17)
     dark = ThemeComposer().compose(style="dark-tech", seed=17)
