@@ -49,6 +49,7 @@ from pptx_designer.core.pipeline import Presentation, generate_ppt
 from pptx_designer.data import PALETTES, STYLES, TYPOGRAPHY
 from pptx_designer.enterprise.design_dna_extractor import extract_design_dna
 from pptx_designer.renderer.theme import recommend_styles
+from pptx_designer.renderer.theme_context import set_presentation_theme, set_slide_theme
 from pptx_designer.tools.svg import svg_chart
 
 __all__ = [
@@ -61,5 +62,7 @@ __all__ = [
     "fetch_image",
     "extract_design_dna",
     "recommend_styles",
+    "set_presentation_theme",
+    "set_slide_theme",
     "svg_chart",
 ]

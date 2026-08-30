@@ -21,6 +21,7 @@ from pptx.util import Inches
 
 # Import helpers from shapes module to avoid duplication
 from pptx_designer.renderer.freeform_builder import FreeformBuilder
+from pptx_designer.renderer.theme_context import resolve_color_context
 from pptx_designer.tools.shapes import (
     SPACING,
     TYPOGRAPHY,
@@ -55,7 +56,7 @@ def _parse_percent(value) -> float:
 
 
 def bar_chart(slide, left, top, data, max_width=5.0, bar_height=0.3, C=None, typo=None, spacing=None, grouped=True):
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
     # The legacy ungrouped path drew full overlapping circles.  Use the same
     # safe sector implementation for both modes; editability is preserved.
@@ -148,7 +149,7 @@ def bar_chart(slide, left, top, data, max_width=5.0, bar_height=0.3, C=None, typ
 
 
 def comparison_bars(slide, left, top, metrics, max_width=4.0, C=None, typo=None, spacing=None, grouped=True):
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
     row_h = 0.55
 
@@ -276,7 +277,7 @@ def donut_chart(slide, cx, cy, radius, inner_radius, sectors, C=None, typo=None,
     """Donut/pie chart. When native=True and sectors>1, uses PowerPoint native
     doughnut chart for accurate sector angles. When native=False or sectors==1,
     falls back to Shape-based rendering for maximum visual customization."""
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
 
     if native and len(sectors) > 1:
@@ -492,6 +493,8 @@ def native_chart(slide, left, top, width, height, chart_type, categories=None, s
     during package creation.
     """
     from pptx_designer.renderer.chart_builder import ChartBuilder
+
+    C = resolve_color_context(slide, C)
 
     if categories is None:
         categories = ["Q1", "Q2", "Q3", "Q4"]

@@ -24,6 +24,7 @@ from pptx_designer.effects.text_effects import (
     TEXT_GRADIENT_PRESETS,
     set_vertical_text,
 )
+from pptx_designer.renderer.theme_context import resolve_color_context
 from pptx_designer.tools.shapes import (
     _resolve_color,
     _rgb,
@@ -49,6 +50,8 @@ def text(
     C=None,
     anchor="top",
 ):
+    C = resolve_color_context(slide, C)
+    font_name = font_name or C.get("font_body")
     txBox = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf = txBox.text_frame
     tf.word_wrap = True
@@ -76,6 +79,8 @@ def multiline(
     C=None,
     line_spacing=None,
 ):
+    C = resolve_color_context(slide, C)
+    font_name = font_name or C.get("font_body")
     txBox = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf = txBox.text_frame
     tf.word_wrap = True

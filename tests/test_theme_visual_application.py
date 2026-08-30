@@ -11,9 +11,13 @@ from pathlib import Path
 
 from pptx import Presentation as PptxPresentation
 
+from pptx_designer import Presentation, set_slide_theme
 from pptx_designer.core.pipeline import generate_ppt
 from pptx_designer.renderer.theme import ThemeComposer
-
+from pptx_designer.tools.charts import bar_chart
+from pptx_designer.tools.layout import page_header
+from pptx_designer.tools.shapes import rect
+from pptx_designer.tools.text import text
 
 PAGES = [
     {
@@ -169,3 +173,40 @@ def test_theme_application_reports_not_yet_consumed_theme_fields(tmp_path):
     not_applied = {item["field"] for item in result["theme_application"]["not_applied"]}
 
     assert {"decoration", "layout_variant", "text_effect_preset", "image_effect"} <= not_applied
+
+
+def test_build_mode_helpers_inherit_presentation_theme(tmp_path):
+    theme = ThemeComposer().compose(style="warm-elegant", seed=17)
+    prs = Presentation(theme=theme)
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+    rect(slide, 0, 0, 13.333, 7.5, "background")
+    page_header(slide, "Inherited heading", "Inherited body")
+    text(slide, 1, 2, 8, 0.5, "Inherited text")
+    bar_chart(slide, 2, 3, [("Adoption", 0.7, "70%")])
+
+    output = tmp_path / "build-theme.pptx"
+    prs.save(output)
+    generated = PptxPresentation(str(output))
+
+    assert _shape_fill_hex(generated.slides[0].shapes[0]) == theme["semantic_roles"]["background"].lstrip("#")
+    assert theme["typography"]["heading"] in _text_font_names(generated)
+    assert theme["typography"]["body"] in _text_font_names(generated)
+
+
+def test_slide_theme_and_explicit_values_override_presentation_defaults():
+    warm = ThemeComposer().compose(style="warm-elegant", seed=17)
+    dark = ThemeComposer().compose(style="dark-tech", seed=17)
+    prs = Presentation(theme=warm)
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_slide_theme(slide, dark)
+
+    inherited = text(slide, 1, 1, 5, 0.5, "Slide override")
+    explicit = text(slide, 1, 2, 5, 0.5, "Element override", font_name="Arial", C={"text_body": "#123456"})
+
+    inherited_run = inherited.text_frame.paragraphs[0].runs[0]
+    explicit_run = explicit.text_frame.paragraphs[0].runs[0]
+    assert inherited_run.font.name == dark["typography"]["body"]
+    assert str(inherited_run.font.color.rgb) == dark["semantic_roles"]["ink"].lstrip("#")
+    assert explicit_run.font.name == "Arial"
+    assert str(explicit_run.font.color.rgb) == "123456"

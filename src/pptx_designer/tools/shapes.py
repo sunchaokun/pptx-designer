@@ -19,6 +19,8 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Inches, Pt
 
+from pptx_designer.renderer.theme_context import resolve_color_context
+
 
 def _resolve_color(val, C):
     if val is None:
@@ -87,6 +89,7 @@ def _lighten(hex_color, amount=30):
 
 
 def _centered_shape(slide, mso_type, cx, cy, width, height, fill, line=None, C=None):
+    C = resolve_color_context(slide, C)
     sh = _add_shape(
         slide.shapes, mso_type, Inches(cx - width / 2), Inches(cy - height / 2), Inches(width), Inches(height)
     )
@@ -122,6 +125,7 @@ def add_slide(prs, layout_index=None):
 
 
 def rect(slide, left, top, width, height, fill, line=None, C=None):
+    C = resolve_color_context(slide, C)
     shape = _add_shape(slide.shapes, MSO_SHAPE.RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(_resolve_color(fill, C))
@@ -150,6 +154,8 @@ def dashed_rect(slide, left, top, width, height, fill=None, line_color="#000000"
     """
     from pptx.enum.dml import MSO_LINE_DASH_STYLE
 
+    C = resolve_color_context(slide, C)
+
     shape = _add_shape(slide.shapes, MSO_SHAPE.RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
 
     if fill:
@@ -175,6 +181,7 @@ def dashed_rect(slide, left, top, width, height, fill=None, line_color="#000000"
 
 
 def rrect(slide, left, top, width, height, fill, line=None, C=None):
+    C = resolve_color_context(slide, C)
     shape = _add_shape(
         slide.shapes, MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height)
     )
@@ -189,6 +196,7 @@ def rrect(slide, left, top, width, height, fill, line=None, C=None):
 
 
 def oval(slide, left, top, width, height, fill, line=None, C=None):
+    C = resolve_color_context(slide, C)
     shape = _add_shape(slide.shapes, MSO_SHAPE.OVAL, Inches(left), Inches(top), Inches(width), Inches(height))
     shape.fill.solid()
     shape.fill.fore_color.rgb = _rgb(_resolve_color(fill, C))
@@ -201,6 +209,7 @@ def oval(slide, left, top, width, height, fill, line=None, C=None):
 
 
 def shape(slide, shape_type, left, top, width, height, fill, line=None, C=None):
+    C = resolve_color_context(slide, C)
     _type = shape_type
     if isinstance(_type, str):
         _type = getattr(MSO_SHAPE, _type.upper(), MSO_SHAPE.RECTANGLE)

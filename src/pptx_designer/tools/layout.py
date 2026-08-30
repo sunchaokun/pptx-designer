@@ -22,6 +22,7 @@ import copy
 from lxml import etree
 from pptx.util import Inches
 
+from pptx_designer.renderer.theme_context import resolve_color_context
 from pptx_designer.tools.shapes import (
     SPACING,
     TYPOGRAPHY,
@@ -266,7 +267,7 @@ def set_slide_bg_image(slide, image_path):
 def page_header(slide, title, subtitle="", C=None, left=0.65, width=None, typo=None, spacing=None):
     from pptx_designer.tools.text import text
 
-    C = C or {}
+    C = resolve_color_context(slide, C)
     cw = width or (13.333 - 2 * left)
     t = typo or TYPOGRAPHY.get("mckinsey")
     sp = spacing or SPACING.get("mckinsey")
@@ -306,6 +307,7 @@ def page_header(slide, title, subtitle="", C=None, left=0.65, width=None, typo=N
 
 
 def top_bar(slide, color, width=13.333, height=0.08, C=None):
+    C = resolve_color_context(slide, C)
     color_val = _resolve_color(color, C)
     return rect(slide, 0, 0, width, height, color_val)
 
@@ -327,7 +329,7 @@ def page_number(slide, current, total, style="simple", C=None, typo=None):
     """
     from pptx_designer.tools.text import text
 
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
     shapes = []
 
@@ -343,6 +345,7 @@ def page_number(slide, current, total, style="simple", C=None, typo=None):
             font_size=t.caption,
             color=C.get("text_muted", "#666666"),
             align="right",
+            font_name=C.get("font_body"),
             C=C,
         )
         shapes.append(s)

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from pptx_designer.renderer.theme_context import resolve_color_context
 from pptx_designer.tools.shapes import (
     TYPOGRAPHY,
     _resolve_color,
+    _set_cjk_font,
     rect,
     rrect,
 )
@@ -41,7 +43,7 @@ def kpi_card(
     Returns:
         List of shapes or GroupShape
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
 
     # Background
@@ -62,6 +64,7 @@ def kpi_card(
         font_size=t.h1 if t else 28,
         color=C.get("text_dark", "#000000"),
         bold=True,
+        font_name=C.get("font_heading"),
         C=C,
     )
 
@@ -75,13 +78,14 @@ def kpi_card(
         label,
         font_size=t.caption if t else 10,
         color=C.get("text_muted", "#666666"),
+        font_name=C.get("font_body"),
         C=C,
     )
 
     # Trend
     shapes = [bg, bar, num_box, label_box]
     if trend:
-        trend_color = "#22C55E" if trend_up else "#EF4444"
+        trend_color = C.get("success", C.get("accent", "#1D78FA")) if trend_up else C.get("destructive", C.get("accent", "#1D78FA"))
         trend_box = _add_shape(
             slide,
             left + 0.15,
@@ -92,6 +96,7 @@ def kpi_card(
             font_size=t.caption if t else 10,
             color=trend_color,
             bold=True,
+            font_name=C.get("font_body"),
             C=C,
         )
         shapes.append(trend_box)
@@ -113,7 +118,7 @@ def highlight_cards(slide, left, top, cards, total_width=12.0, C=None, typo=None
     Returns:
         List of shapes
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
     n = len(cards)
     if n == 0:
@@ -139,6 +144,7 @@ def highlight_cards(slide, left, top, cards, total_width=12.0, C=None, typo=None
             font_size=t.h3 if t else 16,
             color=C.get("text_dark", "#000000"),
             bold=True,
+            font_name=C.get("font_heading"),
             C=C,
         )
         shapes.append(title_box)
@@ -152,6 +158,7 @@ def highlight_cards(slide, left, top, cards, total_width=12.0, C=None, typo=None
             desc,
             font_size=t.body if t else 12,
             color=C.get("text_body", "#4A4A4A"),
+            font_name=C.get("font_body"),
             C=C,
         )
         shapes.append(desc_box)
@@ -172,14 +179,15 @@ def code_block(slide, left, top, width, height, lines, language="python", C=None
     Returns:
         List of shapes
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     # Dark background
-    bg = rrect(slide, left, top, width, height, "#1E1E1E")
+    bg = rrect(slide, left, top, width, height, C.get("card", "#1E1E1E"), line=C.get("border"))
 
     # Language badge
-    badge = rect(slide, left + 0.1, top + 0.1, 1.2, 0.3, "#3B82F6")
+    badge = rect(slide, left + 0.1, top + 0.1, 1.2, 0.3, C.get("primary", "#3B82F6"))
     badge_text = _add_shape(
-        slide, left + 0.15, top + 0.12, 1.1, 0.25, language, font_size=10, color="#FFFFFF", bold=True, C=C
+        slide, left + 0.15, top + 0.12, 1.1, 0.25, language, font_size=10, color=C.get("on_primary", "#FFFFFF"), bold=True,
+        font_name=C.get("font_body"), C=C,
     )
 
     # Code lines
@@ -194,8 +202,8 @@ def code_block(slide, left, top, width, height, lines, language="python", C=None
             0.25,
             line,
             font_size=11,
-            color="#D4D4D4",
-            font_name="Consolas",
+            color=C.get("text_dark", "#D4D4D4"),
+            font_name=C.get("font_mono", "Consolas"),
             C=C,
         )
         shapes.append(line_box)
@@ -217,12 +225,13 @@ def section_divider(slide, number, title, C=None, typo=None, grouped=True):
     Returns:
         List of shapes
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     t = typo or TYPOGRAPHY.get("mckinsey")
 
     # Large number
     num_box = _add_shape(
-        slide, 0.5, 2.0, 3.0, 2.0, str(number).zfill(2), font_size=96, color=C.get("accent", "#1D78FA"), bold=True, C=C
+        slide, 0.5, 2.0, 3.0, 2.0, str(number).zfill(2), font_size=96, color=C.get("accent", "#1D78FA"), bold=True,
+        font_name=C.get("font_heading"), C=C,
     )
 
     # Title
@@ -236,6 +245,7 @@ def section_divider(slide, number, title, C=None, typo=None, grouped=True):
         font_size=t.h1 if t else 28,
         color=C.get("text_dark", "#000000"),
         bold=True,
+        font_name=C.get("font_heading"),
         C=C,
     )
 
@@ -258,16 +268,18 @@ def hero_slide(slide, title, subtitle="", C=None, typo=None, grouped=True):
     Returns:
         List of shapes
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     # Background
     bg = rect(slide, 0, 0, 13.333, 7.5, C.get("primary", "#1D78FA"))
 
     # Title
-    title_box = _add_shape(slide, 0.5, 2.5, 12.333, 1.5, title, font_size=44, color="#FFFFFF", bold=True, C=C)
+    title_box = _add_shape(slide, 0.5, 2.5, 12.333, 1.5, title, font_size=44, color=C.get("on_primary", "#FFFFFF"), bold=True,
+                           font_name=C.get("font_heading"), C=C)
 
     shapes = [bg, title_box]
     if subtitle:
-        sub_box = _add_shape(slide, 0.5, 4.2, 12.333, 0.8, subtitle, font_size=18, color="#FFFFFF", C=C)
+        sub_box = _add_shape(slide, 0.5, 4.2, 12.333, 0.8, subtitle, font_size=18, color=C.get("on_primary", "#FFFFFF"),
+                             font_name=C.get("font_body"), C=C)
         shapes.append(sub_box)
 
     return shapes
@@ -286,19 +298,21 @@ def cta_slide(slide, title, subtitle="", C=None, typo=None, grouped=True):
     Returns:
         List of shapes
     """
-    C = C or {}
+    C = resolve_color_context(slide, C)
     # Background
     bg = rect(slide, 0, 0, 13.333, 7.5, C.get("background", "#FFFFFF"))
 
     # Title
     title_box = _add_shape(
-        slide, 0.5, 2.5, 12.333, 1.5, title, font_size=44, color=C.get("text_dark", "#000000"), bold=True, C=C
+        slide, 0.5, 2.5, 12.333, 1.5, title, font_size=44, color=C.get("text_dark", "#000000"), bold=True,
+        font_name=C.get("font_heading"), C=C,
     )
 
     shapes = [bg, title_box]
     if subtitle:
         sub_box = _add_shape(
-            slide, 0.5, 4.2, 12.333, 0.8, subtitle, font_size=18, color=C.get("text_body", "#4A4A4A"), C=C
+            slide, 0.5, 4.2, 12.333, 0.8, subtitle, font_size=18, color=C.get("text_body", "#4A4A4A"),
+            font_name=C.get("font_body"), C=C,
         )
         shapes.append(sub_box)
 
@@ -311,6 +325,7 @@ def _add_shape(slide, left, top, width, height, txt, font_size=12, color="#00000
     from pptx.enum.text import PP_ALIGN
     from pptx.util import Inches, Pt
 
+    C = resolve_color_context(slide, C)
     color_val = _resolve_color(color, C)
     shape = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf = shape.text_frame
@@ -322,6 +337,10 @@ def _add_shape(slide, left, top, width, height, txt, font_size=12, color="#00000
     run.font.size = Pt(font_size)
     run.font.color.rgb = RGBColor.from_string(color_val.lstrip("#"))
     run.font.bold = bold
+    font_name = font_name or C.get("font_body")
     if font_name:
         run.font.name = font_name
+    cjk_font = C.get("font_cjk") or C.get("font_body")
+    if cjk_font:
+        _set_cjk_font(run, cjk_font)
     return shape

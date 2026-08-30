@@ -16,18 +16,22 @@ Usage:
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from typing import Any
 
 from pptx import Presentation as _PptxPresentation
 
 
-def Presentation(template_path: str | None = None) -> _PptxPresentation:
+def Presentation(
+    template_path: str | None = None, theme: Mapping[str, Any] | None = None
+) -> _PptxPresentation:
     """Create a Presentation with pptx-designer defaults.
 
     Automatically sets widescreen 16:9 format.
 
     Args:
         template_path: Optional path to a .pptx template file.
+        theme: Optional resolved theme inherited by Build Mode helpers.
 
     Returns:
         A python-pptx Presentation object.
@@ -36,6 +40,10 @@ def Presentation(template_path: str | None = None) -> _PptxPresentation:
     # Set widescreen 16:9
     prs.slide_width = 12192000  # 13.333 inches
     prs.slide_height = 6858000  # 7.5 inches
+    if theme is not None:
+        from pptx_designer.renderer.theme_context import set_presentation_theme
+
+        set_presentation_theme(prs, theme)
     return prs
 
 
