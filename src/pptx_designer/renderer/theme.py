@@ -1013,6 +1013,18 @@ class ThemeComposer:
         text_effect_preset: str | None = None,
         image_effect: str | None = None,
     ) -> dict[str, Any]:
+        requested = {
+            "style": style,
+            "palette": palette,
+            "fonts": fonts,
+            "decoration": decoration,
+            "layout": layout,
+            "mood": mood,
+            "seed": seed,
+            "query": query,
+            "text_effect_preset": text_effect_preset,
+            "image_effect": image_effect,
+        }
         if style and style in _PRESET_ATOM_MAP:
             atoms = _PRESET_ATOM_MAP[style]
             palette = palette or atoms.get("palette")
@@ -1068,6 +1080,23 @@ class ThemeComposer:
 
         dark_mode = self._is_dark(colors)
 
+        # Keep the existing flat color dictionary for backward compatibility,
+        # while exposing a stable semantic vocabulary for downstream renderers.
+        semantic_roles = {
+            "background": colors.get("background", "#FFFFFF"),
+            "surface": colors.get("card", colors.get("muted", "#F5F5F5")),
+            "ink": colors.get("foreground", colors.get("text_dark", "#111827")),
+            "muted": colors.get("muted-foreground", colors.get("text_muted", "#6B7280")),
+            "accent": colors.get("accent", colors.get("primary", "#1D78FA")),
+            "accent-secondary": colors.get("secondary", colors.get("primary", "#1D78FA")),
+            "success": colors.get("success", "#22C55E"),
+            "warning": colors.get("warning", "#F59E0B"),
+            "danger": colors.get("destructive", "#EF4444"),
+            "border": colors.get("border", "#E5E7EB"),
+            "data-series-1": colors.get("primary", "#1D78FA"),
+            "data-series-2": colors.get("accent", "#8B5CF6"),
+        }
+
         result = {
             "name": f"{ux_style_name or 'custom'}+{d}+{lay_atom}",
             "colors": colors,
@@ -1077,6 +1106,21 @@ class ThemeComposer:
             "layout_variant": lay,
             "text_effect_preset": te,
             "image_effect": ie,
+            "semantic_roles": semantic_roles,
+            "source": {
+                "requested": requested,
+                "resolved": {
+                    "style": style,
+                    "palette": palette,
+                    "fonts": fonts,
+                    "decoration": d,
+                    "layout": lay_atom,
+                    "mood": detected_moods,
+                },
+                "seed": seed,
+                "fallbacks": [],
+                "warnings": [],
+            },
             "atoms": {
                 "palette": palette or "ux-dynamic",
                 "fonts": fonts or "ux-dynamic",
