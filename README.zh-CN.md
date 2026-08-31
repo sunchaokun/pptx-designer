@@ -56,36 +56,35 @@ pip install pptx-designer[ai-images]   # AI 图片生成（OpenAI 等）
 
 ## 快速开始
 
-### 一页代码优先的幻灯片
+### 一页主题锁定、代码优先的幻灯片
 
-当 AI 编码助手生成 PPT 代码时，输出如下：
+先解析主题并附加到文稿。Build helper 会继承主题的颜色和字体，因此无需给每个
+调用重复传入手写 `C` 字典，构建结果也可复现：
 
 ```python
 from pptx_designer.tools.shapes import rect
-from pptx_designer.tools.text import text, multiline
 from pptx_designer.tools.cards import kpi_card
 from pptx_designer.tools.layout import page_header
-from pptx_designer.tools.images import cover_image
-from pptx_designer.core.pipeline import Presentation
+from pptx_designer import Presentation
+from pptx_designer.renderer.theme import ThemeComposer
 
-C = {
-    "primary": "#1D78FA",
-    "accent": "#FF6B35",
-    "text_dark": "#1A1A1A",
-    "text_body": "#4A4A4A",
-    "background": "#FFFFFF",
-}
-
-prs = Presentation()
+theme = ThemeComposer().compose(style="professional", seed=17)
+prs = Presentation(theme=theme, strict_theme=True)
 slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-page_header(slide, "Q4 营收报告", "财务摘要", C=C)
-kpi_card(slide, 1.0, 2.0, 3.5, 1.5, "$12.8M", "营收", "+23%", C=C)
-kpi_card(slide, 5.0, 2.0, 3.5, 1.5, "89%", "留存率", "+5pp", C=C)
-rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
+page_header(slide, "Q4 营收报告", "财务摘要")
+kpi_card(slide, left=1.0, top=2.0, width=3.5, height=1.5,
+         number="$12.8M", label="营收", trend="+23%")
+kpi_card(slide, left=5.0, top=2.0, width=3.5, height=1.5,
+         number="89%", label="留存率", trend="+5pp")
+rect(slide, left=0.5, top=6.8, width=12.3, height=0.08, fill="primary")
 
 prs.save("output/q4_report.pptx")
 ```
+
+`ThemeComposer.compose()` 会返回完整的 resolved theme。不要把 partial Theme
+Lock 传给 FreeStyle `generate_ppt()`；它会明确抛出 `ValueError`。若确有单个
+元素需例外处理，仍可显式传入 `C`、颜色或字体。
 
 ### 由结构化内容生成完整演示文稿
 
@@ -250,7 +249,7 @@ shape_fx.apply_pattern(shape, "cross", fg="#000000", bg="#FFFFFF")
 
 ### 1. 明确的函数签名
 
-```python
+```text
 def rect(slide, left, top, width, height, fill, line=None, C=None) -> Shape
 def text(slide, left, top, width, height, txt, font_size=12, color="text_body", bold=False, ...) -> Shape
 def kpi_card(slide, left, top, width, height, number, label, trend="", trend_up=True, C=None, ...) -> list[Shape]
@@ -294,9 +293,11 @@ theme = ThemeComposer().compose(style="dark cyberpunk")
 
 规则：
 1. 只使用有文档的公开 `pptx_designer` 导入；不要臆造辅助函数或使用私有模块。
-2. 创建 `Presentation()`，添加空白 slide，最后使用 `prs.save(path)` 保存。
+2. 正式交付先用 `ThemeComposer.compose()` 解析 theme，再创建
+   `Presentation(theme=theme, strict_theme=True)`，添加空白 slide，最后使用
+   `prs.save(path)` 保存。
 3. 位置和尺寸使用具名参数；坐标单位为英寸。
-4. 颜色放在 `C` 字典中，或选择明确的 theme。
+4. 优先使用 resolved theme；`C` 只用于有意的局部覆盖或遗留代码。
 5. 优先使用原生形状、文字、图表和图示；编译 SVG 后检查 `SVGResult.warnings`。
 6. 必须生成可运行 Python 文件；PPT 未被打开或渲染检查前，不得声称页面已经正确。
 

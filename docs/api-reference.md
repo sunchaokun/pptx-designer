@@ -1,6 +1,6 @@
 # API 参考
 
-> 适用版本：`1.0.0b9`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
+> 适用版本：`1.0.0b10`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 
@@ -11,8 +11,8 @@ Generate a complete PowerPoint presentation from a text description.
 ```python
 from pptx_designer import generate_ppt
 
-result = generate_ppt(
-    query: str,                    # Natural language description
+def generate_ppt(
+    query: str = "",               # Natural language description
     *,
     content: dict | None = None,   # Structured FreeStyle page plan
     style: str | None = None,      # Design style (e.g., "dark cyberpunk")
@@ -20,13 +20,16 @@ result = generate_ppt(
     fonts: str | None = None,      # Exact font pair name
     decoration: str | None = None, # Decoration style
     layout: str | None = None,     # Layout variant
+    layout_variant: str | None = None, # Alias for layout
     mood: str | None = None,       # Mood category
     style_seed: int | None = None, # Local theme-selection seed
     theme: dict | None = None,     # Complete ThemeComposer-resolved theme
+    template: str | None = None,   # Optional source template
     slides: int | None = None,     # Number of slides for query mode
     output: str = "output.pptx",  # Output file path
+    **kwargs,
 ) -> dict:
-    """Returns output information plus theme_context and theme_application."""
+    ...
 ```
 
 `query` and `content` are FreeStyle inputs; `content` is a structured page
@@ -39,7 +42,13 @@ contexts are rejected with `ValueError`. When `theme` is supplied, `style`,
 `theme_application.ignored_arguments`.
 
 Use `validate_resolved_theme(theme)` to validate a Theme Lock before passing it
-across process or storage boundaries.
+across process or storage boundaries:
+
+```python
+from pptx_designer import validate_resolved_theme
+
+validate_resolved_theme(theme)  # raises ValueError for an incomplete or invalid theme
+```
 
 ### `Presentation`, `set_presentation_theme`, and `set_slide_theme`
 
@@ -108,16 +117,17 @@ Generate or search for an image.
 ```python
 from pptx_designer import fetch_image
 
-result = fetch_image(
+def fetch_image(
     keywords: str,                 # Search/generation prompt
     *,
     mode: str = "auto",           # placeholder|search|generate|enhance|auto
-    llm_provider: str | None = None,
-    llm_api_key: str | None = None,
+    emotion: str = "",
+    goal: str = "",
     width: int = 1920,
     height: int = 1080,
-) -> dict:
-    """Returns dict with keys: path, mode, provider, keywords."""
+    **config,
+) -> dict[str, str | None]:
+    ...
 ```
 
 ### `extract_design_dna`
@@ -127,7 +137,7 @@ Extract design analysis from an existing .pptx file.
 ```python
 from pptx_designer import extract_design_dna
 
-dna = extract_design_dna(pptx_path: str) -> dict
+dna = extract_design_dna("template.pptx")
 ```
 
 ### Production VI Build: `extract_design_context`, `VITemplateAdapter`, and `VIBuildDelivery`

@@ -1,6 +1,6 @@
 # LLM 编写手册：使用 pptx-designer 生成可编辑 PPTX
 
-> 适用版本：`1.0.0b9`。
+> 适用版本：`1.0.0b10`。
 > 目标读者：生成、审查或修改 `pptx-designer` Python 代码的 LLM 与开发者。
 > 本文是用户文档与训练/上下文材料；只描述当前公开且已验证的 API。
 
@@ -12,7 +12,9 @@
 
 1. 只从 `pptx_designer` 的公开模块导入，不能臆造函数、参数或模块；
 2. 所有位置和尺寸使用 **英寸**，参数名为 `left`、`top`、`width`、`height`；
-3. 使用 `Presentation()` 创建文稿，并通过 `prs.slides.add_slide(prs.slide_layouts[6])` 创建空白页；
+3. 正式交付先用 `ThemeComposer.compose()` 解析主题，再使用
+   `Presentation(theme=theme, strict_theme=True)` 创建文稿，并通过
+   `prs.slides.add_slide(prs.slide_layouts[6])` 创建空白页；
 4. 每个脚本最后调用 `prs.save("output/name.pptx")`；
 5. 对重要结果运行脚本并打开 PPTX，不能仅凭代码声称页面正确；
 6. 优先输出原生形状、文本、图表和图示；SVG 编译后必须检查 warning；
@@ -23,34 +25,28 @@
 以下是任何 Build 模式脚本的推荐起点：
 
 ```python
-from pptx_designer.core.pipeline import Presentation
+from pptx_designer import Presentation
+from pptx_designer.renderer.theme import ThemeComposer
 from pptx_designer.tools.layout import page_header
 from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import text
 
-C = {
-    "primary": "#2563EB",
-    "accent": "#F97316",
-    "background": "#FFFFFF",
-    "text_dark": "#172554",
-    "text_body": "#475569",
-    "text_muted": "#64748B",
-    "border": "#E2E8F0",
-}
-
-prs = Presentation()  # default: 16:9, 13.333 × 7.5 inches
+theme = ThemeComposer().compose(style="professional", seed=17)
+prs = Presentation(theme=theme, strict_theme=True)  # default: 16:9, 13.333 × 7.5 inches
 slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank slide
 
-rect(slide, left=0, top=0, width=13.333, height=7.5, fill="background", C=C)
-page_header(slide, "Quarterly review", "Code-first PowerPoint", C=C)
+rect(slide, left=0, top=0, width=13.333, height=7.5, fill="background")
+page_header(slide, "Quarterly review", "Code-first PowerPoint")
 text(slide, left=0.7, top=1.5, width=8.5, height=0.5,
      txt="Every important object is created by explicit Python code.",
-     font_size=20, color="text_body", C=C)
+     font_size=20, color="text_body")
 
 prs.save("output/quarterly-review.pptx")
 ```
 
-`C` 是颜色角色字典。传入 `fill="primary"` 或 `color="text_body"` 时，函数会从 `C` 中解析颜色；也可以直接传入 `"#RRGGBB"`。
+主题会解析 `fill="primary"` 或 `color="text_body"` 这类语义角色；也可以直接传入
+`"#RRGGBB"`。`C` 仍兼容，但仅用于刻意的局部覆盖或遗留代码，不应作为新脚本的
+默认主题机制。
 
 ## 3. 公开模块与可靠 API
 
@@ -59,7 +55,7 @@ prs.save("output/quarterly-review.pptx")
 | 导入 | 何时使用 | 关键事实 |
 |---|---|---|
 | `from pptx_designer import Presentation, set_presentation_theme, set_slide_theme` | 创建或读取文稿，并应用 Build Mode 主题继承 | `Presentation(template_path=None, theme=None)` 默认使用 16:9；主题只在当前 presentation/slide 生效。 |
-| `from pptx_designer import generate_ppt` | 快速生成完整 deck | 可传 `query` 或结构化 `content`；二者都是 FreeStyle 输入，不是 Build Mode。可传已解析 `theme` 锁定视觉结果。 |
+| `from pptx_designer import generate_ppt, validate_resolved_theme` | 快速生成完整 deck 或在跨进程传递前校验 Theme Lock | `generate_ppt` 可传 `query` 或结构化 `content`；二者都是 FreeStyle 输入，不是 Build Mode。Theme Lock 必须是完整 resolved theme，`validate_resolved_theme` 会在渲染前发现无效值。 |
 | `from pptx_designer import svg_chart` | 将静态 SVG 编译为原生对象 | 推荐 SVG 公共入口；必须检查返回的 `warnings` 和 `errors`。 |
 | `from pptx_designer.renderer.theme import ThemeComposer` | 需要主题数据 | 正式交付应显式指定 palette/fonts 等，避免依赖未固定的默认选择。 |
 
@@ -91,7 +87,7 @@ from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import text
 
 theme = ThemeComposer().compose(style="warm-elegant", seed=17)
-prs = Presentation(theme=theme)
+prs = Presentation(theme=theme, strict_theme=True)
 slide = prs.slides.add_slide(prs.slide_layouts[6])
 
 # 现有 helpers 自动继承 background / font_body 等；显式参数仍可局部覆盖。

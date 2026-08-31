@@ -1,6 +1,6 @@
 # 快速开始
 
-> 适用版本：`1.0.0b9`；要求 Python 3.10+。
+> 适用版本：`1.0.0b10`；要求 Python 3.10+。
 
 ## 安装
 
@@ -19,20 +19,24 @@ print(result["output_path"])
 
 ## Build 模式
 
-需要逐项控制形状、文字和位置时，直接使用 Build 模式。Build 不会由
+需要逐项控制形状、文字和位置时，直接使用 Build 模式。建议先解析并锁定主题，
+使公共 helper 自动继承颜色和字体；不要为每个 helper 重复传入手写的 `C` 字典。
+Build 不会由
 `content_type` 自动选择页面结构：页面目标、信息层级、内容关系和每个原子的精确
 几何都由调用方明确决定。
 
 ```python
+from pptx_designer import Presentation
+from pptx_designer.renderer.theme import ThemeComposer
 from pptx_designer.tools.shapes import rect
 from pptx_designer.tools.text import text
-from pptx_designer.core.pipeline import Presentation
 
-prs = Presentation()
+theme = ThemeComposer().compose(style="professional", seed=17)
+prs = Presentation(theme=theme, strict_theme=True)
 slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-text(slide, 1, 1, 8, 1, "Hello World", font_size=32, bold=True)
-rect(slide, 1, 2.5, 8, 0.1, fill="#3B82F6")
+text(slide, left=1, top=1, width=8, height=1, txt="Hello World", font_size=32, bold=True)
+rect(slide, left=1, top=2.5, width=8, height=0.1, fill="primary")
 
 prs.save("output/hello.pptx")
 ```

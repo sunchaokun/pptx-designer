@@ -23,7 +23,7 @@ jobs:
       - run: python -m pip install --force-reinstall dist/*.whl
       - run: >-
           python -c "import importlib.metadata as metadata, pathlib, pptx_designer;
-          assert metadata.version('pptx-designer') == '1.0.0b9';
+          assert metadata.version('pptx-designer') == '1.0.0b10';
           assert 'site-packages' in pathlib.Path(pptx_designer.__file__).parts;
           print(metadata.version('pptx-designer'), pptx_designer.__file__)"
       - uses: pypa/gh-action-pypi-publish@release/v1

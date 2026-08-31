@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0b10 - 2026-08-31
+
+### Documentation
+
+- Replaced the Quick Start's legacy hand-written `C` palette example with the
+  recommended resolved-theme workflow: `ThemeComposer.compose()` followed by
+  `Presentation(theme=..., strict_theme=True)`. The same correction is applied
+  to the Chinese getting-started guide.
+
 ## 1.0.0b9 - 2026-08-31
 
 ### Theme and VI reliability

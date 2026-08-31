@@ -56,36 +56,37 @@ pip install pptx-designer[ai-images]   # AI image generation (OpenAI, etc.)
 
 ## Quick Start
 
-### A code-first slide
+### A theme-locked code-first slide
 
-When an AI coding assistant generates PPT code, it produces:
+Resolve a theme once, then attach it to the presentation. Build helpers inherit
+the theme's colors and typography, so the deck is reproducible without passing
+an ad-hoc `C` dictionary to every call:
 
 ```python
 from pptx_designer.tools.shapes import rect
-from pptx_designer.tools.text import text, multiline
 from pptx_designer.tools.cards import kpi_card
 from pptx_designer.tools.layout import page_header
-from pptx_designer.tools.images import cover_image
-from pptx_designer.core.pipeline import Presentation
+from pptx_designer import Presentation
+from pptx_designer.renderer.theme import ThemeComposer
 
-C = {
-    "primary": "#1D78FA",
-    "accent": "#FF6B35",
-    "text_dark": "#1A1A1A",
-    "text_body": "#4A4A4A",
-    "background": "#FFFFFF",
-}
-
-prs = Presentation()
+theme = ThemeComposer().compose(style="professional", seed=17)
+prs = Presentation(theme=theme, strict_theme=True)
 slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-page_header(slide, "Q4 Revenue Report", "Financial Summary", C=C)
-kpi_card(slide, 1.0, 2.0, 3.5, 1.5, "$12.8M", "Revenue", "+23%", C=C)
-kpi_card(slide, 5.0, 2.0, 3.5, 1.5, "89%", "Retention", "+5pp", C=C)
-rect(slide, 0.5, 6.8, 12.3, 0.08, fill=C["primary"])
+page_header(slide, "Q4 Revenue Report", "Financial Summary")
+kpi_card(slide, left=1.0, top=2.0, width=3.5, height=1.5,
+         number="$12.8M", label="Revenue", trend="+23%")
+kpi_card(slide, left=5.0, top=2.0, width=3.5, height=1.5,
+         number="89%", label="Retention", trend="+5pp")
+rect(slide, left=0.5, top=6.8, width=12.3, height=0.08, fill="primary")
 
 prs.save("output/q4_report.pptx")
 ```
+
+`ThemeComposer.compose()` returns a complete resolved theme. Do not pass a
+partial Theme Lock to FreeStyle `generate_ppt()`; it is rejected with a clear
+`ValueError`. Explicit `C`, color, and font parameters are still available for
+intentional per-element overrides.
 
 ### A generated deck from structured content
 
@@ -262,7 +263,7 @@ This creates a practical feedback loop: a user can edit a title or value in Powe
 
 ### 1. Explicit function signatures
 
-```python
+```text
 def rect(slide, left, top, width, height, fill, line=None, C=None) -> Shape
 def text(slide, left, top, width, height, txt, font_size=12, color="text_body", bold=False, ...) -> Shape
 def kpi_card(slide, left, top, width, height, number, label, trend="", trend_up=True, C=None, ...) -> list[Shape]
@@ -306,9 +307,12 @@ You are a PPT generation expert using pptx-designer.
 
 Rules:
 1. Use only documented public `pptx_designer` imports; do not invent helpers or private modules.
-2. Create a `Presentation()`, add a blank slide, and save the result with `prs.save(path)`.
+2. Resolve a theme with `ThemeComposer.compose()` for production work, create a
+   `Presentation(theme=theme, strict_theme=True)`, add a blank slide, and save
+   the result with `prs.save(path)`.
 3. Use named arguments for positions and dimensions. Coordinates are inches.
-4. Keep colours in a `C` dictionary or select an explicit theme.
+4. Prefer a resolved theme; use `C` only for an intentional local override or
+   legacy code.
 5. Prefer native shapes, text, charts, and diagrams. Check `SVGResult.warnings` after compiling SVG.
 6. Generate a runnable Python file and do not claim the PPT is correct until it has been opened or rendered for review.
 
