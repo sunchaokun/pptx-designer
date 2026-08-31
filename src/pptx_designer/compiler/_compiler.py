@@ -1116,7 +1116,7 @@ class SVGCompiler:
         # Freeform path
         fill_hex = _resolve_svg_color(fval, self.C, "") if fkind == "solid" else None
         stroke_hex = _resolve_svg_color(sval, self.C, "") if skind == "solid" else None
-        elem = self._add_freeform(local, ix0, iy0, iw, ih, fill_hex or "#FFFFFF", fa, stroke_hex, sw)
+        elem = self._add_freeform(local, ix0, iy0, iw, ih, fill_hex, fa, stroke_hex, sw)
         if stroke_style and elem is not None:
             apply_stroke_style(elem, stroke_style)
         if fkind == "grad":
@@ -1230,7 +1230,10 @@ class SVGCompiler:
                     fb.line_to(cmd.x, cmd.y)
                 else:
                     fb.cubic_bezier_to(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x3, cmd.y3)
-            fb.close()
+            # Preserve open SVG paths. Closing a two-point line creates a
+            # zero-area polygon that PowerPoint/LibreOffice may drop.
+            if len(sub) >= 3:
+                fb.close()
         elem = fb.build(
             self._slide,
             ix0,

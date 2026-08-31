@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.0b11 - 2026-08-31
+
+### SVG rendering
+
+- Fixed open SVG paths being forcibly closed during native PPTX compilation,
+  which could cause lines and connectors to disappear in PowerPoint or
+  LibreOffice rendering.
+- Fixed `fill="none"` paths being assigned an unintended white fill.
+- Added the approved SVG compiler upgrade plan for native rendering and
+  controlled raster fallback.
+
 ## 1.0.0b10 - 2026-08-31
 
 ### Documentation
