@@ -50,11 +50,20 @@ class TemplateAnalyzer:
         form combines it with direct per-slide evidence from the template.
         """
         from pptx_designer.enterprise.design_dna_extractor import extract_design_context
-        from pptx_designer.enterprise.vi_context import design_context_from_brand_spec, merge_design_context
+        from pptx_designer.enterprise.vi_context import (
+            design_context_from_brand_spec,
+            merge_design_context,
+            merge_vi_design_context,
+        )
 
         brand_spec = self.analyze(template_path)
         extracted = extract_design_context(template_path)
-        context = merge_design_context(design_context_from_brand_spec(brand_spec), extracted)
+        # Preserve the established brand-as-fallback behavior first. The
+        # protected VI merge then makes the extracted template context the
+        # policy anchor for all template locks without allowing normalized
+        # empty defaults from the brand adapter to erase template evidence.
+        combined = merge_design_context(design_context_from_brand_spec(brand_spec), extracted)
+        context = merge_vi_design_context(extracted, combined)
         context["source"]["kind"] = "merged"
         context["source"]["brand_source"] = brand_spec.source
         return context

@@ -1,6 +1,6 @@
 # LLM 编写手册：使用 pptx-designer 生成可编辑 PPTX
 
-> 适用版本：`1.0.0b8`。
+> 适用版本：`1.0.0b9`。
 > 目标读者：生成、审查或修改 `pptx-designer` Python 代码的 LLM 与开发者。
 > 本文是用户文档与训练/上下文材料；只描述当前公开且已验证的 API。
 
@@ -146,6 +146,11 @@ slide = render_build_spec(spec, prs, context={})
 4. `VITemplateAdapter.compile_atomic()` 仅解析 visual token/fixed base 并校验安全区、禁区和最小字号；
 5. 用 `VIBuildDelivery` 交付：它按原始 slide identity 移除模板源页，并检查页面来源、样例文本泄漏与框架文本契约；
 6. 仅当 Structural QA 为 `pass` 后，执行 PPTX → PowerPoint PDF → PNG 的逐页视觉审查。
+
+若要把品牌、resolved theme 或页面上下文叠加到模板证据，必须调用
+`merge_vi_design_context(template_context, *overrides)`，不能使用兼容性的
+`merge_design_context()`。前者会保留模板锁定字段并输出
+`diagnostics.conflicts`；后者仍是“后者覆盖前者”的通用合并。
 
 固定视觉层不是整页克隆：只有经审核的 `reference_slide` 和
 `fixed_shape_indices` 同时存在时才可复制。Structural QA 会检查原子内容页是否包含

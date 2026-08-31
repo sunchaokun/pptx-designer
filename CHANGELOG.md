@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0b9 - 2026-08-31
+
+### Theme and VI reliability
+
+- FreeStyle now validates supplied resolved themes before rendering, including
+  semantic-role and palette color values, typography, atoms, and provenance.
+- Passing `theme=` alongside theme-discovery arguments now emits a `UserWarning`
+  and records the ignored arguments in the rendering diagnostics.
+- Added protected `merge_vi_design_context()` and migrated template analysis,
+  documentation, and the enterprise example to preserve template locks and
+  report rejected context overrides.
+- Added `Presentation(strict_theme=True)` for callers that require a complete
+  resolved theme instead of a partial Build/VI context.
+
+### Release verification
+
+- CI and release jobs now install the built wheel and verify both the package
+  version and its `site-packages` import path before release.
+
 ## 1.0.0b8 - 2026-08-31
 
 ### Build and VI

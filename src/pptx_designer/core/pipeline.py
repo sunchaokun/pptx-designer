@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import os
+import warnings
 from collections.abc import Mapping
 from typing import Any
 
@@ -23,7 +24,10 @@ from pptx import Presentation as _PptxPresentation
 
 
 def Presentation(
-    template_path: str | None = None, theme: Mapping[str, Any] | None = None
+    template_path: str | None = None,
+    theme: Mapping[str, Any] | None = None,
+    *,
+    strict_theme: bool = False,
 ) -> _PptxPresentation:
     """Create a Presentation with pptx-designer defaults.
 
@@ -32,6 +36,8 @@ def Presentation(
     Args:
         template_path: Optional path to a .pptx template file.
         theme: Optional resolved theme inherited by Build Mode helpers.
+        strict_theme: Require ``theme`` to be a complete resolved FreeStyle
+            theme. Leave false for partial VI/template design contexts.
 
     Returns:
         A python-pptx Presentation object.
@@ -41,6 +47,10 @@ def Presentation(
     prs.slide_width = 12192000  # 13.333 inches
     prs.slide_height = 6858000  # 7.5 inches
     if theme is not None:
+        if strict_theme:
+            from pptx_designer.renderer.theme import validate_resolved_theme
+
+            validate_resolved_theme(theme)
         from pptx_designer.renderer.theme_context import set_presentation_theme
 
         set_presentation_theme(prs, theme)
@@ -59,7 +69,7 @@ def generate_ppt(
     layout_variant: str | None = None,
     mood: str | None = None,
     style_seed: int | None = None,
-    theme: dict[str, Any] | None = None,
+    theme: Mapping[str, Any] | None = None,
     template: str | None = None,
     output: str = "output.pptx",
     slides: int | None = None,
@@ -91,7 +101,35 @@ def generate_ppt(
         Dictionary with keys: output_path, slide_count, shapes_count, and
         traceable resolved-theme information.
     """
-    from pptx_designer.renderer.theme import ThemeComposer
+    from pptx_designer.renderer.theme import ThemeComposer, validate_resolved_theme
+
+    # A supplied theme is a locked, complete FreeStyle result. Validate it
+    # before planning so a Theme Lock cannot fail later with an unrelated
+    # renderer KeyError.
+    if theme is not None:
+        validate_resolved_theme(theme)
+
+    ignored_arguments = {
+        field: value
+        for field, value in {
+            "style": style,
+            "palette": palette,
+            "fonts": fonts,
+            "decoration": decoration,
+            "layout": layout,
+            "layout_variant": layout_variant,
+            "mood": mood,
+            "style_seed": style_seed,
+        }.items()
+        if value is not None
+    }
+    if theme is not None and ignored_arguments:
+        ignored_names = ", ".join(ignored_arguments)
+        warnings.warn(
+            f"theme= was supplied, so these theme-discovery arguments were ignored: {ignored_names}",
+            UserWarning,
+            stacklevel=2,
+        )
 
     # ── Step 1: Get pages ──────────────────────────────────────────
     layout = layout or layout_variant
@@ -184,6 +222,7 @@ def generate_ppt(
             ],
             "fallbacks": theme.get("source", {}).get("fallbacks", []),
             "warnings": theme.get("source", {}).get("warnings", []),
+            "ignored_arguments": ignored_arguments if theme is not None else {},
         },
     }
 

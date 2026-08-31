@@ -53,7 +53,7 @@ _DEFAULT_CONTEXT: dict[str, Any] = {
     "media_slots": [],
     "locks": [],
     "acceptance": {"must_coverage": [], "thresholds": {}},
-    "diagnostics": {"warnings": [], "unknown_fields": []},
+    "diagnostics": {"warnings": [], "unknown_fields": [], "conflicts": [], "incomplete_theme_context": []},
 }
 
 
@@ -82,6 +82,14 @@ def normalize_design_context(context: Mapping[str, Any] | None = None) -> dict[s
     unknown = sorted(key for key in raw if key not in known_keys)
     diagnostics = normalized["diagnostics"]
     diagnostics["unknown_fields"] = sorted(set(diagnostics.get("unknown_fields", [])) | set(unknown))
+    # A mapping that declares itself as a theme should not silently look like a
+    # complete FreeStyle theme after defaults have been added. Template and VI
+    # contexts remain intentionally partial.
+    raw_source = raw.get("source")
+    is_declared_theme = isinstance(raw_source, Mapping) and raw_source.get("kind") == "theme"
+    if is_declared_theme or "name" in raw or "atoms" in raw:
+        required = {"name", "atoms", "colors", "semantic_roles", "typography", "source"}
+        diagnostics["incomplete_theme_context"] = sorted(required - set(raw))
     return normalized
 
 
@@ -105,6 +113,121 @@ def merge_design_context(*contexts: Mapping[str, Any] | None) -> dict[str, Any]:
         if context is not None:
             merged = _merge_context_values(merged, context)
     return normalize_design_context(merged)
+
+
+def _template_lock_fields(context: Mapping[str, Any]) -> list[str]:
+    return [
+        str(lock["field"])
+        for lock in context.get("locks", [])
+        if isinstance(lock, Mapping) and lock.get("field") and lock.get("mode") == "template-locked"
+    ]
+
+
+def _locked_path(path: str, lock_fields: Sequence[str]) -> str | None:
+    """Return the lock affecting *path*, including locked parent paths."""
+    for field in lock_fields:
+        if path == field or path.startswith(f"{field}."):
+            return field
+    return None
+
+
+def _locked_descendant(path: str, lock_fields: Sequence[str]) -> str | None:
+    """Return a descendant lock that would be erased by replacing *path*."""
+    prefix = f"{path}."
+    return next((field for field in lock_fields if field.startswith(prefix)), None)
+
+
+def _merge_vi_context_values(
+    base: Any,
+    override: Any,
+    *,
+    path: str,
+    lock_fields: Sequence[str],
+    conflicts: list[dict[str, Any]],
+) -> Any:
+    locked_by = _locked_path(path, lock_fields) if path else None
+    if locked_by:
+        if base != override:
+            conflicts.append(
+                {
+                    "path": path,
+                    "locked_by": locked_by,
+                    "base_value": deepcopy(base),
+                    "attempted_value": deepcopy(override),
+                    "action": "rejected",
+                }
+            )
+        return deepcopy(base)
+    descendant_lock = _locked_descendant(path, lock_fields) if path else None
+    if descendant_lock and not (isinstance(base, Mapping) and isinstance(override, Mapping)):
+        if base != override:
+            conflicts.append(
+                {
+                    "path": path,
+                    "locked_by": descendant_lock,
+                    "base_value": deepcopy(base),
+                    "attempted_value": deepcopy(override),
+                    "action": "rejected_to_preserve_locked_descendant",
+                }
+            )
+        return deepcopy(base)
+    if isinstance(base, Mapping) and isinstance(override, Mapping):
+        merged = deepcopy(dict(base))
+        for key, value in override.items():
+            child_path = f"{path}.{key}" if path else str(key)
+            merged[key] = _merge_vi_context_values(
+                merged.get(key), value, path=child_path, lock_fields=lock_fields, conflicts=conflicts
+            )
+        return merged
+    return deepcopy(override)
+
+
+def _preserve_template_locks(
+    template: Mapping[str, Any], overrides: Sequence[Mapping[str, Any] | None]
+) -> list[Any]:
+    """Union lock declarations while keeping the template declaration authoritative."""
+    result = deepcopy(list(template.get("locks", [])))
+    known_fields = {
+        str(lock.get("field"))
+        for lock in result
+        if isinstance(lock, Mapping) and lock.get("field")
+    }
+    for context in overrides:
+        if context is None:
+            continue
+        for lock in context.get("locks", []):
+            if not isinstance(lock, Mapping) or not lock.get("field"):
+                continue
+            field = str(lock["field"])
+            if field not in known_fields:
+                result.append(deepcopy(lock))
+                known_fields.add(field)
+    return result
+
+
+def merge_vi_design_context(
+    template_context: Mapping[str, Any], *overrides: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """Merge VI contexts without allowing later inputs to alter template locks.
+
+    Unlike :func:`merge_design_context`, this is the policy boundary for
+    template/brand/theme/page composition. Later contexts still win for
+    unlocked values; rejected writes are retained as serializable diagnostics.
+    """
+    lock_fields = _template_lock_fields(template_context)
+    conflicts: list[dict[str, Any]] = []
+    merged: Any = deepcopy(dict(template_context))
+    for override in overrides:
+        if override is None:
+            continue
+        values = {key: value for key, value in override.items() if key != "locks"}
+        merged = _merge_vi_context_values(
+            merged, values, path="", lock_fields=lock_fields, conflicts=conflicts
+        )
+    merged["locks"] = _preserve_template_locks(template_context, overrides)
+    normalized = normalize_design_context(merged)
+    normalized["diagnostics"]["conflicts"] = conflicts
+    return normalized
 
 
 def validate_variant_sequence(plans: Sequence[Mapping[str, Any]]) -> list[str]:
@@ -726,6 +849,7 @@ __all__ = [
     "VIBuildSession",
     "design_context_from_brand_spec",
     "merge_design_context",
+    "merge_vi_design_context",
     "normalize_design_context",
     "validate_variant_sequence",
 ]

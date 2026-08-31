@@ -1,6 +1,6 @@
 # API 参考
 
-> 适用版本：`1.0.0b8`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
+> 适用版本：`1.0.0b9`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 
@@ -22,7 +22,7 @@ result = generate_ppt(
     layout: str | None = None,     # Layout variant
     mood: str | None = None,       # Mood category
     style_seed: int | None = None, # Local theme-selection seed
-    theme: dict | None = None,     # Previously resolved locked theme
+    theme: dict | None = None,     # Complete ThemeComposer-resolved theme
     slides: int | None = None,     # Number of slides for query mode
     output: str = "output.pptx",  # Output file path
 ) -> dict:
@@ -30,8 +30,16 @@ result = generate_ppt(
 ```
 
 `query` and `content` are FreeStyle inputs; `content` is a structured page
-plan, not Build Mode.  Passing a previously resolved `theme` prevents a second
-theme-discovery step and supports reproducible delivery generation.
+plan, not Build Mode. Passing a previously resolved `theme` prevents a second
+theme-discovery step and supports reproducible delivery generation. The value
+must be a complete result from `ThemeComposer.compose()`; partial template/VI
+contexts are rejected with `ValueError`. When `theme` is supplied, `style`,
+`palette`, `fonts`, `decoration`, `layout`, `layout_variant`, `mood`, and
+`style_seed` are ignored and reported through `UserWarning` plus
+`theme_application.ignored_arguments`.
+
+Use `validate_resolved_theme(theme)` to validate a Theme Lock before passing it
+across process or storage boundaries.
 
 ### `Presentation`, `set_presentation_theme`, and `set_slide_theme`
 
@@ -43,7 +51,7 @@ from pptx_designer import Presentation, set_presentation_theme, set_slide_theme
 from pptx_designer.renderer.theme import ThemeComposer
 
 theme = ThemeComposer().compose(style="warm-elegant", seed=17)
-prs = Presentation(theme=theme)
+prs = Presentation(theme=theme, strict_theme=True)
 slide = prs.slides.add_slide(prs.slide_layouts[6])
 
 # Optional slide-only override. Explicit helper and element values still win.
@@ -53,6 +61,10 @@ set_slide_theme(slide, ThemeComposer().compose(style="dark-tech", seed=17))
 Presentation-level inheritance is scoped to that presentation. Existing calls
 with explicit `C`, `typo`, `font_name`, and colors remain compatible and have
 higher priority than inherited defaults.
+
+`strict_theme=False` is the default so partial template/VI design contexts
+remain valid for Build Mode. Set `strict_theme=True` when the `theme` argument
+is intended to be a complete FreeStyle Theme Lock.
 
 ### `render_build_spec`
 
@@ -128,7 +140,7 @@ unknown text boxes as writable slots. It is visual evidence, not a content
 planner.
 
 ```python
-from pptx_designer import Presentation, extract_design_context
+from pptx_designer import Presentation, extract_design_context, merge_vi_design_context
 from pptx_designer.enterprise import VIBuildDelivery, VITemplateAdapter
 
 context = extract_design_context("template.pptx")
@@ -166,6 +178,12 @@ delivery.add(adapter.compile_atomic(
 report = delivery.finalize("output.pptx", sample_texts=["template placeholder"])
 assert report.status == "pass"
 ```
+
+When adding a brand, resolved theme, or page-level context to template evidence,
+use `merge_vi_design_context(template_context, *overrides)`, not the generic
+`merge_design_context()`. The VI entry preserves template-locked paths and
+reports rejected writes in `diagnostics.conflicts`; the generic merge remains
+last-writer-wins for compatibility.
 
 `compile(page_role="content")` and `VIBuildSession` archetype planning do not
 create production content pages. Use `compile_atomic()` only. `VIBuildDelivery`

@@ -43,6 +43,12 @@ jobs:
           python-version: "3.12"
       - run: pip install build
       - run: python -m build
+      - run: python -m pip install --force-reinstall dist/*.whl
+      - run: >-
+          python -c "import importlib.metadata as metadata, pathlib, pptx_designer;
+          assert metadata.version('pptx-designer') == '1.0.0b9';
+          assert 'site-packages' in pathlib.Path(pptx_designer.__file__).parts;
+          print(metadata.version('pptx-designer'), pptx_designer.__file__)"
       - uses: actions/upload-artifact@v4
         with:
           name: dist

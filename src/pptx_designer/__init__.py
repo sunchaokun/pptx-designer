@@ -42,7 +42,7 @@ For more information, see: https://github.com/sunchaokun/pptx-designer
 
 from __future__ import annotations
 
-__version__ = "1.0.0b8"
+__version__ = "1.0.0b9"
 
 from pptx_designer.ai import fetch_image
 from pptx_designer.core.pipeline import Presentation, generate_ppt
@@ -52,9 +52,10 @@ from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
     merge_design_context,
+    merge_vi_design_context,
     normalize_design_context,
 )
-from pptx_designer.renderer.theme import recommend_styles
+from pptx_designer.renderer.theme import recommend_styles, validate_resolved_theme
 from pptx_designer.renderer.theme_context import set_presentation_theme, set_slide_theme
 from pptx_designer.tools.svg import svg_chart
 
@@ -71,8 +72,10 @@ __all__ = [
     "VIBuildSession",
     "design_context_from_brand_spec",
     "merge_design_context",
+    "merge_vi_design_context",
     "normalize_design_context",
     "recommend_styles",
+    "validate_resolved_theme",
     "set_presentation_theme",
     "set_slide_theme",
     "svg_chart",

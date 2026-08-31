@@ -29,6 +29,7 @@ from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
     merge_design_context,
+    merge_vi_design_context,
     normalize_design_context,
     validate_variant_sequence,
 )
@@ -67,6 +68,7 @@ __all__ = [
     "VIBuildSession",
     "design_context_from_brand_spec",
     "merge_design_context",
+    "merge_vi_design_context",
     "normalize_design_context",
     "validate_variant_sequence",
     "VITemplateAdapter",

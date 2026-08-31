@@ -21,6 +21,8 @@ Usage:
 from __future__ import annotations
 
 import random
+import re
+from collections.abc import Mapping
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
@@ -43,6 +45,166 @@ def _package_version() -> str:
         return version("pptx-designer")
     except PackageNotFoundError:
         return "unknown"
+
+
+_RESOLVED_THEME_FIELDS = {
+    "name": str,
+    "atoms": Mapping,
+    "colors": Mapping,
+    "semantic_roles": Mapping,
+    "typography": Mapping,
+    "decoration": Mapping,
+    "layout_variant": Mapping,
+    "source": Mapping,
+}
+_HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}\Z")
+
+
+def _is_hex_color(value: Any) -> bool:
+    return isinstance(value, str) and bool(_HEX_COLOR.fullmatch(value))
+
+
+def validate_resolved_theme(theme: Mapping[str, Any]) -> None:
+    """Validate the complete theme contract consumed by FreeStyle rendering.
+
+    ``ThemeComposer.compose()`` returns this contract.  Template and VI design
+    contexts are deliberately *not* validated here: they may be partial and
+    belong to Build Mode rather than the FreeStyle renderer.
+
+    Raises:
+        ValueError: If *theme* is not a complete resolved theme.
+    """
+    if not isinstance(theme, Mapping):
+        raise ValueError("theme must be a resolved theme mapping from ThemeComposer.compose()")
+
+    missing = sorted(field for field in _RESOLVED_THEME_FIELDS if field not in theme)
+    invalid = sorted(
+        field
+        for field, expected_type in _RESOLVED_THEME_FIELDS.items()
+        if field in theme
+        and (
+            not isinstance(theme[field], expected_type)
+            or (expected_type is str and not theme[field].strip())
+        )
+    )
+    atoms = theme.get("atoms")
+    if isinstance(atoms, Mapping):
+        missing_atoms = sorted(
+            field for field in ("palette", "fonts", "decoration", "layout", "moods") if field not in atoms
+        )
+    else:
+        missing_atoms = []
+    invalid_atoms = []
+    if isinstance(atoms, Mapping):
+        invalid_atoms = [
+            field
+            for field in ("palette", "fonts", "decoration", "layout")
+            if field in atoms and (not isinstance(atoms[field], str) or not atoms[field].strip())
+        ]
+        if "moods" in atoms and (
+            not isinstance(atoms["moods"], list)
+            or not atoms["moods"]
+            or any(not isinstance(mood, str) or not mood.strip() for mood in atoms["moods"])
+        ):
+            invalid_atoms.append("moods")
+
+    roles = theme.get("semantic_roles")
+    if isinstance(roles, Mapping):
+        missing_roles = sorted(
+            field
+            for field in (
+                "background",
+                "surface",
+                "ink",
+                "muted",
+                "accent",
+                "accent-secondary",
+                "success",
+                "warning",
+                "danger",
+                "border",
+                "data-series-1",
+                "data-series-2",
+            )
+            if field not in roles
+        )
+    else:
+        missing_roles = []
+    invalid_roles = []
+    if isinstance(roles, Mapping):
+        invalid_roles = [field for field, value in roles.items() if not _is_hex_color(value)]
+
+    typography = theme.get("typography")
+    if isinstance(typography, Mapping):
+        missing_typography = sorted(field for field in ("heading", "body") if field not in typography)
+    else:
+        missing_typography = []
+    invalid_typography = []
+    if isinstance(typography, Mapping):
+        invalid_typography = [
+            field
+            for field in ("heading", "body")
+            if field in typography and (not isinstance(typography[field], str) or not typography[field].strip())
+        ]
+
+    colors = theme.get("colors")
+    invalid_colors = []
+    if isinstance(colors, Mapping):
+        if not colors:
+            invalid_colors.append("<empty>")
+        invalid_colors.extend(field for field, value in colors.items() if not _is_hex_color(value))
+
+    source = theme.get("source")
+    if isinstance(source, Mapping):
+        missing_source = sorted(field for field in ("requested", "resolved") if field not in source)
+        invalid_source = sorted(
+            field
+            for field in ("requested", "resolved")
+            if field in source and not isinstance(source[field], Mapping)
+        )
+    else:
+        missing_source = []
+        invalid_source = []
+
+    if (
+        missing
+        or invalid
+        or missing_atoms
+        or invalid_atoms
+        or missing_roles
+        or invalid_roles
+        or missing_typography
+        or invalid_typography
+        or invalid_colors
+        or missing_source
+        or invalid_source
+    ):
+        details: list[str] = []
+        if missing:
+            details.append("missing fields: " + ", ".join(missing))
+        if invalid:
+            details.append("invalid fields: " + ", ".join(invalid))
+        if missing_atoms:
+            details.append("missing atoms: " + ", ".join(missing_atoms))
+        if invalid_atoms:
+            details.append("invalid atoms: " + ", ".join(invalid_atoms))
+        if missing_roles:
+            details.append("missing semantic roles: " + ", ".join(missing_roles))
+        if invalid_roles:
+            details.append("invalid semantic role colors: " + ", ".join(sorted(invalid_roles)))
+        if missing_typography:
+            details.append("missing typography fields: " + ", ".join(missing_typography))
+        if invalid_typography:
+            details.append("invalid typography fields: " + ", ".join(invalid_typography))
+        if invalid_colors:
+            details.append("invalid colors: " + ", ".join(sorted(invalid_colors)))
+        if missing_source:
+            details.append("missing source fields: " + ", ".join(missing_source))
+        if invalid_source:
+            details.append("invalid source fields: " + ", ".join(invalid_source))
+        raise ValueError(
+            "theme must be a complete resolved theme from ThemeComposer.compose(); " + "; ".join(details)
+        )
 
 # ============================================================
 # COLOR PALETTES — 25 curated palettes
