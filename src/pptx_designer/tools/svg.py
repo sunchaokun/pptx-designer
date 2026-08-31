@@ -15,6 +15,7 @@ import logging
 from typing import Any
 
 from pptx_designer.compiler import SVGCompileError, SVGCompiler, SVGResult
+from pptx_designer.renderer.theme_context import resolve_color_context
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,10 @@ def svg_chart(
     if not svg_text or not svg_text.strip():
         return SVGResult(shape_count=0, warnings=["empty svg_text"])
 
-    compiler = SVGCompiler(C=C or {}, text_style=text_style, group_opacity=group_opacity, layout=layout)
+    # SVG is a public Build Mode helper too: inherit the nearest slide or
+    # presentation theme, while allowing an explicit partial C override.
+    color_context = resolve_color_context(slide, C)
+    compiler = SVGCompiler(C=color_context, text_style=text_style, group_opacity=group_opacity, layout=layout)
     try:
         result = compiler.compile(svg_text, slide, (x, y, w, h))
     except SVGCompileError:

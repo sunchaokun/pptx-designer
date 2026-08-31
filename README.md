@@ -148,6 +148,26 @@ composition, rather than promising a visual rearrangement they do not yet make.
 
 All presentations are built using **composable atoms** — simple, predictable functions that create shapes, text, images, and charts.
 
+### Exact-composition contract
+
+Build Mode is not a fixed-layout generator. The author (or Build Planner)
+decides the page goal, information hierarchy, content relationships, and the
+exact composition. Every atom has explicit bounds; its recipe may also set
+font, fill, line, data, and `z_index`. The renderer executes those instructions
+as editable PowerPoint objects instead of selecting a layout from a content
+type.
+
+For a reusable component, a `BuildSpec` references `component_id`. For
+atomic production work, it carries an inline `recipe`; that inline recipe takes
+priority and preserves the authored geometry. A resolved theme can be attached
+to the presentation or one slide, so public helpers inherit colors and fonts;
+explicit helper values still override the inherited context.
+
+When building against a VI template, this remains true: Build owns content
+composition; the VI adapter only supplies visual grammar, tokens, reviewed
+fixed layers, capacity, and safe/forbidden-zone constraints. It never chooses
+a content archetype from `content_type` or `variant_id`.
+
 ### Shapes
 
 ```python

@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.0.0b8 - 2026-08-31
+
+### Build and VI
+
+- BuildSpec now executes Build-authored inline recipes with exact geometry,
+  typography, data, and z-order; presentation and slide themes are inherited by
+  public Build helpers while explicit values keep priority.
+- Content-page composition is Build-owned. The VI adapter now validates visual
+  grammar, fixed layers, capacity, and safety constraints through the atomic
+  content contract instead of selecting a template archetype.
+- Added delivery isolation and Structural QA checks for content relationships,
+  provenance, template-text leaks, and reviewed fixed-base copying.
+
+### Rendering, tests, and documentation
+
+- Extended professional rendering, diagram/theme coverage, and SVG handling for
+  namespace-free gradient and clipping definitions.
+- Added atomic BuildSpec, VI boundary, delivery, QA, and theme-inheritance
+  regression coverage; refreshed the README, API reference, quick start, and
+  LLM authoring guidance.
+
 ## 1.0.0b7 - 2026-08-30
 
 - 修复 SVG 文字角色字号、颜色、嵌套 transform 布局校验和透明度处理。

@@ -1,6 +1,6 @@
 # API 参考
 
-> 适用版本：`1.0.0b7`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
+> 适用版本：`1.0.0b8`。此页仅列出稳定且已存在的公共入口；具体 SVG 支持范围见 [SVG 编译器指南](svg-guide.md)。
 
 ## Top-Level Functions
 
@@ -54,6 +54,41 @@ Presentation-level inheritance is scoped to that presentation. Existing calls
 with explicit `C`, `typo`, `font_name`, and colors remain compatible and have
 higher priority than inherited defaults.
 
+### `render_build_spec`
+
+`render_build_spec()` is the Build Core executor for a prepared component
+`BuildSpec`. It does not infer page structure. A component can reference a
+reusable `component_id`, or carry an inline `recipe`; the inline recipe is used
+when present, so Build can keep exact bounds, font choices, data, and z-order.
+
+```python
+from pptx_designer import Presentation
+from pptx_designer.core import render_build_spec
+
+prs = Presentation()
+spec = {
+    "kind": "BuildSpec",
+    "render_strategy": "components",
+    "components": [{
+        "atom_id": "headline",
+        "z_index": 10,
+        "recipe": {
+            "kind": "text",
+            "bounds": {"left": 0.8, "top": 0.8, "width": 8.0, "height": 0.7},
+            "font_name": "Aptos Display", "font_size": 30, "bold": True,
+            "color": "text_dark",
+        },
+        "data": "Build-owned composition",
+    }],
+}
+slide = render_build_spec(spec, prs, context={})
+```
+
+The executor creates editable native objects in ascending `z_index` order. If
+`fixed_base` is present, copying template artwork requires an explicitly
+reviewed `reference_slide` and `fixed_shape_indices`; Build Core does not clone
+an entire template slide implicitly.
+
 ### `fetch_image`
 
 Generate or search for an image.
@@ -83,52 +118,61 @@ from pptx_designer import extract_design_dna
 dna = extract_design_dna(pptx_path: str) -> dict
 ```
 
-### `extract_design_context` and `VIBuildSession`
+### Production VI Build: `extract_design_context`, `VITemplateAdapter`, and `VIBuildDelivery`
 
 VI Build uses the same versioned design-context dictionary as Build Mode theme
 inheritance. `extract_design_context()` provides deterministic evidence from a
 16:9 template: direct colors, fonts, image references, photo/color-panel
-components, slide archetypes, and a template fingerprint. It does not guess
-unknown text boxes as writable slots.
+components, fixed visual layers, and a template fingerprint. It does not guess
+unknown text boxes as writable slots. It is visual evidence, not a content
+planner.
 
 ```python
-from pptx_designer import Presentation, VIBuildSession, extract_design_context
+from pptx_designer import Presentation, extract_design_context
+from pptx_designer.enterprise import VIBuildDelivery, VITemplateAdapter
 
 context = extract_design_context("template.pptx")
-# Add only user-confirmed slots/components before rendering a new page.
+# Confirm framework pages and only the text objects that may be rebound.
+context["framework_pages"] = [{
+    "id": "cover", "role": "cover", "reference_slide": 1,
+    "text_contract": {"strict": True},
+}]
 context["content_slots"] = [{
-    "id": "page_title",
-    "max_chars": 24,
-    "bounds": {"left": 0.7, "top": 1.2, "width": 5.5, "height": 1.0},
-    "font_size": 32,
-    "bold": True,
+    "id": "cover.title", "page_role": "cover",
+    "target": {"shape_index": 3},
+    "text_style": {"font_size": 32},
 }]
 
 prs = Presentation("template.pptx", theme=context)
-session = VIBuildSession(context, assets={"supporting_photo": "botanical.png"})
-result = session.render_page(
-    prs,
-    "slide-1-photo",
-    components=["photo-panel-1-1"],
-    slot_values={"page_title": "Spring collection"},
-)
-if result["status"] != "READY":
-    raise RuntimeError(result["asset_plan"])
-prs.save("output.pptx")
+adapter = VITemplateAdapter(context)
+delivery = VIBuildDelivery(prs, adapter)
+
+# Framework page: rebind only confirmed text.
+delivery.add(adapter.compile(
+    page_role="cover", content={"slots": {"cover.title": "Spring collection"}},
+))
+
+# Content page: Build owns content relations, components and exact geometry.
+delivery.add(adapter.compile_atomic(
+    page_role="content",
+    atomic_build_plan={
+        "content_model": {"relations": [{"id": "journey", "type": "sequence"}]},
+        "atoms": [
+            {"id": "headline", "kind": "text", "geometry": {"left": 0.8, "top": 0.8, "width": 7, "height": 0.7}, "style": {"font_size": 30, "bold": True, "color": "text_dark"}, "data": "A Build-owned page"},
+        ],
+        "relation_bindings": [{"relation_id": "journey", "atom_ids": ["headline"]}],
+    },
+))
+report = delivery.finalize("output.pptx", sample_texts=["template placeholder"])
+assert report.status == "pass"
 ```
 
-Required photo assets are never silently replaced with color blocks:
-`result["status"]` is `NEEDS_ASSET` and no new slide is created. Each result
-contains `design_application`, `asset_plan`, slot bindings, accepted overrides,
-and MUST acceptance evidence. `design_context_from_brand_spec(BrandSpec(...))`
-adapts the legacy enterprise brand object into this same context. Use
-`merge_design_context(extracted_context, reviewed_contract)` to apply a
-confirmed slot/lock contract; later fields override earlier fields. The legacy
-`TemplateAnalyzer().analyze_context(path)` combines BrandSpec and direct
-template evidence into the same representation.
-
-If a photo archetype specifies `image_grammar.min_area_ratio`, insufficient
-media coverage returns `NEEDS_REVISION`; Build does not create the page.
+`compile(page_role="content")` and `VIBuildSession` archetype planning do not
+create production content pages. Use `compile_atomic()` only. `VIBuildDelivery`
+removes the template source slides by identity during `finalize`, checks page
+provenance and template-text leaks, and makes a source page impossible to ship
+by accident. With `text_contract.strict`, every non-empty framework text object
+must be replaced, explicitly cleared, or explicitly preserved.
 
 ### `svg_chart`
 

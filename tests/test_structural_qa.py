@@ -59,3 +59,24 @@ def test_visual_baseline_create_and_compare(tmp_path):
     assert compare(rendered, baseline)["status"] == "pass"
     Image.new("RGBA", (4, 4), "#654321").save(rendered / "slide01.png")
     assert compare(rendered, baseline, threshold=0.1)["status"] == "fail"
+
+
+def test_structural_qa_can_report_text_media_overlap(tmp_path):
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    box = slide.shapes.add_textbox(Inches(2), Inches(1.5), Inches(2), Inches(1))
+    box.text = "Text over image"
+    # A later picture layer can cover the text and must be reported.
+    slide.shapes.add_picture(str(_image(tmp_path, "#123456")), Inches(1), Inches(1), Inches(4), Inches(3))
+    path = tmp_path / "overlap.pptx"
+    prs.save(path)
+
+    report = run_structural_qa(path, check_overlaps=True)
+
+    assert any(issue.kind == "text_media_overlap" for issue in report.warnings)
+
+
+def _image(tmp_path, color):
+    path = tmp_path / f"{color[1:]}.png"
+    Image.new("RGB", (80, 60), color).save(path)
+    return path

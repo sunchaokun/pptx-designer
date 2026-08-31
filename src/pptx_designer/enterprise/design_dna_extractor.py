@@ -216,6 +216,31 @@ def _extract_archetypes(prs: Presentation) -> tuple[list[dict[str, Any]], dict[s
     for slide_index, slide in enumerate(prs.slides):
         pictures = [shape for shape in slide.shapes if shape.shape_type == MSO_SHAPE_TYPE.PICTURE]
         component_ids: list[str] = []
+        slot_candidates: list[dict[str, Any]] = []
+        media_slot_candidates: list[dict[str, Any]] = []
+        for shape_index, shape in enumerate(slide.shapes):
+            zone = _text_zone(shape) if getattr(shape, "has_text_frame", False) else None
+            if zone is None:
+                continue
+            # Extraction supplies evidence, not permission to alter a template
+            # object. A reviewed contract promotes selected candidates into
+            # content_slots before VIBuildSession can bind them.
+            slot_candidates.append(
+                {
+                    "id": f"slide-{slide_index + 1}-text-{shape_index + 1}",
+                    "target": {"shape_index": shape_index},
+                    "original_text": zone.text,
+                    "bounds": {
+                        "left": zone.x,
+                        "top": zone.y,
+                        "width": zone.width,
+                        "height": zone.height,
+                    },
+                    "font_size": zone.font_size,
+                    "font_name": zone.font_name,
+                    "color": zone.color,
+                }
+            )
         for image_index, picture in enumerate(pictures, start=1):
             component_id = f"photo-panel-{slide_index + 1}-{image_index}"
             component_ids.append(component_id)
@@ -230,6 +255,14 @@ def _extract_archetypes(prs: Presentation) -> tuple[list[dict[str, Any]], dict[s
                     "height": _inches(picture.height),
                 },
             }
+            media_slot_candidates.append(
+                {
+                    "id": f"slide-{slide_index + 1}-image-{image_index}",
+                    "target": {"shape_index": slide.shapes.index(picture)},
+                    "bounds": components[component_id]["bounds"],
+                    "image_mode": "cover",
+                }
+            )
         for shape_index, shape in enumerate(slide.shapes, start=1):
             fill = _shape_fill(shape)
             area_ratio = (_inches(shape.width) * _inches(shape.height)) / slide_area if slide_area else 0
@@ -268,8 +301,14 @@ def _extract_archetypes(prs: Presentation) -> tuple[list[dict[str, Any]], dict[s
             {
                 "id": f"slide-{slide_index + 1}-{'photo' if pictures else 'text'}",
                 "reference_slide": slide_index + 1,
-                "required_assets": ["supporting_photo"] if pictures else [],
+                "render_strategy": "prototype",
+                # The first render of a prototype retains its embedded media.
+                # A new image is required only when a reviewed contract adds an
+                # explicit image replacement slot.
+                "required_assets": [],
                 "permitted_components": component_ids,
+                "slot_candidates": slot_candidates,
+                "media_slot_candidates": media_slot_candidates,
             }
         )
     return archetypes, components

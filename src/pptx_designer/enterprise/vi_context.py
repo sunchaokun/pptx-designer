@@ -38,8 +38,19 @@ _DEFAULT_CONTEXT: dict[str, Any] = {
         },
     },
     "components": {},
+    "atom_styles": {},
+    "visual_grammar": {
+        "allowed_atom_kinds": [],
+        "safe_area": {},
+        "forbidden_zones": [],
+        "min_font_size": None,
+    },
     "archetypes": [],
+    "visual_families": [],
+    "layout_variants": [],
+    "fixed_bases": {},
     "content_slots": [],
+    "media_slots": [],
     "locks": [],
     "acceptance": {"must_coverage": [], "thresholds": {}},
     "diagnostics": {"warnings": [], "unknown_fields": []},
@@ -96,6 +107,21 @@ def merge_design_context(*contexts: Mapping[str, Any] | None) -> dict[str, Any]:
     return normalize_design_context(merged)
 
 
+def validate_variant_sequence(plans: Sequence[Mapping[str, Any]]) -> list[str]:
+    """Return deterministic layout-diversity violations for a deck sequence."""
+    violations: list[str] = []
+    previous = None
+    for index, plan in enumerate(plans, start=1):
+        if plan.get("page_role") != "content":
+            previous = None
+            continue
+        variant = plan.get("variant_id")
+        if variant and variant == previous:
+            violations.append(f"adjacent_variant_repeat:page-{index}:{variant}")
+        previous = variant
+    return violations
+
+
 def design_context_from_brand_spec(brand_spec: Any) -> dict[str, Any]:
     """Adapt the legacy ``BrandSpec`` object into the canonical context."""
     colors = dict(getattr(brand_spec, "colors", None) or {})
@@ -132,6 +158,89 @@ class VIBuildSession:
         self.context = normalize_design_context(design_context)
         self.assets = dict(assets or {})
 
+    def plan(
+        self,
+        *,
+        page_role: str,
+        page_goal: str = "",
+        content: Mapping[str, Any] | None = None,
+        previous_variants: Sequence[str] | None = None,
+    ) -> dict[str, Any]:
+        """Select a safe archetype and produce a renderer-ready page plan.
+
+        This is intentionally deterministic.  A planner may select only an
+        explicitly reviewed archetype; it never invents geometry or silently
+        falls back from a content component page to a full prototype copy.
+        """
+        content = dict(content or {})
+        if page_role == "content":
+            return {
+                "status": "NEEDS_REVISION",
+                "page_role": page_role,
+                "page_goal": page_goal,
+                "diagnostics": {"blocked": ["content_pages_require_atomic_build_plan"]},
+            }
+        previous = set(previous_variants or ())
+        candidates = [
+            item for item in self.context["archetypes"]
+            if isinstance(item, Mapping)
+            and (not item.get("page_role") or item.get("page_role") == page_role)
+        ]
+        if previous:
+            unused = [item for item in candidates if item.get("variant_id") not in previous]
+            if unused:
+                candidates = unused
+            elif previous_variants:
+                # Once a family has been fully consumed, avoid an immediate
+                # repeat of the last variant.  This is the same deterministic
+                # rotation rule used by the VI adapter.
+                last = previous_variants[-1]
+                candidates = [item for item in candidates if item.get("variant_id") != last] or candidates
+        if not candidates:
+            return {
+                "status": "NEEDS_REVISION",
+                "page_role": page_role,
+                "page_goal": page_goal,
+                "diagnostics": {"blocked": ["no_safe_archetype"]},
+            }
+        archetype = candidates[0]
+        component_ids = list(content.get("components", archetype.get("default_components", [])))
+        slot_values = dict(content.get("slots", {}))
+        media_values = dict(content.get("media", {}))
+        preflight = self.plan_page(
+            str(archetype["id"]),
+            components=component_ids,
+            slot_values=slot_values,
+            media_values=media_values,
+        )
+        return {
+            "status": preflight["status"],
+            "page_role": page_role,
+            "page_goal": page_goal,
+            "reference_slide": archetype.get("reference_slide"),
+            "archetype_id": archetype["id"],
+            "family_id": archetype.get("family_id"),
+            "variant_id": archetype.get("variant_id"),
+            "base_id": archetype.get("base_id"),
+            "components": component_ids,
+            "text_instances": slot_values,
+            "media_instances": media_values,
+            "preflight": preflight,
+            "diagnostics": {"blocked": preflight.get("asset_plan", {}).get("missing", [])},
+        }
+
+    def render(self, plan: Mapping[str, Any], presentation: Any) -> dict[str, Any]:
+        """Render a plan produced by :meth:`plan` through the existing API."""
+        if plan.get("status") != "READY":
+            return {**dict(plan), "slide": None}
+        return self.render_page(
+            presentation,
+            str(plan["archetype_id"]),
+            components=plan.get("components", []),
+            slot_values=plan.get("text_instances", {}),
+            media_values=plan.get("media_instances", {}),
+        )
+
     def validate_overrides(
         self,
         overrides: Mapping[str, Any] | None,
@@ -163,33 +272,52 @@ class VIBuildSession:
         *,
         components: Sequence[str] | None = None,
         slot_values: Mapping[str, str] | None = None,
+        media_values: Mapping[str, Any] | None = None,
         overrides: Mapping[str, Any] | None = None,
         allow_template_override: bool = False,
     ) -> dict[str, Any]:
         """Return an auditable preflight result for a new template-derived page."""
         archetype = self._get_archetype(archetype_id)
+        if archetype.get("page_role") == "content":
+            return {
+                "status": "NEEDS_REVISION",
+                "archetype": {"id": archetype_id, "reference_slide": archetype.get("reference_slide")},
+                "asset_plan": {"missing": [], "violations": []},
+                "media_plan": {"missing": []},
+                "diagnostics": {"blocked": ["content_pages_require_atomic_build_plan"]},
+            }
         override_report = self.validate_overrides(
             overrides, allow_template_override=allow_template_override
         )
         component_report = self._validate_components(archetype, components or [])
+        layout_violations = self._validate_layout(components or [], slot_values or {})
         slot_bindings = self._bind_slots(slot_values or {})
+        media_plan = self._bind_media_slots(media_values or {})
         asset_plan = self._plan_assets(archetype, components or [])
         acceptance = self._evaluate_acceptance(asset_plan, component_report)
-        if asset_plan["missing"]:
+        if asset_plan["missing"] or media_plan["missing"]:
             status = "NEEDS_ASSET"
-        elif asset_plan["violations"]:
+        elif asset_plan["violations"] or layout_violations:
             status = "NEEDS_REVISION"
         else:
             status = "READY"
 
         return {
             "status": status,
-            "archetype": {"id": archetype_id, "reference_slide": archetype.get("reference_slide")},
+            "archetype": {
+                "id": archetype_id,
+                "reference_slide": archetype.get("reference_slide"),
+                "render_strategy": archetype.get("render_strategy", "components"),
+            },
             "asset_plan": asset_plan,
             "components": component_report,
+            "layout": {"violations": layout_violations},
             "slot_bindings": slot_bindings,
+            "media_bindings": media_plan["bindings"],
+            "media_plan": media_plan,
             "overrides": override_report["overrides"],
             "acceptance": acceptance,
+            "fixed_base": self._fixed_base(archetype),
         }
 
     def render_page(
@@ -199,6 +327,7 @@ class VIBuildSession:
         *,
         components: Sequence[str] | None = None,
         slot_values: Mapping[str, str] | None = None,
+        media_values: Mapping[str, Any] | None = None,
         overrides: Mapping[str, Any] | None = None,
         allow_template_override: bool = False,
     ) -> dict[str, Any]:
@@ -212,55 +341,101 @@ class VIBuildSession:
             archetype_id,
             components=components,
             slot_values=slot_values,
+            media_values=media_values,
             overrides=overrides,
             allow_template_override=allow_template_override,
         )
+        archetype = self._get_archetype(archetype_id)
+        if archetype.get("page_role") == "content" and archetype.get("render_strategy", "components") == "prototype":
+            result["status"] = "NEEDS_REVISION"
+            result["diagnostics"] = {"blocked": ["content_pages_require_atomic_build_plan"]}
+            result["slide"] = None
+            return result
         if result["status"] != "READY":
             result["slide"] = None
             result["design_application"] = {
                 "applied_to": [],
                 "not_applied": ["page_not_created"],
-                "blocked": result["asset_plan"]["missing"] + result["asset_plan"]["violations"],
+                "blocked": result["asset_plan"]["missing"]
+                + result["media_plan"]["missing"]
+                + result["asset_plan"]["violations"],
             }
             return result
 
-        from pptx_designer.renderer.theme_context import set_slide_theme
-        from pptx_designer.tools.images import cover_image
-        from pptx_designer.tools.shapes import rect
-        from pptx_designer.tools.text import text
+        render_strategy = archetype.get("render_strategy", "components")
+        if render_strategy == "prototype":
+            from pptx_designer.enterprise.prototype import clone_slide_prototype
 
-        slide = prs.slides.add_slide(self._blank_layout(prs))
-        set_slide_theme(slide, self.context)
-        applied_to: list[str] = []
-        for component_id in components or []:
-            component = self.context["components"][component_id]
-            bounds = self._component_bounds(component, component_id)
-            if component.get("kind") == "photo_panel":
-                image_path = self._asset_path(self.assets["supporting_photo"])
-                cover_image(slide, **bounds, image_path=image_path)
-            elif component.get("kind") in {"color_panel", "rule"}:
-                rect(slide, **bounds, fill=component["fill"])
-            else:
-                raise ValueError(f"unsupported VI component kind: {component.get('kind')}")
-            applied_to.append(component_id)
+            reference_slide = int(archetype.get("reference_slide", 0))
+            if not 1 <= reference_slide <= len(prs.slides):
+                raise ValueError(f"prototype reference_slide is unavailable: {reference_slide}")
+            slide = clone_slide_prototype(prs, prs.slides[reference_slide - 1])
+            applied_to: list[str] = [f"prototype:slide-{reference_slide}"] + list(components or [])
+        elif render_strategy == "components":
+            from pptx_designer.core.build_spec import render_build_spec
+
+            instances = []
+            for component_id in components or []:
+                component = self.context["components"][component_id]
+                data = None
+                if component.get("kind") == "photo_panel":
+                    data = self.assets.get("supporting_photo")
+                instances.append({"component_id": component_id, "data": data})
+            slide = render_build_spec(
+                {
+                    "kind": "BuildSpec",
+                    "render_strategy": "components",
+                    "components": instances,
+                    "fixed_base": self._fixed_base(archetype),
+                },
+                prs,
+                self.context,
+            )
+            applied_to = list(components or [])
+        else:
+            raise ValueError(f"unsupported VI render strategy: {render_strategy}")
 
         for slot_id, value in (slot_values or {}).items():
             slot = self._slot(slot_id)
-            bounds = slot.get("bounds")
-            if not isinstance(bounds, Mapping):
-                raise ValueError(f"content slot {slot_id} has no render bounds")
-            text(
-                slide,
-                bounds["left"],
-                bounds["top"],
-                bounds["width"],
-                bounds["height"],
-                str(value),
-                font_size=slot.get("font_size", 18),
-                bold=bool(slot.get("bold", False)),
-                color=slot.get("color", "text_dark"),
-                align=slot.get("align", "left"),
-            )
+            if render_strategy == "prototype":
+                self._bind_prototype_text(slide, slot_id, slot, str(value))
+            else:
+                from pptx_designer.tools.text import text
+
+                bounds = slot.get("bounds")
+                if not isinstance(bounds, Mapping):
+                    raise ValueError(f"content slot {slot_id} has no render bounds")
+                text(
+                    slide,
+                    bounds["left"],
+                    bounds["top"],
+                    bounds["width"],
+                    bounds["height"],
+                    str(value),
+                    font_size=slot.get("font_size", 18),
+                    bold=bool(slot.get("bold", False)),
+                    color=slot.get("color", "text_dark"),
+                    align=slot.get("align", "left"),
+                )
+            applied_to.append(slot_id)
+
+        for slot_id, asset in (media_values or {}).items():
+            slot = self._media_slot(slot_id)
+            if render_strategy != "prototype":
+                raise ValueError("media slots require the prototype render strategy")
+            image_path = self._asset_path(asset)
+            mode = str(slot.get("mode", "replace"))
+            if mode == "replace":
+                self._bind_prototype_image(slide, slot_id, slot, image_path)
+            elif mode == "insert":
+                from pptx_designer.tools.images import cover_image
+
+                bounds = self._media_slot_bounds(slot, slot_id)
+                picture = cover_image(slide, **bounds, image_path=image_path)
+                if slot.get("z_order") == "back":
+                    self._send_shape_to_back(slide, picture)
+            else:
+                raise ValueError(f"unsupported prototype media slot mode: {mode}")
             applied_to.append(slot_id)
 
         result["slide"] = slide
@@ -272,6 +447,31 @@ class VIBuildSession:
             if isinstance(archetype, Mapping) and archetype.get("id") == archetype_id:
                 return archetype
         raise ValueError(f"unknown archetype: {archetype_id}")
+
+    def _fixed_base(self, archetype: Mapping[str, Any]) -> dict[str, Any] | None:
+        """Return the reviewed fixed-base recipe for a content archetype."""
+        if archetype.get("page_role") != "content" or not archetype.get("base_id"):
+            return None
+        base_id = str(archetype["base_id"])
+        base = self.context.get("fixed_bases", {}).get(base_id)
+        if not isinstance(base, Mapping):
+            return {"id": base_id, "status": "review_required"}
+        if not base.get("safe_to_clone", False):
+            raise ValueError(f"unsafe fixed base: {base_id}")
+        if "reference_slide" in base and "fixed_shape_indices" not in base:
+            raise ValueError(
+                f"fixed base {base_id} requires explicit fixed_shape_indices"
+            )
+        return {
+            "id": base_id,
+            "safe_to_clone": True,
+            "reference_slide": base.get("reference_slide"),
+            "fixed_shape_indices": list(base.get("fixed_shape_indices", [])) or None,
+            "exclude_shape_indices": list(base.get("exclude_shape_indices", [])) or None,
+            "fixed_objects": list(base.get("fixed_objects", [])),
+            "removed_objects": list(base.get("removed_objects", [])),
+            "unsupported_objects": list(base.get("unsupported_objects", [])),
+        }
 
     def _validate_components(
         self, archetype: Mapping[str, Any], components: Sequence[str]
@@ -286,6 +486,43 @@ class VIBuildSession:
                 raise ValueError(f"component is not permitted by archetype: {component}")
             report.append({"id": component, "status": "applied"})
         return report
+
+    def _validate_layout(
+        self, component_ids: Sequence[str], slot_values: Mapping[str, Any]
+    ) -> list[str]:
+        """Reject accidental component/text collisions before rendering."""
+        violations: list[str] = []
+        boxes: list[tuple[str, Mapping[str, Any]]] = []
+        for component_id in component_ids:
+            component = self.context["components"].get(component_id, {})
+            bounds = component.get("bounds")
+            if isinstance(bounds, Mapping):
+                boxes.append((component_id, bounds))
+                if any(float(bounds.get(key, 0)) < 0 for key in ("left", "top", "width", "height")):
+                    violations.append(f"negative_geometry:{component_id}")
+                if float(bounds.get("left", 0)) + float(bounds.get("width", 0)) > 13.333 or float(bounds.get("top", 0)) + float(bounds.get("height", 0)) > 7.5:
+                    violations.append(f"out_of_bounds:{component_id}")
+        for index, (first_id, first) in enumerate(boxes):
+            for second_id, second in boxes[index + 1:]:
+                if self._intersection_ratio(first, second) > 0:
+                    first_component = self.context["components"].get(first_id, {})
+                    second_component = self.context["components"].get(second_id, {})
+                    if not first_component.get("allow_overlap") and not second_component.get("allow_overlap"):
+                        violations.append(f"component_overlap:{first_id}:{second_id}")
+        # Text over a photo can be intentional in editorial templates.  The
+        # renderer/visual QA decides whether its contrast and z-order are safe;
+        # the planner only rejects unambiguous component-component collisions.
+        return sorted(set(violations))
+
+    @staticmethod
+    def _intersection_ratio(first: Mapping[str, Any], second: Mapping[str, Any]) -> float:
+        try:
+            ax, ay, aw, ah = (float(first[key]) for key in ("left", "top", "width", "height"))
+            bx, by, bw, bh = (float(second[key]) for key in ("left", "top", "width", "height"))
+        except (KeyError, TypeError, ValueError):
+            return 0.0
+        area = max(0.0, min(ax + aw, bx + bw) - max(ax, bx)) * max(0.0, min(ay + ah, by + bh) - max(ay, by))
+        return area / max(aw * ah, 0.0001)
 
     def _bind_slots(self, slot_values: Mapping[str, str]) -> list[dict[str, str]]:
         slots = {
@@ -309,6 +546,84 @@ class VIBuildSession:
             if isinstance(slot, Mapping) and slot.get("id") == slot_id:
                 return slot
         raise ValueError(f"unknown content slot: {slot_id}")
+
+    def _bind_media_slots(self, media_values: Mapping[str, Any]) -> dict[str, Any]:
+        bindings: list[dict[str, str]] = []
+        missing: list[str] = []
+        for slot_id, asset in media_values.items():
+            self._media_slot(slot_id)
+            if self._asset_is_available(asset):
+                bindings.append({"id": slot_id, "status": "bound"})
+            else:
+                bindings.append({"id": slot_id, "status": "missing_asset"})
+                missing.append(slot_id)
+        return {"bindings": bindings, "missing": missing}
+
+    def _media_slot(self, slot_id: str) -> Mapping[str, Any]:
+        for slot in self.context["media_slots"]:
+            if isinstance(slot, Mapping) and slot.get("id") == slot_id:
+                return slot
+        raise ValueError(f"unknown media slot: {slot_id}")
+
+    @staticmethod
+    def _media_slot_bounds(slot: Mapping[str, Any], slot_id: str) -> dict[str, float]:
+        bounds = slot.get("bounds")
+        if not isinstance(bounds, Mapping):
+            raise ValueError(f"prototype media slot {slot_id} has no bounds")
+        required = ("left", "top", "width", "height")
+        if any(field not in bounds for field in required):
+            raise ValueError(f"prototype media slot {slot_id} has incomplete bounds")
+        return {field: float(bounds[field]) for field in required}
+
+    @staticmethod
+    def _send_shape_to_back(slide: Any, shape: Any) -> None:
+        """Place a contract-defined media layer behind copied template text."""
+        element = shape.element
+        parent = element.getparent()
+        parent.remove(element)
+        # The first two children are the group's non-visual and group
+        # properties. Index 2 is consequently behind every shape layer.
+        parent.insert(2, element)
+
+    @staticmethod
+    def _bind_prototype_text(slide: Any, slot_id: str, slot: Mapping[str, Any], value: str) -> None:
+        """Replace a reviewed template text slot without changing its styling."""
+        target = slot.get("target")
+        if not isinstance(target, Mapping) or "shape_index" not in target:
+            raise ValueError(f"prototype content slot {slot_id} has no target.shape_index")
+        shape_index = int(target["shape_index"])
+        if not 0 <= shape_index < len(slide.shapes):
+            raise ValueError(f"prototype content slot {slot_id} targets an unavailable shape")
+        shape = slide.shapes[shape_index]
+        if not shape.has_text_frame or not shape.text_frame.paragraphs:
+            raise ValueError(f"prototype content slot {slot_id} does not target a text shape")
+        paragraph = shape.text_frame.paragraphs[0]
+        if paragraph.runs:
+            paragraph.runs[0].text = value
+            for run in paragraph.runs[1:]:
+                run.text = ""
+        else:
+            paragraph.text = value
+        for extra in shape.text_frame.paragraphs[1:]:
+            for run in extra.runs:
+                run.text = ""
+
+    @staticmethod
+    def _bind_prototype_image(slide: Any, slot_id: str, slot: Mapping[str, Any], image_path: str) -> None:
+        """Replace a prototype picture while retaining the template crop and bounds."""
+        target = slot.get("target")
+        if not isinstance(target, Mapping) or "shape_index" not in target:
+            raise ValueError(f"prototype media slot {slot_id} has no target.shape_index")
+        shape_index = int(target["shape_index"])
+        if not 0 <= shape_index < len(slide.shapes):
+            raise ValueError(f"prototype media slot {slot_id} targets an unavailable shape")
+        shape = slide.shapes[shape_index]
+        try:
+            image_part, new_rid = slide.part.get_or_add_image_part(image_path)
+            del image_part  # The slide relationship holds the part; keep the public result explicit.
+            shape._element.blipFill.blip.rEmbed = new_rid
+        except (AttributeError, TypeError):
+            raise ValueError(f"prototype media slot {slot_id} does not target a picture") from None
 
     @staticmethod
     def _component_bounds(component: Mapping[str, Any], component_id: str) -> dict[str, float]:
@@ -412,4 +727,5 @@ __all__ = [
     "design_context_from_brand_spec",
     "merge_design_context",
     "normalize_design_context",
+    "validate_variant_sequence",
 ]

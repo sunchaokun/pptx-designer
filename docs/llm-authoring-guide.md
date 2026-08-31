@@ -1,6 +1,6 @@
 # LLM 编写手册：使用 pptx-designer 生成可编辑 PPTX
 
-> 适用版本：`1.0.0b7`。
+> 适用版本：`1.0.0b8`。
 > 目标读者：生成、审查或修改 `pptx-designer` Python 代码的 LLM 与开发者。
 > 本文是用户文档与训练/上下文材料；只描述当前公开且已验证的 API。
 
@@ -103,20 +103,60 @@ text(slide, 0.7, 1.5, 8.5, 0.5, "The presentation inherits its visual language."
 不要把 Theme Lock 当作页面模板。主题负责颜色角色、字体、装饰和空间倾向；LLM
 仍须根据每页目标选择构图、焦点和公共 API 组合。
 
-### 3.1.1 VI Build：模板规则由 Build 消费
+### 3.1.1 BuildSpec：精确执行，不推断页面结构
+
+需要将页面计划作为数据传给 Build Core 时，使用 `BuildSpec`。它不是内容类型到版式的
+映射：Build 自己决定每个原子的 `kind`、`bounds`、数据和 `z_index`。组件可以引用
+复用的 `component_id`，也可以携带内联 `recipe`；内联 recipe 存在时优先执行，因此
+精确几何、字体、填充和图层顺序不会被组件目录或模板重新决定。
+
+```python
+from pptx_designer import Presentation
+from pptx_designer.core import render_build_spec
+
+prs = Presentation()
+spec = {
+    "kind": "BuildSpec",
+    "render_strategy": "components",
+    "components": [{
+        "atom_id": "claim", "z_index": 10,
+        "recipe": {
+            "kind": "text",
+            "bounds": {"left": 0.8, "top": 0.8, "width": 8.0, "height": 0.7},
+            "font_size": 30, "bold": True, "font_name": "Aptos Display",
+        },
+        "data": "A precise, Build-owned claim",
+    }],
+}
+slide = render_build_spec(spec, prs, context={})
+```
+
+需要表达主张、证据、顺序、因果或对比时，在 Build 的内容设计中同时保留
+`content_model` 与 `relation_bindings`，并使用能实际表达该关系的 atom 组合。不要用
+`variant_id` 是否变化替代这项内容验收。
+
+### 3.1.2 VI Build：模板规则由 Build 消费
 
 模板分析必须使用统一的 `ResolvedDesignContext`，不能把 `extract_design_dna()`
 的原始结果另存为下游不会读取的 VI 字典。推荐顺序为：
 
-1. `extract_design_context(template.pptx)` 获取确定性证据；
-2. 人工确认可写文本槽位及其 bounds，低置信度槽位不得自动替换；
-3. 选择一个提取出的 archetype，并给出其允许的组件；
-4. 用 `VIBuildSession` 先预检资产、锁定项和槽位容量；
-5. 仅当状态为 `READY` 时创建新页，随后执行 PPTX → PDF → PNG 审查。
+1. `extract_design_context(template.pptx)` 获取确定性视觉证据；
+2. 人工确认 framework page、可写文本槽位、固定视觉层和视觉 grammar；低置信度对象不得自动替换；
+3. Build 根据内容关系写出 `content_model`、原子组件、精确几何和 `relation_bindings`；不得根据 `content_type`、`variant_id` 或模板 archetype 选择内容构图；
+4. `VITemplateAdapter.compile_atomic()` 仅解析 visual token/fixed base 并校验安全区、禁区和最小字号；
+5. 用 `VIBuildDelivery` 交付：它按原始 slide identity 移除模板源页，并检查页面来源、样例文本泄漏与框架文本契约；
+6. 仅当 Structural QA 为 `pass` 后，执行 PPTX → PowerPoint PDF → PNG 的逐页视觉审查。
 
-需要照片的 archetype 在缺少合规本地图片时会返回 `NEEDS_ASSET`，而不是生成
-没有视觉锚点的纯文字或色块页。系统固定使用 16:9（13.333 × 7.5 英寸）画布。
-`generate_ppt(content=...)` 仍属于 FreeStyle，不会自动启用 VI Build。
+固定视觉层不是整页克隆：只有经审核的 `reference_slide` 和
+`fixed_shape_indices` 同时存在时才可复制。Structural QA 会检查原子内容页是否包含
+有效的 `content_model.relations`，每个关系是否有指向实际 atom 的
+`relation_bindings`，以及内容页是否来自 `build_atomic`。`variant_id` 重复不再是
+内容设计验收条件。
+
+`VITemplateAdapter.compile(page_role="content")` 已被禁用；内容页只能走
+`compile_atomic()`。`VIBuildSession` 仅适用于历史框架页预检，不能用于内容页规划或
+渲染。系统固定使用 16:9（13.333 × 7.5 英寸）画布。`generate_ppt(content=...)`
+仍属于 FreeStyle，不会自动启用 VI Build。
 
 ### 3.2 基础形状：`pptx_designer.tools.shapes`
 
@@ -204,13 +244,16 @@ bar_chart(slide, left=2.0, top=2.0,
 
 ```python
 from pptx_designer.diagrams import DiagramStyle, FlowchartDiagram, Region
+from pptx_designer.renderer.theme import ThemeComposer
+
+theme = ThemeComposer().compose(style="warm-elegant", seed=17)
 
 diagram = FlowchartDiagram(
     data={
         "direction": "horizontal",
         "nodes": [{"label": "Discover"}, {"label": "Build"}, {"label": "Review"}],
     },
-    style=DiagramStyle(),
+    style=DiagramStyle.from_theme(theme),
     region=Region(left=1.0, top=2.0, width=11.0, height=2.0),
 )
 diagram.render(slide)

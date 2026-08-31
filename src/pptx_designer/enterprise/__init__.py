@@ -19,16 +19,20 @@ from pptx_designer.enterprise.image_matcher import (
     match_images,
 )
 from pptx_designer.enterprise.proposal_generator import ProposalGenerator
+from pptx_designer.enterprise.prototype import clone_slide_prototype, copy_slide_shapes, prune_unreferenced_slide_parts
 from pptx_designer.enterprise.scanner import ProjectAsset, ProjectScanner
 from pptx_designer.enterprise.slide_extractor import SlideExtractor
 from pptx_designer.enterprise.template_analyzer import TemplateAnalyzer
 from pptx_designer.enterprise.version_manager import next_version, read_meta, write_meta
+from pptx_designer.enterprise.vi_adapter import VITemplateAdapter
 from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
     merge_design_context,
     normalize_design_context,
+    validate_variant_sequence,
 )
+from pptx_designer.enterprise.vi_delivery import VIBuildDelivery
 
 __all__ = [
     "BrandSpec",
@@ -42,6 +46,9 @@ __all__ = [
     "auto_generate_image_prompts",
     "classify_image_size",
     "ProposalGenerator",
+    "clone_slide_prototype",
+    "copy_slide_shapes",
+    "prune_unreferenced_slide_parts",
     "TemplateAnalyzer",
     "SlideExtractor",
     "DeliveryGate",
@@ -61,4 +68,7 @@ __all__ = [
     "design_context_from_brand_spec",
     "merge_design_context",
     "normalize_design_context",
+    "validate_variant_sequence",
+    "VITemplateAdapter",
+    "VIBuildDelivery",
 ]

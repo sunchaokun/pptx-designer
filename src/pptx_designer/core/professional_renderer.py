@@ -123,17 +123,19 @@ def render_professional_page(
     if goal == "hook":
         _render_hero(slide, title, subtitle, tokens)
     elif goal == "problem":
-        _render_problem(slide, title, bullets, tokens)
+        _render_problem(slide, title, subtitle, bullets, tokens)
     elif goal == "solution":
-        _render_solution(slide, title, bullets, tokens)
+        _render_solution(slide, title, subtitle, bullets, tokens)
     elif goal == "features":
-        _render_features(slide, title, bullets, tokens)
+        _render_features(slide, title, subtitle, bullets, tokens)
     elif goal == "data":
-        _render_data(slide, title, bullets, tokens)
+        _render_data(slide, title, subtitle, bullets, tokens)
     elif goal == "code":
-        _render_code(slide, title, bullets, tokens)
+        _render_code(slide, title, subtitle, bullets, tokens)
+    elif goal == "cta":
+        _render_cta(slide, title, subtitle, tokens)
     else:
-        _render_content(slide, title, bullets, tokens)
+        _render_content(slide, title, subtitle, bullets, tokens)
 
     if page_index > 0:
         _text(
@@ -150,7 +152,9 @@ def render_professional_page(
         )
 
 
-def _section_header(slide: Any, label: str, title: str, color: str, tokens: _ThemeTokens) -> None:
+def _section_header(
+    slide: Any, label: str, title: str, subtitle: str, color: str, tokens: _ThemeTokens
+) -> float:
     from pptx_designer.tools.shapes import rect
 
     title_height = 1.15 if tokens.title_alignment == "center" or len(title) > 44 else 0.8
@@ -182,10 +186,18 @@ def _section_header(slide: Any, label: str, title: str, color: str, tokens: _The
         align=tokens.title_alignment,
         tokens=tokens,
     )
+    underline_y = 0.9 + title_height + 0.1
     if tokens.decoration.get("title_underline", True):
         line_width = 2.0 if tokens.title_alignment == "left" else min(3.0, tokens.content_width * 0.3)
         line_left = tokens.content_left if tokens.title_alignment == "left" else (13.333 - line_width) / 2
-        rect(slide, line_left, 0.9 + title_height + 0.1, line_width, 0.04, color)
+        rect(slide, line_left, underline_y, line_width, 0.04, color)
+    if subtitle:
+        _text(
+            slide, tokens.content_left, underline_y + 0.14, tokens.content_width, 0.3,
+            subtitle, font_size=12, color=tokens.muted, align=tokens.title_alignment, tokens=tokens,
+        )
+        return max(2.3, underline_y + 0.55)
+    return max(2.3, underline_y + 0.25)
 
 
 def _render_page_decoration(slide: Any, tokens: _ThemeTokens) -> None:
@@ -240,29 +252,29 @@ def _render_hero(slide: Any, title: str, subtitle: str, tokens: _ThemeTokens) ->
         )
 
 
-def _render_problem(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_problem(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import oval, rrect
 
-    _section_header(slide, "PROBLEM", title, tokens.danger, tokens)
+    content_top = _section_header(slide, "PROBLEM", title, subtitle, tokens.danger, tokens)
     if not bullets:
         return
     card_width = min(3.5, 10.5 / len(bullets[:3]))
     for index, bullet in enumerate(bullets[:3]):
         x = 1.0 + index * (card_width + 0.4)
-        rrect(slide, x, 2.3, card_width, 3.5, tokens.surface, line=tokens.border)
-        oval(slide, x + card_width / 2 - 0.4, 2.6, 0.8, 0.8, tokens.danger)
+        rrect(slide, x, content_top, card_width, 3.5, tokens.surface, line=tokens.border)
+        oval(slide, x + card_width / 2 - 0.4, content_top + 0.3, 0.8, 0.8, tokens.danger)
         _text(
-            slide, x + card_width / 2 - 0.3, 2.7, 0.6, 0.6, str(index + 1), font_size=24, bold=True,
+            slide, x + card_width / 2 - 0.3, content_top + 0.4, 0.6, 0.6, str(index + 1), font_size=24, bold=True,
             color=tokens.on_primary, align="center", kind="heading", tokens=tokens,
         )
-        _text(slide, x + 0.2, 3.6, card_width - 0.4, 1.8, bullet, font_size=14, color=tokens.ink, align="center", tokens=tokens)
+        _text(slide, x + 0.2, content_top + 1.3, card_width - 0.4, 1.8, bullet, font_size=14, color=tokens.ink, align="center", tokens=tokens)
 
 
-def _render_solution(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_solution(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import oval, rect
 
-    _section_header(slide, "SOLUTION", title, tokens.success, tokens)
-    y = 2.3
+    content_top = _section_header(slide, "SOLUTION", title, subtitle, tokens.success, tokens)
+    y = content_top
     for bullet in bullets[:4]:
         oval(slide, 1.0, y, 0.5, 0.5, tokens.success)
         _text(slide, 1.05, y + 0.05, 0.4, 0.4, "✓", font_size=18, bold=True, color=tokens.on_primary, align="center", tokens=tokens)
@@ -271,28 +283,28 @@ def _render_solution(slide: Any, title: str, bullets: list[str], tokens: _ThemeT
         y += 0.7
 
 
-def _render_features(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_features(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import oval, rect, rrect
 
-    _section_header(slide, "FEATURES", title, tokens.data_1, tokens)
+    content_top = _section_header(slide, "FEATURES", title, subtitle, tokens.data_1, tokens)
     cards = bullets[:3]
     if not cards:
         return
     card_width = min(3.5, 10.5 / len(cards))
     colors = [tokens.data_1, tokens.data_2, tokens.accent_secondary]
-    for index, (bullet, color) in enumerate(zip(cards, colors, strict=True)):
+    for index, (bullet, color) in enumerate(zip(cards, colors[:len(cards)], strict=True)):
         x = 1.0 + index * (card_width + 0.4)
-        rrect(slide, x, 2.3, card_width, 3.8, tokens.surface, line=tokens.border)
-        rect(slide, x, 2.3, card_width, 0.08, color)
-        oval(slide, x + card_width / 2 - 0.5, 2.8, 1.0, 1.0, color)
-        _text(slide, x + card_width / 2 - 0.4, 2.9, 0.8, 0.8, "★", font_size=32, color=tokens.on_primary, align="center", tokens=tokens)
-        _text(slide, x + 0.3, 4.1, card_width - 0.6, 1.5, bullet, font_size=14, color=tokens.ink, align="center", tokens=tokens)
+        rrect(slide, x, content_top, card_width, 3.8, tokens.surface, line=tokens.border)
+        rect(slide, x, content_top, card_width, 0.08, color)
+        oval(slide, x + card_width / 2 - 0.5, content_top + 0.5, 1.0, 1.0, color)
+        _text(slide, x + card_width / 2 - 0.4, content_top + 0.6, 0.8, 0.8, "★", font_size=32, color=tokens.on_primary, align="center", tokens=tokens)
+        _text(slide, x + 0.3, content_top + 1.8, card_width - 0.6, 1.5, bullet, font_size=14, color=tokens.ink, align="center", tokens=tokens)
 
 
-def _render_data(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_data(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import rect, rrect
 
-    _section_header(slide, "METRICS", title, tokens.warning, tokens)
+    content_top = _section_header(slide, "METRICS", title, subtitle, tokens.warning, tokens)
     kpi_data = []
     for bullet in bullets:
         if ": " in bullet:
@@ -310,33 +322,71 @@ def _render_data(slide: Any, title: str, bullets: list[str], tokens: _ThemeToken
     for index, (value, label) in enumerate(kpi_data):
         x = start_x + index * (card_width + gap)
         color = colors[index % len(colors)]
-        rrect(slide, x, 2.5, card_width, 3.0, tokens.surface, line=tokens.border)
-        rect(slide, x, 2.5, card_width, 0.06, color)
-        _text(slide, x, 3.0, card_width, 0.8, value, font_size=36, bold=True, color=color, align="center", kind="heading", tokens=tokens)
-        _text(slide, x, 4.0, card_width, 0.4, label, font_size=12, color=tokens.muted, align="center", tokens=tokens)
+        rrect(slide, x, content_top, card_width, 3.0, tokens.surface, line=tokens.border)
+        rect(slide, x, content_top, card_width, 0.06, color)
+        value_size = 36 if len(value) <= 10 else 24 if len(value) <= 15 else 20
+        value_color = color if _contrast_ratio(color, tokens.surface) >= 3.0 else tokens.ink
+        _text(slide, x, content_top + 0.45, card_width, 1.0, value, font_size=value_size, bold=True, color=value_color, align="center", kind="heading", tokens=tokens)
+        _text(slide, x, content_top + 1.55, card_width, 0.4, label, font_size=12, color=tokens.muted, align="center", tokens=tokens)
 
 
-def _render_code(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_code(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import rrect
 
-    _section_header(slide, "CODE", title, tokens.accent, tokens)
-    rrect(slide, 1.0, 2.0, 11.0, 4.5, tokens.surface, line=tokens.border)
-    rrect(slide, 1.2, 2.2, 1.0, 0.3, tokens.data_1)
-    _text(slide, 1.25, 2.22, 0.9, 0.25, "Python", font_size=10, bold=True, color=tokens.on_primary, align="center", tokens=tokens)
-    y = 2.7
+    content_top = _section_header(slide, "CODE", title, subtitle, tokens.accent, tokens)
+    rrect(slide, 1.0, content_top - 0.25, 11.0, 4.5, tokens.surface, line=tokens.border)
+    rrect(slide, 1.2, content_top - 0.05, 1.0, 0.3, tokens.data_1)
+    _text(slide, 1.25, content_top - 0.03, 0.9, 0.25, "Python", font_size=10, bold=True, color=tokens.on_primary, align="center", tokens=tokens)
+    y = content_top + 0.45
     for line in bullets[:8]:
         _text(slide, 1.5, y, 10.0, 0.25, line, font_size=12, color=tokens.ink, kind="mono", tokens=tokens)
         y += 0.35
 
 
-def _render_content(slide: Any, title: str, bullets: list[str], tokens: _ThemeTokens) -> None:
+def _render_content(slide: Any, title: str, subtitle: str, bullets: list[str], tokens: _ThemeTokens) -> None:
     from pptx_designer.tools.shapes import oval, rect, rrect
 
     _text(slide, 1.0, 0.5, 11.0, 0.8, title, font_size=36, bold=True, color=tokens.ink, kind="heading", tokens=tokens)
     rect(slide, 1.0, 1.4, 2.0, 0.04, tokens.data_1)
     y = 1.8
+    if subtitle:
+        _text(slide, 1.0, 1.55, 11.0, 0.3, subtitle, font_size=12, color=tokens.muted, tokens=tokens)
+        y = 2.05
     for bullet in bullets[:5]:
         rrect(slide, 1.0, y, 11.0, 0.8, tokens.surface, line=tokens.border)
         oval(slide, 1.3, y + 0.25, 0.3, 0.3, tokens.data_1)
         _text(slide, 1.8, y + 0.15, 10.0, 0.5, bullet, font_size=15, color=tokens.ink, tokens=tokens)
         y += 1.0
+
+
+def _render_cta(slide: Any, title: str, subtitle: str, tokens: _ThemeTokens) -> None:
+    """Render a closing page with a visible next action."""
+    from pptx_designer.tools.shapes import rrect
+
+    _text(
+        slide, 1.0, 2.0, 11.333, 1.0, title, font_size=44, bold=True,
+        color=tokens.ink, kind="heading", align=tokens.title_alignment, tokens=tokens,
+    )
+    if subtitle:
+        _text(
+            slide, 1.0, 3.25, 11.333, 0.6, subtitle, font_size=20,
+            color=tokens.muted, align=tokens.title_alignment, tokens=tokens,
+        )
+    button_width = 3.0
+    button_left = (13.333 - button_width) / 2
+    rrect(slide, button_left, 4.45, button_width, 0.7, tokens.accent, line=tokens.accent)
+    _text(
+        slide, button_left, 4.62, button_width, 0.3, "开始试点  →", font_size=16,
+        bold=True, color=tokens.on_primary, align="center", tokens=tokens,
+    )
+
+
+def _contrast_ratio(first: str, second: str) -> float:
+    """Return WCAG relative contrast for two six-digit hex colors."""
+    def luminance(color: str) -> float:
+        channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        linear = [channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4 for channel in channels]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    light, dark = sorted((luminance(first), luminance(second)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)

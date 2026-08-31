@@ -142,6 +142,21 @@ print(result["theme_atoms"])  # 保存实际使用的色板、字体、装饰和
 
 所有演示文稿使用 **可组合原子** 构建 —— 简单、可预测的函数，创建形状、文字、图片和图表。
 
+### 精确构图契约
+
+Build 模式不是固定版式生成器。页面目标、信息层级、内容关系和精确构图由
+Build 作者（或 Build Planner）决定。每个原子都有明确的边界；其 recipe 还可指定
+字体、填充、线条、数据和 `z_index`。渲染器按这些指令生成可编辑的 PowerPoint
+对象，而不会依据内容类型去挑选页面布局。
+
+可复用组件的 `BuildSpec` 使用 `component_id` 引用；需要原子级控制的生产页面则
+携带内联 `recipe`。内联 recipe 优先，精确保留作者指定的几何。已解析主题可附着到
+presentation 或单页，公共 helper 会继承颜色和字体；helper 上的显式值仍具有更高优先级。
+
+在 VI 模板场景也同样如此：Build 负责内容构图；VI Adapter 只提供视觉 grammar、
+tokens、已审核的固定视觉层、容量及安全区/禁区约束。它不会根据 `content_type` 或
+`variant_id` 为内容页选择 archetype。
+
 ### 形状
 
 ```python

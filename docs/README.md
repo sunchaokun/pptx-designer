@@ -1,6 +1,6 @@
 # 文档索引
 
-> 当前版本：`1.0.0b7`。
+> 当前版本：`1.0.0b8`。
 
 ## 使用文档
 
@@ -8,7 +8,5 @@
 - [API 参考](api-reference.md)：公共函数、工具模块与 SVG 编译器返回值。
 - [LLM 编写手册](llm-authoring-guide.md)：可直接提供给 LLM 的 API 约束、可靠范式、示例和验收规则。
 - [SVG 编译器指南](svg-guide.md)：输入要求、支持范围、warning、错误处理和安全限制。
-- [主题集成升级设计](theme-integration-design.md)：主题上下文、FreeStyle/Build Mode 传递、兼容性、测试与视觉验收计划。
-- [VI Build 统一设计上下文计划](vi-build-unified-design-context-plan.md)：模板 DNA 如何与主题视觉系统共享契约、由 Build 消费，并按测试先行逐步升级。
 
 文档中的代码示例应以当前包的公共导入路径为准。若示例与源码或测试冲突，以源码和自动化测试为准，并应提交文档修复。内部 SVG 研究、审查和验证资料仅保留在本地开发环境，不作为发布文档。

@@ -7,6 +7,8 @@ rule or reports why it cannot do so.
 
 from __future__ import annotations
 
+import zipfile
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -19,12 +21,14 @@ from pptx.util import Inches, Pt
 from pptx_designer import Presentation
 from pptx_designer.enterprise.brand import BrandSpec
 from pptx_designer.enterprise.design_dna_extractor import extract_design_context, extract_design_dna
+from pptx_designer.enterprise.prototype import clone_slide_prototype, prune_unreferenced_slide_parts
 from pptx_designer.enterprise.template_analyzer import TemplateAnalyzer
 from pptx_designer.enterprise.vi_context import (
     VIBuildSession,
     design_context_from_brand_spec,
     merge_design_context,
     normalize_design_context,
+    validate_variant_sequence,
 )
 
 
@@ -80,6 +84,62 @@ def test_normalization_preserves_theme_contract_and_vi_fields():
     assert context["diagnostics"]["warnings"] == []
 
 
+def test_content_planner_rejects_legacy_archetype_selection():
+    context = _photo_archetype_context()
+    context["archetypes"] = [
+        {
+            "id": "content-a",
+            "page_role": "content",
+            "family_id": "editorial",
+            "variant_id": "split-a",
+            "render_strategy": "components",
+            "permitted_components": ["forest_photo_panel"],
+            "required_assets": ["supporting_photo"],
+        },
+        {
+            "id": "content-b",
+            "page_role": "content",
+            "family_id": "editorial",
+            "variant_id": "split-b",
+            "render_strategy": "components",
+            "permitted_components": ["forest_photo_panel"],
+            "required_assets": ["supporting_photo"],
+        },
+    ]
+    session = VIBuildSession(context, assets={"supporting_photo": "photo.png"})
+
+    plan = session.plan(page_role="content", page_goal="explain", previous_variants=["split-a"])
+
+    assert plan["status"] == "NEEDS_REVISION"
+    assert plan["diagnostics"]["blocked"] == ["content_pages_require_atomic_build_plan"]
+
+
+def test_content_page_prototype_is_blocked_by_atomic_only_boundary():
+    context = _photo_archetype_context()
+    context["archetypes"][0]["page_role"] = "content"
+    context["archetypes"][0]["render_strategy"] = "prototype"
+    presentation = Presentation(theme=context)
+
+    result = VIBuildSession(context, assets={"supporting_photo": "photo.png"}).render_page(
+        presentation, "text-photo-right"
+    )
+
+    assert result["status"] == "NEEDS_REVISION"
+    assert result["slide"] is None
+    assert result["diagnostics"]["blocked"] == ["content_pages_require_atomic_build_plan"]
+
+
+def test_variant_sequence_rejects_adjacent_content_repetition():
+    plans = [
+        {"page_role": "content", "variant_id": "split-a"},
+        {"page_role": "content", "variant_id": "split-a"},
+        {"page_role": "section", "variant_id": "split-a"},
+        {"page_role": "content", "variant_id": "split-a"},
+    ]
+
+    assert validate_variant_sequence(plans) == ["adjacent_variant_repeat:page-2:split-a"]
+
+
 def test_brand_spec_adapts_to_the_same_design_context():
     context = design_context_from_brand_spec(
         BrandSpec(
@@ -118,7 +178,8 @@ def test_template_analyzer_can_return_the_unified_context(tmp_path: Path):
 
     assert context["source"]["kind"] == "merged"
     assert context["source"]["template_fingerprint"]
-    assert context["archetypes"][0]["required_assets"] == ["supporting_photo"]
+    assert context["archetypes"][0]["render_strategy"] == "prototype"
+    assert context["archetypes"][0]["required_assets"] == []
 
 
 def test_build_requires_asset_when_archetype_demands_photo():
@@ -275,10 +336,142 @@ def test_extractor_emits_stable_unified_context_and_keeps_legacy_projection(tmp_
     assert first["typography"]["heading"] == "Aptos Display"
     assert first["semantic_roles"]["primary"] == "#164A3B"
     assert first["assets"]["references"][0]["kind"] == "image"
-    assert first["archetypes"][0]["required_assets"] == ["supporting_photo"]
+    assert first["archetypes"][0]["render_strategy"] == "prototype"
+    assert first["archetypes"][0]["required_assets"] == []
+    candidate = first["archetypes"][0]["slot_candidates"][0]
+    assert candidate["target"] == {"shape_index": 1}
+    assert candidate["original_text"] == "自然的系列"
+    assert candidate["font_name"] == "Aptos Display"
     assert any(component["kind"] == "color_panel" for component in first["components"].values())
     assert any(component["kind"] == "rule" for component in first["components"].values())
     assert "#164A3B" in legacy["colors"].values()
     assert legacy["slides"][0]["text_zones"][0]["font_name"] == "Aptos Display"
     assert legacy["slides"][0]["images"]
     assert legacy["slides"][0]["shapes"]
+
+
+def test_clone_slide_prototype_rebinds_embedded_picture_relationship(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    presentation = PptxPresentation(template_path)
+    source = presentation.slides[0]
+
+    clone_slide_prototype(presentation, source)
+    saved_path = tmp_path / "cloned-template.pptx"
+    presentation.save(saved_path)
+
+    reopened = PptxPresentation(saved_path)
+    copied_pictures = [shape for shape in reopened.slides[1].shapes if shape.shape_type == MSO_SHAPE_TYPE.PICTURE]
+    assert len(copied_pictures) == 1
+    assert copied_pictures[0].image.blob == next(
+        shape.image.blob for shape in reopened.slides[0].shapes if shape.shape_type == MSO_SHAPE_TYPE.PICTURE
+    )
+
+
+def test_prune_unreferenced_slide_parts_keeps_preview_package_clean(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    presentation = PptxPresentation(template_path)
+    clone_slide_prototype(presentation, presentation.slides[0])
+    source_rel = presentation.slides._sldIdLst[0].rId
+    presentation.part.drop_rel(source_rel)
+    del presentation.slides._sldIdLst[0]
+    output = tmp_path / "cleaned.pptx"
+    presentation.save(output)
+
+    prune_unreferenced_slide_parts(str(output))
+
+    with zipfile.ZipFile(output) as archive:
+        slide_parts = [name for name in archive.namelist() if name.startswith("ppt/slides/slide") and name.endswith(".xml")]
+    assert len(slide_parts) == 1
+    assert len(PptxPresentation(output).slides) == 1
+
+
+def test_vi_build_renders_prototype_and_binds_only_approved_text_slots(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    presentation = PptxPresentation(template_path)
+    context = extract_design_context(str(template_path))
+    context["content_slots"] = [
+        {
+            "id": "page_title",
+            "max_chars": 24,
+            "target": {"shape_index": 1},
+        }
+    ]
+
+    result = VIBuildSession(context).render_page(
+        presentation,
+        "slide-1-photo",
+        slot_values={"page_title": "新的自然系列"},
+    )
+
+    assert result["status"] == "READY"
+    assert result["slide"] is presentation.slides[1]
+    assert result["slide"].shapes[1].text == "新的自然系列"
+    assert any(shape.shape_type == MSO_SHAPE_TYPE.PICTURE for shape in result["slide"].shapes)
+    assert result["design_application"]["applied_to"] == ["prototype:slide-1", "page_title"]
+
+
+def test_vi_build_replaces_an_approved_prototype_picture_without_losing_geometry(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    replacement = tmp_path / "replacement.png"
+    Image.new("RGB", (400, 900), "#F97316").save(replacement)
+    presentation = PptxPresentation(template_path)
+    context = extract_design_context(str(template_path))
+    context["media_slots"] = [{"id": "hero_photo", "target": {"shape_index": 3}}]
+
+    result = VIBuildSession(context).render_page(
+        presentation,
+        "slide-1-photo",
+        media_values={"hero_photo": str(replacement)},
+    )
+
+    copied_picture = result["slide"].shapes[3]
+    assert result["status"] == "READY"
+    assert copied_picture.image.blob == replacement.read_bytes()
+    assert copied_picture.left == presentation.slides[0].shapes[3].left
+    assert copied_picture.width == presentation.slides[0].shapes[3].width
+
+
+def test_vi_build_blocks_missing_approved_prototype_picture_asset(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    presentation = PptxPresentation(template_path)
+    context = extract_design_context(str(template_path))
+    context["media_slots"] = [{"id": "hero_photo", "target": {"shape_index": 3}}]
+
+    result = VIBuildSession(context).render_page(
+        presentation,
+        "slide-1-photo",
+        media_values={"hero_photo": str(tmp_path / "not-present.png")},
+    )
+
+    assert result["status"] == "NEEDS_ASSET"
+    assert result["slide"] is None
+    assert result["media_plan"]["missing"] == ["hero_photo"]
+
+
+def test_vi_build_inserts_a_contract_defined_decorative_picture_on_a_prototype(tmp_path: Path):
+    template_path = _make_template_with_deterministic_visual_evidence(tmp_path)
+    decoration = tmp_path / "decoration.png"
+    Image.new("RGB", (900, 400), "#164A3B").save(decoration)
+    presentation = PptxPresentation(template_path)
+    context = extract_design_context(str(template_path))
+    context["media_slots"] = [
+        {
+            "id": "decorative_photo",
+            "mode": "insert",
+            "z_order": "back",
+            "bounds": {"left": 9.5, "top": 0.7, "width": 2.5, "height": 1.6},
+        }
+    ]
+
+    result = VIBuildSession(context).render_page(
+        presentation,
+        "slide-1-photo",
+        media_values={"decorative_photo": str(decoration)},
+    )
+
+    inserted = result["slide"].shapes[0]
+    assert result["status"] == "READY"
+    assert len([shape for shape in result["slide"].shapes if shape.shape_type == MSO_SHAPE_TYPE.PICTURE]) == 2
+    assert inserted.shape_type == MSO_SHAPE_TYPE.PICTURE
+    assert Image.open(BytesIO(inserted.image.blob)).size[0] > 0
+    assert round(inserted.left / 914400, 1) == 9.5

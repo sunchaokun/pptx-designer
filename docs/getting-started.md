@@ -1,6 +1,6 @@
 # 快速开始
 
-> 适用版本：`1.0.0b7`；要求 Python 3.10+。
+> 适用版本：`1.0.0b8`；要求 Python 3.10+。
 
 ## 安装
 
@@ -19,7 +19,9 @@ print(result["output_path"])
 
 ## Build 模式
 
-需要逐项控制形状、文字和位置时，直接使用 Build 模式：
+需要逐项控制形状、文字和位置时，直接使用 Build 模式。Build 不会由
+`content_type` 自动选择页面结构：页面目标、信息层级、内容关系和每个原子的精确
+几何都由调用方明确决定。
 
 ```python
 from pptx_designer.tools.shapes import rect
@@ -36,6 +38,10 @@ prs.save("output/hello.pptx")
 ```
 
 所有坐标单位均为英寸。`Presentation()` 默认创建 16:9 画布（13.333 × 7.5 英寸）。
+将已解析 theme 传给 `Presentation(theme=theme)` 后，公共 helper 会继承当前文稿的
+颜色和字体；需要特殊处理时，显式的 `C`、颜色、字体等参数优先。模板驱动的 VI
+内容页请使用 Build 原子计划与 `VITemplateAdapter.compile_atomic()`，不要使用旧的
+archetype 路径；完整交付和 QA 流程见 [LLM 编写手册](llm-authoring-guide.md)。
 
 ## 在页面中加入可编辑 SVG
 

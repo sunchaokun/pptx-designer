@@ -38,6 +38,13 @@ SVG_NS = "http://www.w3.org/2000/svg"
 SVG = f"{{{SVG_NS}}}"
 
 
+def _local_tag(tag: object) -> str:
+    """Return an XML tag's local name for namespaced and plain SVG input."""
+    if not isinstance(tag, str):
+        return ""
+    return tag.rsplit("}", 1)[-1]
+
+
 @dataclass
 class _LineCmd:
     x: float
@@ -590,9 +597,13 @@ class SVGCompiler:
     # ── defs collection ──────────────────────────────────────
 
     def _collect_defs(self, root: etree._Element) -> None:
-        for g in root.iter(f"{SVG}linearGradient"):
+        for g in root.iter():
+            if _local_tag(g.tag) != "linearGradient":
+                continue
             stops = []
-            for s in g.iter(f"{SVG}stop"):
+            for s in g.iter():
+                if _local_tag(s.tag) != "stop":
+                    continue
                 off = s.get("offset", "0")
                 pos = float(off.rstrip("%")) / 100.0 if off.endswith("%") else float(off)
                 # Get color from attribute or style
@@ -618,9 +629,13 @@ class SVGCompiler:
             y2 = _parse_pct(g.get("y2", "0"))
             self._grads[g.get("id")] = GradientDef(stops=stops, x1=x1, y1=y1, x2=x2, y2=y2)
 
-        for g in root.iter(f"{SVG}radialGradient"):
+        for g in root.iter():
+            if _local_tag(g.tag) != "radialGradient":
+                continue
             stops = []
-            for s in g.iter(f"{SVG}stop"):
+            for s in g.iter():
+                if _local_tag(s.tag) != "stop":
+                    continue
                 off = s.get("offset", "0")
                 pos = float(off.rstrip("%")) / 100.0 if off.endswith("%") else float(off)
                 # Get color from attribute or style
@@ -644,7 +659,9 @@ class SVGCompiler:
             r_ = _parse_pct(g.get("r", "50%"))
             self._grads[g.get("id")] = GradientDef(stops=stops, cx=cx, cy=cy, r=r_, gradient_type="radial")
 
-        for c in root.iter(f"{SVG}clipPath"):
+        for c in root.iter():
+            if _local_tag(c.tag) != "clipPath":
+                continue
             polys = []
             for child in c:
                 tf = Affine()
